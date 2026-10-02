@@ -450,7 +450,7 @@ ISIN_METADATA = {
     'FR0000075954': {'domain': 'riber.com', 'yf': 'ALRIB.PA', 'sector': 'Semi-conducteurs & Tech', 'div': 0.0},
     'FR0000131104': {'domain': 'bnpparibas.com', 'yf': 'BNP.PA', 'sector': 'Finance & Banque', 'div': 5.84},
     'FR0011726835': {'domain': 'gtt.fr', 'yf': 'GTT.PA', 'sector': 'Énergie & Gaz', 'div': 2.1},
-    'FR0013341781': {'domain': '2crsi.com', 'yf': 'AL2CR.PA', 'sector': 'Technologie & Hardware', 'div': 0.0},
+    'FR0013341781': {'domain': '2crsi.com', 'yf': 'AL2SI.PA', 'sector': 'Technologie & Hardware', 'div': 0.0},
     'FR0014007ND6': {'domain': 'haffner-energy.com', 'yf': 'ALHAF.PA', 'sector': 'Énergie Renouvelable', 'div': 0.0},
     'FR0000121972': {'domain': 'se.com', 'yf': 'SU.PA', 'sector': 'Industrie & Électrique', 'div': 1.3},
     'FR0011550193': {'domain': 'easy.bnpparibas.com', 'yf': 'ETZ.PA', 'sector': 'ETF & Indice Européen', 'div': 2.8},
