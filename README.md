@@ -37,7 +37,6 @@ Application web complète de suivi, d'analyse, de diagnostic par IA et de projec
 - **yfinance** (Récupération des flux de cotation en direct)
 - **Groq** (API LLM ultra-rapide pour l'analyse IA)
 - **BeautifulSoup4** (Scraping d'actualités financières et requêtes ZoneBourse)
-
 ---
 
 ## 🚀 Installation Locale
@@ -47,64 +46,10 @@ Application web complète de suivi, d'analyse, de diagnostic par IA et de projec
 - Python 3.9+
 - Un compte [Supabase](https://supabase.com)
 - Une clé API [Groq](https://groq.com)
-
-### 2. Configuration Supabase (Base de données)
-Exécutez ce script SQL dans l'éditeur SQL de votre projet Supabase pour créer les tables :
-```sql
-CREATE TABLE snapshots (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES auth.users NOT NULL,
-    snapshot_date TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    cash REAL DEFAULT 0.0,
-    valeur_titres REAL DEFAULT 0.0,
-    total_valeur REAL DEFAULT 0.0,
-    cout_investi REAL DEFAULT 0.0,
-    plus_value REAL DEFAULT 0.0
-);
-
-CREATE TABLE snapshot_positions (
-    id SERIAL PRIMARY KEY,
-    snapshot_id INTEGER REFERENCES snapshots(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES auth.users NOT NULL,
-    name TEXT,
-    isin TEXT,
-    type TEXT,
-    quantity REAL,
-    buying_price REAL,
-    last_price REAL,
-    amount REAL,
-    amount_variation REAL,
-    variation REAL
-);
--- Optionnel mais recommandé : Activez le RLS (Row Level Security) sur ces deux tables.
-```
-
-### 3. Lancer le Backend (API Python)
-Créez un fichier `.env` à la racine :
-```env
-SUPABASE_URL=votre_url_supabase
-SUPABASE_KEY=votre_cle_anon_supabase
-GROQ_API_KEY=votre_cle_api_groq
-ALLOWED_ORIGINS=http://localhost:5173
-```
-Puis installez les dépendances et lancez le serveur :
-```bash
-pip install -r requirements.txt
-uvicorn backend.main:app --reload --port 8000
-```
-
-### 4. Lancer le Frontend (Vue.js)
-Dans un nouveau terminal :
-```bash
-npm install
-npm run dev
-```
-Accès web : **http://localhost:5173**
-
 ---
 
 ## 🌍 Déploiement en Production (Cloud)
 
 L'architecture du dépôt est conçue pour être déployée instantanément :
-- **Frontend** : Déployable sur **Vercel** (`vercel.json` inclus pour la gestion du routage SPA). Assurez-vous d'ajouter la variable d'environnement `VITE_API_BASE_URL` pointant vers l'URL du backend.
+- **Frontend** : Déployable sur **Vercel** (`vercel.json` inclus pour la gestion du routage SPA).
 - **Backend** : Déployable sur **Render** (`render.yaml` inclus comme blueprint d'infrastructure).
