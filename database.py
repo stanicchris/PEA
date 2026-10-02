@@ -42,8 +42,20 @@ def is_snapshot_saved(snapshot_date, filename=""):
     user_id = st.session_state.get("user_id")
     if not user_id: return None
     
-    response = supabase.table("snapshots").select("id").eq("user_id", user_id).or_(f"snapshot_date.eq.{snapshot_date},source_filename.eq.{filename}").execute()
-    return response.data[0]['id'] if response.data else None
+    try:
+        # Recherche par date exacte
+        res_date = supabase.table("snapshots").select("id").eq("user_id", user_id).eq("snapshot_date", str(snapshot_date)).execute()
+        if res_date.data:
+            return res_date.data[0]['id']
+            
+        # Recherche par nom de fichier (pour les imports CSV uniques)
+        if filename:
+            res_fn = supabase.table("snapshots").select("id").eq("user_id", user_id).eq("source_filename", str(filename)).execute()
+            if res_fn.data:
+                return res_fn.data[0]['id']
+    except Exception as e:
+        print(f"Erreur vérification snapshot : {e}")
+    return None
 
 def save_snapshot(df, cash=0.0, source_filename="export.csv", custom_date=None):
     """
