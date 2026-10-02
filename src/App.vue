@@ -6,9 +6,23 @@
     <!-- MAIN DASHBOARD -->
     <div v-else class="min-h-screen bg-[#0E1117] text-[#F8FAFC] font-sans flex flex-col md:flex-row">
       <!-- Header Mobile -->
-      <header class="md:hidden glass p-4 flex justify-between items-center sticky top-0 z-50">
-        <div class="font-bold text-xl tracking-tight">PEA Tracker</div>
-        <button @click="logout" class="text-white/50 hover:text-rose-400 text-sm font-semibold">Déconnexion</button>
+      <header class="md:hidden glass p-4 flex flex-col gap-4 sticky top-0 z-50 shadow-lg">
+        <div class="flex justify-between items-center">
+          <div class="font-bold text-xl tracking-tight text-white">PEA Tracker</div>
+          <div class="flex items-center gap-3">
+            <button @click="refreshData" :disabled="isRefreshing" class="p-2 rounded-lg bg-blue-600/20 text-blue-400 hover:bg-blue-600/40 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="isRefreshing ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </button>
+            <button @click="isSettingsOpen = true" class="p-2 rounded-lg bg-white/5 text-white/70 hover:text-white transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </button>
+            <button @click="logout" class="text-white/50 hover:text-rose-400 text-sm font-semibold ml-2">Exit</button>
+          </div>
+        </div>
+        <div class="relative w-full">
+          <input type="text" v-model="searchQuery" @keyup.enter="handleSearch" placeholder="Rechercher (ex: AAPL)" class="w-full bg-[#151921] border border-white/10 rounded-xl px-4 py-2.5 pl-10 text-sm text-white focus:outline-none focus:border-blue-500 shadow-inner" />
+          <svg class="w-4 h-4 text-white/50 absolute left-3.5 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
       </header>
 
       <!-- Sidebar Desktop -->
