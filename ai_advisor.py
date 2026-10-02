@@ -4,6 +4,9 @@ import yfinance as yf
 import re
 import streamlit as st
 import os
+import urllib.request
+import urllib.parse
+import xml.etree.ElementTree as ET
 
 try:
     from groq import Groq
@@ -19,9 +22,18 @@ AVAILABLE_GROQ_MODELS = [
 ]
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
 
+def get_groq_api_key():
+    """Récupère la clé API Groq depuis st.secrets ou les variables d'environnement."""
+    try:
+        if hasattr(st, "secrets") and "GROQ_API_KEY" in st.secrets:
+            return st.secrets["GROQ_API_KEY"]
+    except Exception:
+        pass
+    return os.environ.get("GROQ_API_KEY", "")
+
 def get_available_groq_models():
     """Récupère dynamiquement la liste des modèles Groq de conversation chat."""
-    api_key = st.secrets.get("GROQ_API_KEY")
+    api_key = get_groq_api_key()
     if api_key and HAS_GROQ_PKG:
         try:
             client = Groq(api_key=api_key)
@@ -37,44 +49,76 @@ def get_available_groq_models():
                     if r not in ordered:
                         ordered.append(r)
                 return ordered
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Notice modèles Groq : {e}")
     return AVAILABLE_GROQ_MODELS
 
-def fetch_ticker_news(ticker_symbol, max_news=3):
-    """Récupère les dernières actualités d'un ticker boursier via yfinance."""
-    if not ticker_symbol:
+def fetch_ticker_news(ticker_symbol=None, company_name=None, max_news=3):
+    """
+    Récupère les dernières actualités financières pour un actif.
+    Interroge le flux Google News Finance France (spécifique aux actions Euronext / PEA),
+    puis effectue un repli vers yfinance si besoin.
+    """
+    cleaned_news = []
+    query_name = company_name or ticker_symbol
+    if not query_name:
         return []
+        
+    # 1. Flux RSS Google News France Bourse
     try:
-        ticker = yf.Ticker(ticker_symbol)
-        news_list = ticker.news or []
-
-        cleaned_news = []
-        for item in news_list[:max_news]:
-            content = item.get("content", item)
-            title = content.get("title", "Actualité Boursière")
-            summary = content.get("summary", content.get("description", "Pas de résumé disponible."))
-            provider = content.get("provider", {}).get("displayName", "Actualités Marché")
-            link = content.get("canonicalUrl", {}).get("url", "") or item.get("link", "")
-
-            cleaned_news.append({
-                "title": title,
-                "summary": summary,
-                "provider": provider,
-                "link": link
-            })
-        return cleaned_news
+        clean_query = re.sub(r'[^a-zA-Z0-9\s]', ' ', query_name).strip()
+        q = urllib.parse.quote(f"{clean_query} bourse")
+        url = f"https://news.google.com/rss/search?q={q}&hl=fr&gl=FR&ceid=FR:fr"
+        req = urllib.request.Request(
+            url, 
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+        )
+        with urllib.request.urlopen(req, timeout=5) as res:
+            root = ET.fromstring(res.read())
+            items = root.findall(".//item")[:max_news]
+            for it in items:
+                title = it.findtext("title") or "Actualité Boursière"
+                link = it.findtext("link") or ""
+                src_node = it.find("source")
+                provider = src_node.text if src_node is not None else "Actualités Marché"
+                cleaned_news.append({
+                    "title": title,
+                    "summary": title,
+                    "provider": provider,
+                    "link": link
+                })
     except Exception as e:
-        print(f"Erreur actualités pour {ticker_symbol}: {e}")
-        return []
+        print(f"Notice Google News RSS ({query_name}): {e}")
+
+    # 2. Repli vers yfinance si flux RSS indisponible
+    if not cleaned_news and ticker_symbol:
+        try:
+            ticker = yf.Ticker(ticker_symbol)
+            news_list = ticker.news or []
+            for item in news_list[:max_news]:
+                content = item.get("content", item)
+                title = content.get("title", "Actualité Boursière")
+                summary = content.get("summary", content.get("description", "Pas de résumé disponible."))
+                provider = content.get("provider", {}).get("displayName", "Actualités Marché")
+                link = content.get("canonicalUrl", {}).get("url", "") or item.get("link", "")
+                cleaned_news.append({
+                    "title": title,
+                    "summary": summary,
+                    "provider": provider,
+                    "link": link
+                })
+        except Exception as e:
+            print(f"Notice yfinance news ({ticker_symbol}): {e}")
+
+    return cleaned_news
 
 def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
     """Exécute une requête vers Groq avec extraction JSON robuste (compatible Llama 3.3, 3.1 & DeepSeek R1)."""
     if not HAS_GROQ_PKG:
         raise Exception("Le package 'groq' n'est pas installé.")
-    api_key = st.secrets.get("GROQ_API_KEY")
+    api_key = get_groq_api_key()
     if not api_key:
-        raise Exception("Clé API Groq manquante dans st.secrets.")
+        raise Exception("Clé API Groq manquante (GROQ_API_KEY non configurée dans secrets ou environnement).")
         
     # Sécurité anti-modèle de classification (ex: llama-guard)
     if not model or 'guard' in model.lower() or 'whisper' in model.lower():
@@ -188,79 +232,105 @@ def analyze_portfolio_global(portfolio_df, model=DEFAULT_MODEL, openai_key=None)
         "recommandations_pea": recommandations
     }
 
-def analyze_news_sentiment(ticker_symbol, news_list, model=DEFAULT_MODEL, openai_key=None):
-    """Analyse le sentiment des actualités d'une action via Groq ou analyse de mots-clés."""
-    if not news_list:
-        return {
-            "sentiment_global": "Neutre",
-            "score_global": 0.0,
-            "analyse_news": []
-        }
-
+def analyze_news_sentiment(ticker_symbol, news_list, company_name=None, model=DEFAULT_MODEL, openai_key=None):
+    """Analyse le sentiment des actualités d'une action via Groq ou fallback par mots-clés."""
+    display_name = company_name or ticker_symbol or "Action"
     system_prompt = (
-        "Tu es un analyste financier senior. "
-        "Tu réponds STRICTEMENT avec un objet JSON valide en français."
+        "Tu es un analyste financier senior spécialisé dans les actions et les marchés européens. "
+        "Tu évalues rigoureusement l'impact des actualités récentes sur les cours. "
+        "Tu réponds STRICTEMENT avec un objet JSON valide en français, sans texte en dehors du JSON."
     )
-    prompt = f"""
-    Analyse les actualités suivantes pour l'action {ticker_symbol} :
-    {json.dumps(news_list, indent=2)}
+    
+    if news_list and len(news_list) > 0:
+        prompt = f"""
+        Analyse les actualités financières récentes pour l'entreprise {display_name} ({ticker_symbol}) :
+        {json.dumps(news_list, indent=2, ensure_ascii=False)}
 
-    Génère un JSON respectant EXACTEMENT cette structure :
-    {{
-        "sentiment_global": "Positif",
-        "score_global": 0.4,
-        "analyse_news": [
-            {{
-                "titre": "Titre",
-                "sentiment": "Positif",
-                "score": 0.4,
-                "resume_impact": "Explication courte de l'impact en 1 sentence en français."
-            }}
-        ]
-    }}
-    Note : 'score_global' et 'score' doivent être compris entre -1.0 (très négatif) et +1.0 (très positif).
-    """
+        Génère un JSON respectant EXACTEMENT cette structure :
+        {{
+            "sentiment_global": "Positif",
+            "score_global": 0.45,
+            "analyse_news": [
+                {{
+                    "titre": "Titre exact de l'actualité",
+                    "sentiment": "Positif",
+                    "score": 0.45,
+                    "resume_impact": "Explication claire et synthétique de l'impact financier en 1 phrase en français."
+                }}
+            ]
+        }}
+        Note : 'score_global' et 'score' doivent être obligatoirement des nombres décimaux compris entre -1.0 (très négatif / baissier) et +1.0 (très positif / haussier).
+        """
+    else:
+        # Aucun flux spécifique trouvé : Groq évalue la tendance et le consensus de la valeur
+        prompt = f"""
+        Donne une évaluation synthétique du sentiment de marché actuel pour l'actif {display_name} ({ticker_symbol}).
+        Génère un JSON respectant EXACTEMENT cette structure :
+        {{
+            "sentiment_global": "Neutre",
+            "score_global": 0.05,
+            "analyse_news": [
+                {{
+                    "titre": "Tendance générale et profil de marché ({display_name})",
+                    "sentiment": "Neutre",
+                    "score": 0.05,
+                    "resume_impact": "Flux d'actualités calmes à court terme. Évolution guidée par la macroéconomie sectorielle."
+                }}
+            ]
+        }}
+        Note : 'score_global' et 'score' doivent être compris entre -1.0 et +1.0.
+        """
 
     try:
         return query_groq_safe(prompt, system_prompt, model=model)
-    except Exception:
-        pass
+    except Exception as e_groq:
+        print(f"Notice Groq sentiment ({display_name}): {e_groq}")
 
-    # Fallback sentiment mots-clés
+    # Fallback sentiment mots-clés si Groq est indisponible
     analyzed_items = []
     total_score = 0.0
 
-    pos_words = ['gain', 'profit', 'rise', 'jump', 'up', 'beat', 'growth', 'bull', 'record', 'hausse', 'croissance', 'bénéfice', 'cible', 'recommand']
-    neg_words = ['fall', 'drop', 'down', 'loss', 'bear', 'cut', 'risk', 'warn', 'baisse', 'perte', 'chute', 'risque', 'alerte', 'dégrade']
+    pos_words = ['gain', 'profit', 'rise', 'jump', 'up', 'beat', 'growth', 'bull', 'record', 'hausse', 'croissance', 'bénéfice', 'cible', 'recommand', 'dividende', 'reprise']
+    neg_words = ['fall', 'drop', 'down', 'loss', 'bear', 'cut', 'risk', 'warn', 'baisse', 'perte', 'chute', 'risque', 'alerte', 'dégrade', 'repli', 'crise']
 
-    for n in news_list:
-        text = (n.get('title', '') + " " + n.get('summary', '')).lower()
-        pos_count = sum(1 for w in pos_words if w in text)
-        neg_count = sum(1 for w in neg_words if w in text)
-        
-        if pos_count > neg_count:
-            score = 0.5
-            sentiment = "Positif"
-            impact = "Actualité favorable orientée hausse."
-        elif neg_count > pos_count:
-            score = -0.5
-            sentiment = "Négatif"
-            impact = "Tensions ou incertitudes signalées."
-        else:
-            score = 0.0
-            sentiment = "Neutre"
-            impact = "Information neutre ou factuelle."
+    if news_list:
+        for n in news_list:
+            text = (n.get('title', '') + " " + n.get('summary', '')).lower()
+            pos_count = sum(1 for w in pos_words if w in text)
+            neg_count = sum(1 for w in neg_words if w in text)
             
-        total_score += score
-        analyzed_items.append({
-            "titre": n.get('title', 'Actu'),
-            "sentiment": sentiment,
-            "score": score,
-            "resume_impact": impact
-        })
+            if pos_count > neg_count:
+                score = 0.4
+                sentiment = "Positif"
+                impact = "Actualité favorable orientée hausse."
+            elif neg_count > pos_count:
+                score = -0.4
+                sentiment = "Négatif"
+                impact = "Tensions ou incertitudes signalées."
+            else:
+                score = 0.0
+                sentiment = "Neutre"
+                impact = "Information factuelle ou équilibrée."
+                
+            total_score += score
+            analyzed_items.append({
+                "titre": n.get('title', 'Actu'),
+                "sentiment": sentiment,
+                "score": score,
+                "resume_impact": impact
+            })
 
-    avg_score = round(total_score / len(news_list), 2) if news_list else 0.0
-    global_sent = "Positif" if avg_score > 0.1 else ("Négatif" if avg_score < -0.1 else "Neutre")
+        avg_score = round(total_score / len(news_list), 2)
+        global_sent = "Positif" if avg_score > 0.1 else ("Négatif" if avg_score < -0.1 else "Neutre")
+    else:
+        avg_score = 0.0
+        global_sent = "Neutre"
+        analyzed_items.append({
+            "titre": f"Profil {display_name}",
+            "sentiment": "Neutre",
+            "score": 0.0,
+            "resume_impact": "Actualités de court terme calmes."
+        })
 
     return {
         "sentiment_global": global_sent,

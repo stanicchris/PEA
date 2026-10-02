@@ -1401,19 +1401,30 @@ with tab_ai_tax:
             p_bar = st.progress(0)
 
             for idx, row in df.iterrows():
-                tk_sym = row.get('yf_symbol') or row.get('name')
-                p_text.text(f"Analyse des actualités de {row['name']} ({tk_sym})...")
-                news_items = fetch_ticker_news(tk_sym)
+                comp_name = row.get('name', 'Action')
+                tk_sym = row.get('yf_symbol') or comp_name
+                p_text.text(f"Analyse des actualités de {comp_name} avec {groq_model}...")
+                news_items = fetch_ticker_news(ticker_symbol=tk_sym, company_name=comp_name)
                 try:
-                    analysis = analyze_news_sentiment(tk_sym, news_items, model=groq_model)
-                except Exception:
+                    analysis = analyze_news_sentiment(
+                        ticker_symbol=tk_sym,
+                        news_list=news_items,
+                        company_name=comp_name,
+                        model=groq_model
+                    )
+                except Exception as e_news:
+                    print(f"Notice analyse sentiment {comp_name}: {e_news}")
                     analysis = {"sentiment_global": "Neutre", "score_global": 0.0, "analyse_news": []}
-                sentiments_results[tk_sym] = analysis
+                
+                sentiments_results[comp_name] = analysis
+                if tk_sym:
+                    sentiments_results[tk_sym] = analysis
                 p_bar.progress((idx + 1) / len(df))
 
             p_text.empty()
             p_bar.empty()
             st.session_state["sentiments_results"] = sentiments_results
+            st.success(f"Analyse des actualités terminée avec succès via {groq_model} !")
 
         if "sentiments_results" in st.session_state:
             s_dict = st.session_state["sentiments_results"]
@@ -1430,10 +1441,11 @@ with tab_ai_tax:
                 st.write("**Impact de l'actualité par position :**")
                 total_val_weather = df["amount"].sum()
                 for _, r in df.iterrows():
-                    tk_name = r.get('yf_symbol') or r.get('name')
+                    c_name = r.get('name', '')
+                    tk_name = r.get('yf_symbol') or c_name
                     wt = (r["amount"] / total_val_weather) * 100 if total_val_weather > 0 else 0
-                    s_score = s_dict.get(tk_name, {}).get("score_global", 0.0)
-                    st.caption(f"• **{r['name']}** ({wt:.1f}% du PEA) : Sentiment {s_score:+.2f}")
+                    s_score = s_dict.get(c_name, s_dict.get(tk_name, {})).get("score_global", 0.0)
+                    st.caption(f"• **{c_name}** ({wt:.1f}% du PEA) : Sentiment {s_score:+.2f}")
 
             st.markdown("<hr style='border-color: rgba(255,255,255,0.06); margin: 20px 0;'>", unsafe_allow_html=True)
             stock_names_list = df['name'].tolist()
@@ -1441,8 +1453,8 @@ with tab_ai_tax:
             selected_row = df[df['name'] == selected_t_name].iloc[0]
             tk_key = selected_row.get('yf_symbol') or selected_row.get('name')
 
-            if tk_key in s_dict:
-                res_news = s_dict[tk_key]
+            res_news = s_dict.get(selected_t_name) or s_dict.get(tk_key)
+            if res_news:
                 st.write(f"**Sentiment Global ({selected_t_name}) :** {res_news.get('sentiment_global', 'Neutre')} ({res_news.get('score_global', 0.0):+.2f})")
 
                 for news_item in res_news.get("analyse_news", []):

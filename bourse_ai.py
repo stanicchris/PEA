@@ -71,43 +71,34 @@ def analyze_stock_with_ai(stock_name, isin=None, yf_symbol=None, custom_url=None
     low_52 = yf_info.get('fiftyTwoWeekLow') or (price * 0.8 if price > 0 else 0)
     recommendation = (yf_info.get('recommendationKey') or 'buy').upper()
     
-    # Si clé OpenAI disponible, utiliser GPT
-    if api_key and len(api_key.strip()) > 10:
-        try:
-            import openai
-            client = openai.OpenAI(api_key=api_key)
-            prompt = f"""
-            Tu es un analyste financier senior. Voici les données sur l'entreprise {stock_name} ({page_title}):
-            {page_text[:4000] if page_text else f'Action: {stock_name}, Cours: {price}€, PER: {per}'}
+    # 1. Analyse IA via Groq
+    try:
+        from ai_advisor import query_groq_safe
+        prompt = f"""
+        Tu es un analyste financier senior. Voici les données financières sur l'entreprise {stock_name} ({page_title}):
+        {page_text[:4000] if page_text else f'Action: {stock_name}, Cours: {price}€, PER: {per}x, Rendement: {div_rate}%'}
 
-            Réponds sous le format JSON strict suivant (sans texte autour):
-            {{
-                "company_name": "{stock_name}",
-                "should_invest": true,
-                "score_percent": 82,
-                "summary": "Résumé de l'activité et du profil de la société en 3 phrases...",
-                "pros": "Points forts principaux pour investir...",
-                "cons": "Risques majeurs et points faibles..."
-            }}
-            """
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3
-            )
-            res_content = response.choices[0].message.content
-            match = re.search(r'\{.*\}', res_content, re.DOTALL)
-            if match:
-                data = json.loads(match.group())
-                data['source'] = 'OpenAI GPT (BourseAi)'
-                data['target_url'] = target_url
-                data['metrics'] = {
-                    'price': price, 'per': per, 'div_yield': div_rate,
-                    'target_price': target_price, 'recommendation': recommendation
-                }
-                return data
-        except Exception as e:
-            print(f"Erreur OpenAI: {e}")
+        Réponds sous le format JSON strict suivant (sans texte en dehors du JSON):
+        {{
+            "company_name": "{stock_name}",
+            "should_invest": true,
+            "score_percent": 75,
+            "summary": "Résumé clair de l'activité, des fondamentaux et du profil de la société en 3 phrases en français...",
+            "pros": "Points forts principaux pour investir...",
+            "cons": "Risques majeurs et points de vigilance..."
+        }}
+        """
+        data = query_groq_safe(prompt, system_prompt="Tu es un analyste financier expert. Réponds STRICTEMENT en JSON valide en français.")
+        if data and isinstance(data, dict) and 'score_percent' in data:
+            data['source'] = 'Moteur IA Groq & Marché (BourseAi)'
+            data['target_url'] = target_url
+            data['metrics'] = {
+                'price': price, 'per': per, 'div_yield': div_rate,
+                'target_price': target_price, 'recommendation': recommendation
+            }
+            return data
+    except Exception as e_groq:
+        print(f"Notice Groq BourseAi : {e_groq}")
 
     # Fallback algorithmique financier BourseAi
     score = 50
