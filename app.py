@@ -159,21 +159,21 @@ st.markdown("""
         margin-left: 10px;
     }
 
-    .metric-card {
-        background: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 14px;
-        padding: 16px 18px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        transition: transform 0.2s ease, border-color 0.2s ease;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+    /* Effet Glassmorphism sur toutes les métriques et cartes KPI */
+    [data-testid="stMetric"], .metric-card {
+        background: rgba(30, 41, 59, 0.6) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 16px !important;
+        padding: 16px 20px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35) !important;
+        transition: all 0.25s ease-in-out !important;
     }
-    .metric-card:hover {
-        transform: translateY(-2px);
-        border-color: #38bdf8;
+    [data-testid="stMetric"]:hover, .metric-card:hover {
+        transform: translateY(-3px) !important;
+        border-color: rgba(56, 189, 248, 0.5) !important;
+        box-shadow: 0 12px 35px 0 rgba(56, 189, 248, 0.15) !important;
     }
     .metric-title {
         color: #94a3b8;
@@ -1028,8 +1028,12 @@ with tab_sectors:
     with sec_col1:
         st.markdown("#### 🌐 Allocation par Secteur d'Activité")
         sec_agg = df.groupby('sector')['amount'].sum().reset_index()
-        fig_sec = px.pie(sec_agg, names='sector', values='amount', hole=0.45, color_discrete_sequence=px.colors.qualitative.Dark24)
-        fig_sec.update_layout(paper_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), margin=dict(t=10, l=10, r=10, b=10), height=360)
+        fig_sec = px.pie(sec_agg, names='sector', values='amount', hole=0.55, color_discrete_sequence=px.colors.qualitative.Prism)
+        fig_sec.update_traces(textposition='inside', textinfo='percent+label', marker=dict(line=dict(color='#0b0f19', width=2)))
+        fig_sec.update_layout(
+            paper_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), 
+            margin=dict(t=10, l=10, r=10, b=10), height=360, showlegend=False
+        )
         st.plotly_chart(fig_sec, use_container_width=True)
 
     with sec_col2:
@@ -1098,10 +1102,29 @@ with tab_charts:
     col_a1, col_a2 = st.columns(2)
     with col_a1:
         st.subheader("💶 Contribution aux Gains / Pertes (€)")
-        df_sorted_gains = df.sort_values(by='amountVariation', ascending=True)
-        colors_pv = ['#10b981' if v >= 0 else '#ef4444' for v in df_sorted_gains['amountVariation']]
-        fig_bars = go.Figure(go.Bar(x=df_sorted_gains['amountVariation'], y=df_sorted_gains['name'], orientation='h', marker_color=colors_pv, text=df_sorted_gains['amountVariation'].apply(lambda x: f"{'+' if x>0 else ''}{x:,.2f} €"), textposition='outside'))
-        fig_bars.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), margin=dict(t=10, l=10, r=60, b=10), height=420, xaxis=dict(title="Plus/Moins-value (€)", gridcolor="#334155"), yaxis=dict(title=None))
+        df_sorted_gains = df.sort_values(by='amountVariation', ascending=True).copy()
+        df_sorted_gains['status'] = np.where(df_sorted_gains['amountVariation'] >= 0, 'Plus-Value', 'Moins-Value')
+        fig_bars = px.bar(
+            df_sorted_gains,
+            x='amountVariation',
+            y='name',
+            orientation='h',
+            color='status',
+            color_discrete_map={'Plus-Value': '#10b981', 'Moins-Value': '#ef4444'},
+            text=df_sorted_gains['amountVariation'].apply(lambda x: f"{'+' if x>0 else ''}{x:,.2f} €"),
+            labels={'amountVariation': 'Plus/Moins-value (€)', 'name': 'Titre'}
+        )
+        fig_bars.update_layout(
+            paper_bgcolor="#1e293b",
+            plot_bgcolor="#1e293b",
+            font=dict(color="#f8fafc", family="Plus Jakarta Sans"),
+            margin=dict(t=10, l=10, r=60, b=10),
+            height=420,
+            showlegend=False,
+            xaxis=dict(title="Plus/Moins-value (€)", gridcolor="#334155"),
+            yaxis=dict(title=None, gridcolor="#334155")
+        )
+        fig_bars.update_traces(textposition='outside')
         st.plotly_chart(fig_bars, use_container_width=True)
 
     with col_a2:
