@@ -98,7 +98,8 @@ const handleAuth = async () => {
     }
     
     // Auth success
-    emit('login-success', { userId: data.user_id, username: data.username });
+    localStorage.setItem('pea_access_token', data.access_token);
+        emit('login-success', { userId: data.user_id, username: data.username });
     
   } catch (err) {
     errorMsg.value = err.message;

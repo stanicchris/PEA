@@ -142,7 +142,7 @@ watch(() => props.isOpen, async (newVal) => {
     analysis.value = null;
     try {
       const qName = encodeURIComponent(props.asset.name);
-      const res = await fetch(`${API_BASE}/api/stock/analyze/${props.asset.ticker}?name=${qName}`);
+      const res = await fetch(`${API_BASE}/api/stock/analyze/${props.asset.ticker}?name=${qName}`, { headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') } });
       if (!res.ok) throw new Error("Erreur de récupération de l'analyse");
       analysis.value = await res.json();
     } catch (err) {

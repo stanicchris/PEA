@@ -3,7 +3,8 @@ import os
 import re
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Header
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
@@ -86,9 +87,10 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and
 
 app = FastAPI(title="PEA Tracker SaaS API")
 
+import os
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -102,6 +104,18 @@ def to_synthetic_email(uname: str) -> str:
     cleaned = re.sub(r'[^a-zA-Z0-9_\-\.]', '', uname.strip().lower())
     return f"{cleaned}@pea.local"
 
+
+security = HTTPBearer()
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        res = supabase.auth.get_user(credentials.credentials)
+        if not res or not res.user:
+            raise HTTPException(status_code=401, detail="Token invalide")
+        return res.user.id
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Non autorisé: {str(e)}")
+
 @app.post("/api/auth/login")
 async def login(req: AuthRequest):
     if not supabase:
@@ -109,7 +123,7 @@ async def login(req: AuthRequest):
     try:
         email = to_synthetic_email(req.username)
         res = supabase.auth.sign_in_with_password({"email": email, "password": req.password})
-        return {"user_id": res.user.id, "username": req.username}
+        return {"user_id": res.user.id, "username": req.username, "access_token": res.session.access_token}
     except Exception as e:
         raise HTTPException(status_code=401, detail="Identifiants incorrects.")
 
@@ -122,7 +136,7 @@ async def register(req: AuthRequest):
     try:
         email = to_synthetic_email(req.username)
         res = supabase.auth.sign_up({"email": email, "password": req.password})
-        return {"user_id": res.user.id, "username": req.username}
+        return {"user_id": res.user.id, "username": req.username, "access_token": res.session.access_token}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -282,7 +296,7 @@ async def upload_csv(user_id: str, file: UploadFile = File(...)):
     return {"status": "ok", "snapshot_id": snap_id}
 
 @app.get("/api/portfolio/history")
-async def get_portfolio_history(user_id: str):
+async def get_portfolio_history(user_id: str = Depends(get_current_user)):
     if not supabase: return {"history": []}
     res = supabase.table("snapshots").select("snapshot_date, total_valeur, cout_investi, plus_value").eq("user_id", user_id).order("snapshot_date", desc=False).execute()
     history = []
@@ -298,14 +312,14 @@ async def get_portfolio_history(user_id: str):
     return {"history": history}
 
 @app.get("/api/portfolio/ai-diagnostic")
-async def get_ai_diagnostic(user_id: str):
+async def get_ai_diagnostic(user_id: str = Depends(get_current_user)):
     df, _ = fetch_user_data(user_id)
     if df.empty: return {}
     df['yf_symbol'] = df['isin'] 
     return analyze_portfolio_global(df)
 
 @app.get("/api/portfolio/weather")
-async def get_portfolio_weather(user_id: str):
+async def get_portfolio_weather(user_id: str = Depends(get_current_user)):
     df, _ = fetch_user_data(user_id)
     if df.empty: return {"score": 0, "emoji": "☁️", "text": "Vide", "details": {}}
     
@@ -326,7 +340,7 @@ async def get_portfolio_weather(user_id: str):
 import yfinance as yf
 
 @app.post("/api/portfolio/refresh")
-async def refresh_portfolio(user_id: str):
+async def refresh_portfolio(user_id: str = Depends(get_current_user)):
     if not supabase: return {"status": "error", "message": "Supabase non configuré"}
     
     # Récupérer le dernier snapshot

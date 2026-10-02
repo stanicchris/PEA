@@ -117,7 +117,7 @@ const uploadFile = async () => {
   try {
     const res = await fetch(`${API_BASE}/api/portfolio/upload?user_id=${props.userId}`, {
       method: 'POST',
-      body: formData
+      headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') }, body: formData
     });
     
     if (!res.ok) throw new Error("Format CSV invalide ou non supporté");

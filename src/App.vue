@@ -152,9 +152,9 @@ const fetchData = async () => {
   isLoading.value = true;
   try {
     const [summaryRes, positionsRes, historyRes] = await Promise.all([
-      fetch(`${API_BASE}/api/portfolio/summary?user_id=${userId.value}`),
-      fetch(`${API_BASE}/api/portfolio/positions?user_id=${userId.value}`),
-      fetch(`${API_BASE}/api/portfolio/history?user_id=${userId.value}`)
+      fetch(`${API_BASE}/api/portfolio/summary?user_id=${userId.value}`, { headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') } }),
+      fetch(`${API_BASE}/api/portfolio/positions?user_id=${userId.value}`, { headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') } }),
+      fetch(`${API_BASE}/api/portfolio/history?user_id=${userId.value}`, { headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') } })
     ]);
     summary.value = await summaryRes.json();
     const posData = await positionsRes.json();
@@ -175,7 +175,7 @@ const refreshData = async () => {
   if (!userId.value) return;
   isRefreshing.value = true;
   try {
-    await fetch(`${API_BASE}/api/portfolio/refresh?user_id=${userId.value}`, { method: 'POST' });
+    await fetch(`${API_BASE}/api/portfolio/refresh?user_id=${userId.value}`, { method: 'POST', headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') } });
     // Fetch data immediately after sync finishes
     await fetchData();
   } catch (error) {

@@ -117,8 +117,8 @@ const fetchAiData = async () => {
   error.value = null;
   try {
     const [diagRes, weatherRes] = await Promise.all([
-      fetch(`${API_BASE}/api/portfolio/ai-diagnostic?user_id=${props.userId}`),
-      fetch(`${API_BASE}/api/portfolio/weather?user_id=${props.userId}`)
+      fetch(`${API_BASE}/api/portfolio/ai-diagnostic?user_id=${props.userId}`, { headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') } }),
+      fetch(`${API_BASE}/api/portfolio/weather?user_id=${props.userId}`, { headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') } })
     ]);
 
     if (!diagRes.ok || !weatherRes.ok) {
