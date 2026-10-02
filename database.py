@@ -261,4 +261,65 @@ def update_snapshot_data(snapshot_id, df, cash=0.0):
         print(f"Erreur mise à jour live snapshot : {e}")
         return False
 
+def get_user_cash() -> float:
+    """Récupère les liquidités disponibles enregistrées pour l'utilisateur dans Supabase."""
+    supabase = get_supabase_client()
+    user_id = st.session_state.get("user_id")
+    if not user_id:
+        return 0.0
+    
+    # 1. Tenter depuis la table dédiée user_settings
+    try:
+        res = supabase.table("user_settings").select("cash").eq("user_id", user_id).execute()
+        if res.data and len(res.data) > 0 and res.data[0].get("cash") is not None:
+            return float(res.data[0]["cash"])
+    except Exception:
+        pass
+        
+    # 2. Repli : récupérer depuis le dernier instantané enregistré dans snapshots
+    try:
+        res_snap = supabase.table("snapshots").select("cash").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+        if res_snap.data and len(res_snap.data) > 0 and res_snap.data[0].get("cash") is not None:
+            return float(res_snap.data[0]["cash"])
+    except Exception:
+        pass
+        
+    return 0.0
+
+def update_user_cash(new_cash: float) -> bool:
+    """Enregistre le montant des liquidités dans Supabase (user_settings et dernier snapshot)."""
+    supabase = get_supabase_client()
+    user_id = st.session_state.get("user_id")
+    if not user_id:
+        return False
+        
+    cash_val = float(new_cash)
+    
+    # 1. Enregistrer dans user_settings (upsert)
+    try:
+        supabase.table("user_settings").upsert({
+            "user_id": user_id,
+            "cash": cash_val,
+            "updated_at": get_now_paris().isoformat()
+        }).execute()
+    except Exception as e:
+        print(f"Notice user_settings upsert : {e}")
+
+    # 2. Mettre à jour le dernier snapshot pour synchroniser la valorisation totale
+    try:
+        res_snap = supabase.table("snapshots").select("id, valeur_titres").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+        if res_snap.data and len(res_snap.data) > 0:
+            last_id = res_snap.data[0]["id"]
+            val_titres = float(res_snap.data[0].get("valeur_titres") or 0.0)
+            new_total = val_titres + cash_val
+            supabase.table("snapshots").update({
+                "cash": cash_val,
+                "total_valeur": new_total
+            }).eq("id", last_id).eq("user_id", user_id).execute()
+    except Exception as e:
+        print(f"Notice snapshot cash update : {e}")
+        
+    return True
+
+
 

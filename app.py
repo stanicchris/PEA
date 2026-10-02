@@ -16,7 +16,7 @@ from database import (
     get_positions_history_df, delete_snapshot, 
     is_snapshot_saved, extract_date_from_filename,
     get_latest_portfolio, update_snapshot_data,
-    get_now_paris
+    get_now_paris, get_user_cash, update_user_cash
 )
 
 # Module BourseAi (ZoneBourse + Synthèse)
@@ -114,6 +114,10 @@ if st.sidebar.button("🚪 Déconnexion"):
         pass
     st.session_state["user_id"] = None
     st.session_state["username"] = None
+    if "pea_cash" in st.session_state:
+        del st.session_state["pea_cash"]
+    if "pea_cash_input" in st.session_state:
+        del st.session_state["pea_cash_input"]
     st.rerun()
 
 
@@ -673,8 +677,12 @@ uploaded_file = st.sidebar.file_uploader("Importer un nouvel export CSV", type=[
 # -------------------------------------------------------------
 # CHARGEMENT DU PORTEFEUILLE (BASE DE DONNÉES EN PRIORITÉ)
 # -------------------------------------------------------------
+# Récupération persistante des liquidités depuis Supabase
+if "pea_cash" not in st.session_state:
+    st.session_state["pea_cash"] = get_user_cash()
+
+current_cash = float(st.session_state["pea_cash"])
 df = None
-default_cash = 500.0
 source_label = ""
 
 # Cas 1 : L'utilisateur a uploadé un nouveau fichier CSV
@@ -687,10 +695,10 @@ if uploaded_file is not None:
         source_label = f"Fichier importé : `{uploaded_file.name}`"
         st.sidebar.success(source_label)
         
-        # Enregistrement automatique dans Supabase
+        # Enregistrement automatique dans Supabase avec les liquidités actuelles de l'utilisateur
         snapshot_date_str = extract_date_from_filename(source_name)
         if not is_snapshot_saved(snapshot_date_str, source_name):
-            saved_id = save_snapshot(df, cash=default_cash, source_filename=source_name, custom_date=snapshot_date_str)
+            saved_id = save_snapshot(df, cash=current_cash, source_filename=source_name, custom_date=snapshot_date_str)
             st.session_state["current_snapshot_id"] = saved_id
             st.toast(f"✅ Instantané du {snapshot_date_str} sauvegardé dans Supabase !", icon="💾")
         else:
@@ -701,7 +709,11 @@ if df is None:
     db_df, saved_cash, latest_snap = get_latest_portfolio()
     if db_df is not None and not db_df.empty:
         df = db_df
-        default_cash = saved_cash
+        # Si pea_cash était à 0 et qu'un solde positif existe dans le snapshot
+        if current_cash == 0.0 and saved_cash > 0:
+            current_cash = saved_cash
+            st.session_state["pea_cash"] = saved_cash
+            update_user_cash(saved_cash)
         if latest_snap:
             st.session_state["current_snapshot_id"] = latest_snap['id']
             
@@ -726,9 +738,31 @@ if df is None or df.empty:
     st.info("👋 **Bienvenue sur votre PEA Tracker !**\n\nVotre compte ne contient encore aucun portefeuille en base de données.\n\nVeuillez importer votre premier fichier CSV (ex: export Boursorama / BoursoBank) dans la barre latérale pour initialiser vos positions.")
     st.stop()
 
+# -------------------------------------------------------------
+# COMPTE ESPÈCES PEA (SAUVEGARDE AUTOMATIQUE EN BDD)
+# -------------------------------------------------------------
 st.sidebar.markdown("---")
 st.sidebar.markdown("## 💰 Compte Espèces PEA")
-cash = st.sidebar.number_input("Liquidités disponibles (€)", min_value=0.0, value=float(default_cash), step=100.0)
+
+def on_cash_change():
+    new_val = float(st.session_state.get("pea_cash_input", 0.0))
+    st.session_state["pea_cash"] = new_val
+    update_user_cash(new_val)
+    st.toast(f"💾 Liquidités enregistrées en base : {new_val:,.2f} €", icon="💰")
+
+# Initialiser le champ avec la valeur persistée
+if "pea_cash_input" not in st.session_state:
+    st.session_state["pea_cash_input"] = float(st.session_state.get("pea_cash", 0.0))
+
+cash = st.sidebar.number_input(
+    "Liquidités disponibles (€)",
+    min_value=0.0,
+    step=100.0,
+    key="pea_cash_input",
+    on_change=on_cash_change,
+    help="Modifiez ce montant à tout moment : il est immédiatement sauvegardé dans votre base de données Supabase."
+)
+cash = float(st.session_state.get("pea_cash", cash))
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("## 🧠 Configuration IA (Groq)")
@@ -762,6 +796,7 @@ if force_refresh:
     now_iso = now_dt.strftime("%Y-%m-%d %H:%M:%S")
     now_label = f"Live Yahoo ({now_dt.strftime('%d/%m/%Y %H:%M:%S')})"
     new_snap_id = save_snapshot(df, cash=cash, source_filename=now_label, custom_date=now_iso)
+    update_user_cash(cash)
     st.session_state["current_snapshot_id"] = new_snap_id
     st.toast(f"✅ Nouvel instantané du {now_dt.strftime('%d/%m à %H:%M:%S')} créé dans l'historique !", icon="📈")
     # Forcer la réévaluation immédiate pour que l'onglet Historique trace le nouveau point
