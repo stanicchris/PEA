@@ -1490,7 +1490,8 @@ with tab_ai_tax:
                         stock_name=selected_ai_stock,
                         isin=selected_row.get('isin'),
                         yf_symbol=selected_row.get('yf_symbol'),
-                        custom_url=custom_zb_link if custom_zb_link else None
+                        custom_url=custom_zb_link if custom_zb_link else None,
+                        model=groq_model
                     )
                     st.session_state['last_ai_res'] = ai_res
             else:

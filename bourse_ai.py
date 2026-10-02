@@ -37,7 +37,7 @@ def extract_zonebourse_text(url):
         print(f"Erreur scraping ZoneBourse: {e}")
     return None, None
 
-def analyze_stock_with_ai(stock_name, isin=None, yf_symbol=None, custom_url=None, api_key=None):
+def analyze_stock_with_ai(stock_name, isin=None, yf_symbol=None, custom_url=None, api_key=None, model=None):
     """
     Exécute l'analyse d'action inspirée de BourseAi (ZoneBourse + Synthèse IA / Algorithmique).
     """
@@ -73,7 +73,8 @@ def analyze_stock_with_ai(stock_name, isin=None, yf_symbol=None, custom_url=None
     
     # 1. Analyse IA via Groq
     try:
-        from ai_advisor import query_groq_safe
+        from ai_advisor import query_groq_safe, DEFAULT_MODEL
+        target_model = model or DEFAULT_MODEL
         prompt = f"""
         Tu es un analyste financier senior. Voici les données financières sur l'entreprise {stock_name} ({page_title}):
         {page_text[:4000] if page_text else f'Action: {stock_name}, Cours: {price}€, PER: {per}x, Rendement: {div_rate}%'}
@@ -88,9 +89,9 @@ def analyze_stock_with_ai(stock_name, isin=None, yf_symbol=None, custom_url=None
             "cons": "Risques majeurs et points de vigilance..."
         }}
         """
-        data = query_groq_safe(prompt, system_prompt="Tu es un analyste financier expert. Réponds STRICTEMENT en JSON valide en français.")
+        data = query_groq_safe(prompt, system_prompt="Tu es un analyste financier expert. Réponds STRICTEMENT en JSON valide en français.", model=target_model)
         if data and isinstance(data, dict) and 'score_percent' in data:
-            data['source'] = 'Moteur IA Groq & Marché (BourseAi)'
+            data['source'] = f'Moteur IA Groq ({target_model}) & Marché'
             data['target_url'] = target_url
             data['metrics'] = {
                 'price': price, 'per': per, 'div_yield': div_rate,
