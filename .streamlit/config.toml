@@ -9,3 +9,7 @@ font = "sans serif"
 headless = true
 enableCORS = false
 enableXsrfProtection = true
+
+[client]
+# Masque la barre d'outils supérieure et les raccourcis GitHub pour les visiteurs
+toolbarMode = "minimal"
