@@ -15,7 +15,7 @@ from database import (
     get_supabase_client, save_snapshot, get_snapshots_df, 
     get_positions_history_df, delete_snapshot, 
     is_snapshot_saved, extract_date_from_filename,
-    get_latest_portfolio
+    get_latest_portfolio, update_snapshot_data
 )
 
 # Module BourseAi (ZoneBourse + Synthèse)
@@ -633,8 +633,11 @@ if uploaded_file is not None:
         # Enregistrement automatique dans Supabase
         snapshot_date_str = extract_date_from_filename(source_name)
         if not is_snapshot_saved(snapshot_date_str, source_name):
-            save_snapshot(df, cash=default_cash, source_filename=source_name, custom_date=snapshot_date_str)
+            saved_id = save_snapshot(df, cash=default_cash, source_filename=source_name, custom_date=snapshot_date_str)
+            st.session_state["current_snapshot_id"] = saved_id
             st.toast(f"✅ Instantané du {snapshot_date_str} sauvegardé dans Supabase !", icon="💾")
+        else:
+            st.session_state["current_snapshot_id"] = is_snapshot_saved(snapshot_date_str, source_name)
 
 # Cas 2 : Aucun fichier uploadé dans la session -> chargement depuis Supabase
 if df is None:
@@ -642,6 +645,9 @@ if df is None:
     if db_df is not None and not db_df.empty:
         df = db_df
         default_cash = saved_cash
+        if latest_snap:
+            st.session_state["current_snapshot_id"] = latest_snap['id']
+            
         # Reconstituer les métadonnées (logos, secteurs, yf_symbols) si nécessaire
         if 'logo_url' not in df.columns or df['logo_url'].isna().all():
             df['logo_url'] = df.apply(lambda r: resolve_logo_url(r.get('isin'), r.get('name')), axis=1)
@@ -694,7 +700,17 @@ st.sidebar.markdown("## 🔴 Cours du Marché en Direct")
 force_refresh = st.sidebar.button("🔄 Rafraîchir les cours (Yahoo Finance)")
 df, msg = apply_live_quotes(df, force_refresh=force_refresh)
 if force_refresh:
-    st.sidebar.success(msg)
+    # Synchroniser les nouveaux cours et valorisations directement dans Supabase
+    current_snap_id = st.session_state.get("current_snapshot_id")
+    if current_snap_id:
+        synced = update_snapshot_data(current_snap_id, df, cash=cash)
+        if synced:
+            st.sidebar.success(f"{msg}\n\n💾 Base Supabase synchronisée !")
+            st.toast("✅ Cours et base Supabase synchronisés !", icon="💾")
+        else:
+            st.sidebar.success(msg)
+    else:
+        st.sidebar.success(msg)
 
 # -------------------------------------------------------------
 # CALCULS STATISTIQUES GLOBAUX

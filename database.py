@@ -184,3 +184,57 @@ def get_latest_portfolio():
         st.warning(f"Erreur lors de la lecture Supabase : {e}")
         return None, 0.0, None
 
+def update_snapshot_data(snapshot_id, df, cash=0.0):
+    """Met à jour un instantané existant et toutes ses positions avec les cours en direct dans Supabase."""
+    supabase = get_supabase_client()
+    user_id = st.session_state.get("user_id")
+    if not user_id or not snapshot_id: return False
+    
+    try:
+        valeur_titres = float(df['amount'].sum())
+        valeur_totale = valeur_titres + float(cash)
+        cout_investi = float(df['totalCost'].sum())
+        plus_value = float(df['amountVariation'].sum())
+        plus_value_pct = (plus_value / cout_investi * 100) if cout_investi > 0 else 0.0
+        intraday_pv = float(df['intradayAmount'].sum()) if 'intradayAmount' in df.columns else 0.0
+        
+        # Mettre à jour les totaux du snapshot
+        supabase.table("snapshots").update({
+            "total_valeur": valeur_totale,
+            "valeur_titres": valeur_titres,
+            "cash": float(cash),
+            "cout_investi": cout_investi,
+            "plus_value": plus_value,
+            "plus_value_pct": plus_value_pct,
+            "intraday_pv": intraday_pv,
+            "nb_positions": len(df)
+        }).eq("id", snapshot_id).eq("user_id", user_id).execute()
+        
+        # Remplacer les lignes de positions par les nouvelles valeurs actualisées
+        supabase.table("snapshot_positions").delete().eq("snapshot_id", snapshot_id).eq("user_id", user_id).execute()
+        
+        positions_data = []
+        for _, row in df.iterrows():
+            positions_data.append({
+                "user_id": user_id,
+                "snapshot_id": snapshot_id,
+                "snapshot_date": str(row.get('snapshot_date', datetime.now().strftime("%Y-%m-%d %H:%M:%S"))),
+                "name": str(row.get('name', '')),
+                "isin": str(row.get('isin', '')),
+                "type": str(row.get('type', 'Action')),
+                "quantity": float(row.get('quantity', 0.0)),
+                "buying_price": float(row.get('buyingPrice', 0.0)),
+                "last_price": float(row.get('lastPrice', 0.0)),
+                "amount": float(row.get('amount', 0.0)),
+                "amount_variation": float(row.get('amountVariation', 0.0)),
+                "variation": float(row.get('variation', 0.0)),
+                "weight": float(row.get('weight', 0.0))
+            })
+            
+        supabase.table("snapshot_positions").insert(positions_data).execute()
+        return True
+    except Exception as e:
+        print(f"Erreur mise à jour live snapshot : {e}")
+        return False
+
+
