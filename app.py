@@ -1421,7 +1421,9 @@ with tab_ai_tax:
                 if tk_sym:
                     sentiments_results[tk_sym] = analysis
                 p_bar.progress((idx + 1) / len(df))
-                time.sleep(2.0) # Délai pour respecter la limite OTPM de 1000 tokens/min de Qwen 27B
+                if idx < len(df) - 1:
+                    p_text.text(f"⏳ Pause réglementaire de 15s (quota Groq) avant le titre suivant...")
+                    time.sleep(15.0) # Attente stricte de 15s demandée entre 2 appels API
 
             p_text.empty()
             p_bar.empty()

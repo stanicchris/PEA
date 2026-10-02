@@ -92,6 +92,19 @@ def fetch_ticker_news(ticker_symbol=None, company_name=None, max_news=3):
 
     return cleaned_news
 
+_LAST_GROQ_CALL_TIME = 0.0
+GROQ_MIN_DELAY_SECONDS = 15.0
+
+def enforce_groq_delay(min_delay=GROQ_MIN_DELAY_SECONDS):
+    """Garantit un délai d'au moins 15 secondes entre deux appels à l'API Groq pour respecter les limites de quota."""
+    global _LAST_GROQ_CALL_TIME
+    now = time.time()
+    elapsed = now - _LAST_GROQ_CALL_TIME
+    if elapsed < min_delay and _LAST_GROQ_CALL_TIME > 0:
+        sleep_dur = min_delay - elapsed
+        time.sleep(sleep_dur)
+    _LAST_GROQ_CALL_TIME = time.time()
+
 def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
     """Exécute une requête vers Groq avec extraction JSON robuste sur qwen/qwen3.8-27b."""
     if not HAS_GROQ_PKG:
@@ -118,6 +131,9 @@ def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
     for attempt in attempts:
         for retry_num in range(3):
             try:
+                # Respecter strictement la pause minimale de 15s entre chaque appel API
+                enforce_groq_delay(15.0)
+
                 kwargs = {
                     "messages": attempt["messages"],
                     "model": model,
