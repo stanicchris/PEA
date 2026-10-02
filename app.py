@@ -616,9 +616,9 @@ def parse_portfolio_csv(file_content, filename="portfolio.csv"):
         'name': 'name', 'nom': 'name', 'valeur': 'name', 'titre': 'name', 'libellé': 'name', 'libelle': 'name',
         'isin': 'isin', 'code isin': 'isin', 'code': 'isin',
         'ticker': 'yf_symbol', 'symbole': 'yf_symbol', 'symbol': 'yf_symbol', 'mnemo': 'yf_symbol', 'code mnemo': 'yf_symbol', 'code mnémo': 'yf_symbol',
-        'quantity': 'quantity', 'quantité': 'quantity', 'qte': 'quantity', 'nb': 'quantity',
-        'buyingprice': 'buyingPrice', 'pru': 'buyingPrice', 'prix d\'achat': 'buyingPrice', 'cours d\'achat': 'buyingPrice',
-        'lastprice': 'lastPrice', 'cours': 'lastPrice', 'dernier cours': 'lastPrice', 'prix actuel': 'lastPrice',
+        'quantity': 'quantity', 'quantité': 'quantity', 'quantite': 'quantity', 'quantités': 'quantity', 'quantites': 'quantity', 'qte': 'quantity', 'nb': 'quantity', 'nombre': 'quantity', 'parts': 'quantity', 'titres': 'quantity',
+        'buyingprice': 'buyingPrice', 'pru': 'buyingPrice', 'prix d\'achat': 'buyingPrice', 'cours d\'achat': 'buyingPrice', 'prix achat': 'buyingPrice', 'cours achat': 'buyingPrice',
+        'lastprice': 'lastPrice', 'cours': 'lastPrice', 'dernier cours': 'lastPrice', 'prix actuel': 'lastPrice', 'cours actuel': 'lastPrice', 'prix': 'lastPrice',
         'amount': 'amount', 'montant': 'amount', 'valorisation': 'amount', 'valeur actuelle': 'amount', 'total': 'amount',
         'amountvariation': 'amountVariation', '+/- value': 'amountVariation', 'plus/moins value': 'amountVariation', 'gain': 'amountVariation',
         'variation': 'variation', '+/- value (%)': 'variation', 'perf (%)': 'variation', 'performance (%)': 'variation',
@@ -641,8 +641,14 @@ def parse_portfolio_csv(file_content, filename="portfolio.csv"):
         if col in df.columns:
             df[col] = clean_numeric_col(df[col])
 
-    if 'amount' not in df.columns and 'quantity' in df.columns and 'lastPrice' in df.columns:
-        df['amount'] = df['quantity'] * df['lastPrice']
+    if 'quantity' not in df.columns or df['quantity'].isna().all():
+        df['quantity'] = 1.0
+
+    if 'amount' not in df.columns or df['amount'].isna().all() or (df['amount'] == 0).all():
+        if 'quantity' in df.columns and 'lastPrice' in df.columns:
+            df['amount'] = df['quantity'] * df['lastPrice']
+    
+    df['amount'] = df['amount'].fillna(0.0)
 
     if 'totalCost' not in df.columns:
         if 'quantity' in df.columns and 'buyingPrice' in df.columns:
@@ -877,18 +883,18 @@ if force_refresh:
 # -------------------------------------------------------------
 # CALCULS STATISTIQUES GLOBAUX
 # -------------------------------------------------------------
-valeur_titres = df['amount'].sum()
+valeur_titres = float(df['amount'].sum()) if 'amount' in df.columns and pd.notna(df['amount'].sum()) else 0.0
 valeur_totale_portefeuille = valeur_titres + cash
-cout_total_investi = df['totalCost'].sum()
-plus_value_latente_titres = df['amountVariation'].sum()
+cout_total_investi = float(df['totalCost'].sum()) if 'totalCost' in df.columns and pd.notna(df['totalCost'].sum()) else 0.0
+plus_value_latente_titres = float(df['amountVariation'].sum()) if 'amountVariation' in df.columns and pd.notna(df['amountVariation'].sum()) else 0.0
 perf_globale_pct = (plus_value_latente_titres / cout_total_investi * 100) if cout_total_investi > 0 else 0.0
 
-intraday_euro_total = df['intradayAmount'].sum()
+intraday_euro_total = float(df['intradayAmount'].sum()) if 'intradayAmount' in df.columns and pd.notna(df['intradayAmount'].sum()) else 0.0
 valeur_veille = valeur_titres - intraday_euro_total
-intraday_pct_total = (intraday_euro_total / valeur_veille * 100) if valeur_veille > 0 else 0.0
+intraday_pct_total = (intraday_euro_total / valeur_veille * 100) if (valeur_veille and valeur_veille > 0) else 0.0
 
-total_dividendes_annuels = df['annual_div_euro'].sum()
-rendement_div_moyen = (total_dividendes_annuels / valeur_titres * 100) if valeur_titres > 0 else 0.0
+total_dividendes_annuels = float(df['annual_div_euro'].sum()) if 'annual_div_euro' in df.columns and pd.notna(df['annual_div_euro'].sum()) else 0.0
+rendement_div_moyen = (total_dividendes_annuels / valeur_titres * 100) if (valeur_titres and valeur_titres > 0) else 0.0
 
 nb_positions = len(df)
 prelevements_sociaux = max(0.0, plus_value_latente_titres * 0.172)
@@ -1097,7 +1103,7 @@ with tab_overview:
         type_agg = df.groupby('type')['amount'].sum().reset_index()
         fig_type = px.bar(
             type_agg, x='type', y='amount', color='type',
-            text=type_agg['amount'].apply(lambda x: f"{x:,.0f} € ({x/valeur_titres*100:.1f}%)"),
+            text=type_agg['amount'].apply(lambda x: f"{x:,.0f} € ({(x / valeur_titres * 100) if (valeur_titres and valeur_titres > 0) else 0.0:.1f}%)"),
             color_discrete_map={'ETF': '#0ea5e9', 'Action': '#6366f1'}
         )
         fig_type.update_layout(
