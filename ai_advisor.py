@@ -20,17 +20,21 @@ AVAILABLE_GROQ_MODELS = [
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
 
 def get_available_groq_models():
-    """Récupère dynamiquement la liste des modèles Groq actifs."""
+    """Récupère dynamiquement la liste des modèles Groq de conversation chat."""
     api_key = st.secrets.get("GROQ_API_KEY")
     if api_key and HAS_GROQ_PKG:
         try:
             client = Groq(api_key=api_key)
-            remote = [m.id for m in client.models.list().data if 'llama' in m.id or 'deepseek' in m.id or 'gemma' in m.id]
+            # Filtrer strictement pour exclure les modèles de modération/classification (ex: llama-guard) et audio
+            remote = [
+                m.id for m in client.models.list().data 
+                if ('llama' in m.id.lower() or 'deepseek' in m.id.lower() or 'gemma' in m.id.lower() or 'qwen' in m.id.lower())
+                and not any(bad in m.id.lower() for bad in ['guard', 'whisper', 'vision', 'embedding', 'embed', 'distil-whisper'])
+            ]
             if remote:
-                # Prioriser les modèles validés
                 ordered = [m for m in AVAILABLE_GROQ_MODELS if m in remote]
                 for r in remote:
-                    if r not in ordered and not r.startswith("whisper") and not r.startswith("distil-whisper"):
+                    if r not in ordered:
                         ordered.append(r)
                 return ordered
         except Exception:
@@ -72,39 +76,47 @@ def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
     if not api_key:
         raise Exception("Clé API Groq manquante dans st.secrets.")
         
+    # Sécurité anti-modèle de classification (ex: llama-guard)
+    if not model or 'guard' in model.lower() or 'whisper' in model.lower():
+        model = DEFAULT_MODEL
+
     client = Groq(api_key=api_key)
-    try:
-        # 1. Tentative avec response_format JSON
+    
+    # Construction des messages (avec fallback mono-message si rejeté par le template)
+    full_user_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
+    
+    attempts = [
+        # Tentative 1 : Format standard avec system role et json_object
+        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": True},
+        # Tentative 2 : Format standard sans json_object forcé
+        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": False},
+        # Tentative 3 : Message unique utilisateur (pour les modèles qui n'acceptent pas le rôle system)
+        {"messages": [{"role": "user", "content": full_user_prompt}], "json": False}
+    ]
+    
+    last_err = None
+    for attempt in attempts:
         try:
-            response = client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
-                ],
-                model=model,
-                response_format={"type": "json_object"},
-                temperature=0.2,
-            )
-            content = response.choices[0].message.content
-        except Exception:
-            # 2. Fallback sans format strict (ex: DeepSeek ou modèles spécifiques)
-            response = client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
-                ],
-                model=model,
-                temperature=0.2,
-            )
+            kwargs = {
+                "messages": attempt["messages"],
+                "model": model,
+                "temperature": 0.2
+            }
+            if attempt["json"]:
+                kwargs["response_format"] = {"type": "json_object"}
+            response = client.chat.completions.create(**kwargs)
             content = response.choices[0].message.content
             
-        # Extraction regex du JSON (gère les balises <think> de DeepSeek-R1)
-        match = re.search(r'\{.*\}', content, re.DOTALL)
-        if match:
-            return json.loads(match.group())
-        return json.loads(content)
-    except Exception as e:
-        raise Exception(f"Erreur Groq ({model}): {e}")
+            # Extraction JSON robuste (supporte les balises <think> de DeepSeek-R1)
+            match = re.search(r'\{.*\}', content, re.DOTALL)
+            if match:
+                return json.loads(match.group())
+            return json.loads(content)
+        except Exception as e:
+            last_err = e
+            continue
+            
+    raise Exception(f"Erreur Groq ({model}): {last_err}")
 
 def analyze_portfolio_global(portfolio_df, model=DEFAULT_MODEL, openai_key=None):
     """Génère un diagnostic d'allocation global du portefeuille via Groq ou algorithme."""
