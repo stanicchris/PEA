@@ -122,59 +122,97 @@ if st.sidebar.button("🚪 Déconnexion"):
 # -------------------------------------------------------------
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
     
     html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        -webkit-font-smoothing: antialiased;
     }
     
+    /* Masquer le menu hamburger, la barre Streamlit et le footer pour un effet 100% SaaS */
+    #MainMenu, header, footer {
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+    
+    .block-container {
+        padding-top: 1.8rem !important;
+        padding-bottom: 4rem !important;
+        max-width: 1280px !important;
+    }
+    
+    /* Fond Luxury Dark OLED */
     .stApp {
-        background: radial-gradient(1200px 800px at 50% -100px, #172554 0%, #090d16 55%, #050811 100%) !important;
-        color: #f1f5f9;
+        background-color: #06080d !important;
+        background-image: 
+            radial-gradient(at 15% 0%, rgba(14, 165, 233, 0.08) 0px, transparent 55%),
+            radial-gradient(at 85% 15%, rgba(99, 102, 241, 0.06) 0px, transparent 55%) !important;
+        color: #f8fafc !important;
     }
     
-    /* En-tête Material 3 Dashboard */
-    .dashboard-header {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 24px 30px;
+    /* Barre latérale Finary */
+    [data-testid="stSidebar"] {
+        background-color: #090c12 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    /* Hero Header Finary */
+    .finary-hero {
+        background: linear-gradient(180deg, rgba(17, 23, 34, 0.8) 0%, rgba(10, 14, 22, 0.95) 100%);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 24px;
+        padding: 28px 34px;
         margin-bottom: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-end;
         flex-wrap: wrap;
-        gap: 16px;
+        gap: 20px;
+    }
+    .finary-hero-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+    .finary-hero-value {
+        font-size: 2.9rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: #ffffff;
+        line-height: 1.05;
     }
     
-    .badge-pea {
-        background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
-        color: white;
-        padding: 4px 14px;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35);
+    /* Badges & Pills Finary */
+    .finary-pill-blue {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        background: rgba(14, 165, 233, 0.14);
+        color: #38bdf8;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        border: 1px solid rgba(56, 189, 248, 0.25);
     }
-    
-    .badge-live {
+    .finary-pill-live {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         background: rgba(16, 185, 129, 0.12);
         color: #34d399;
-        padding: 3px 10px;
-        border-radius: 9999px;
-        font-size: 0.75rem;
+        font-size: 0.74rem;
         font-weight: 600;
+        letter-spacing: 0.04em;
+        padding: 4px 12px;
+        border-radius: 9999px;
         border: 1px solid rgba(52, 211, 153, 0.25);
     }
     .pulsing-dot {
@@ -187,151 +225,157 @@ st.markdown("""
     }
     @keyframes pulse-live {
         0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.85); }
+        50% { opacity: 0.35; transform: scale(0.85); }
+    }
+    .finary-pill-green {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .finary-pill-red {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(244, 63, 94, 0.12);
+        color: #f43f5e;
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        border: 1px solid rgba(244, 63, 94, 0.25);
+    }
+    .finary-pill-neutral {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(148, 163, 184, 0.08);
+        color: #94a3b8;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        border: 1px solid rgba(148, 163, 184, 0.15);
     }
 
-    /* Cartes KPIs Material Design 3 avec Glassmorphism & Elevation */
-    [data-testid="stMetric"], .metric-card {
-        background: linear-gradient(145deg, rgba(30, 41, 59, 0.65) 0%, rgba(15, 23, 42, 0.75) 100%) !important;
-        backdrop-filter: blur(16px) !important;
-        -webkit-backdrop-filter: blur(16px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.07) !important;
-        border-radius: 18px !important;
-        padding: 18px 20px !important;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    /* Cartes KPIs Finary Style */
+    [data-testid="stMetric"], .kpi-card {
+        background: linear-gradient(165deg, rgba(18, 24, 35, 0.75) 0%, rgba(11, 15, 23, 0.85) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-radius: 20px !important;
+        padding: 20px 22px !important;
+        box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        height: 100%;
+        min-height: 125px;
     }
-    [data-testid="stMetric"]:hover, .metric-card:hover {
-        transform: translateY(-4px) !important;
-        border-color: rgba(56, 189, 248, 0.4) !important;
-        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.15) !important;
+    [data-testid="stMetric"]:hover, .kpi-card:hover {
+        transform: translateY(-3px) !important;
+        border-color: rgba(56, 189, 248, 0.35) !important;
+        box-shadow: 0 16px 35px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.1) !important;
     }
     
-    .metric-title {
-        color: #94a3b8;
-        font-size: 0.78rem;
+    .kpi-label {
+        font-size: 0.72rem;
         font-weight: 700;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.08em;
+        color: #64748b;
+        margin-bottom: 8px;
     }
-    .metric-value {
-        color: #f8fafc;
+    .kpi-value {
         font-size: 1.65rem;
         font-weight: 800;
-        margin-bottom: 8px;
         letter-spacing: -0.03em;
-    }
-    
-    /* Badges de variation Material Pill */
-    .badge-positive {
-        display: inline-flex;
-        align-items: center;
-        background-color: rgba(16, 185, 129, 0.16);
-        color: #34d399;
-        font-size: 0.82rem;
-        font-weight: 700;
-        padding: 4px 10px;
-        border-radius: 9999px;
-        border: 1px solid rgba(52, 211, 153, 0.25);
-    }
-    .badge-negative {
-        display: inline-flex;
-        align-items: center;
-        background-color: rgba(239, 68, 68, 0.16);
-        color: #f87171;
-        font-size: 0.82rem;
-        font-weight: 700;
-        padding: 4px 10px;
-        border-radius: 9999px;
-        border: 1px solid rgba(248, 113, 113, 0.25);
-    }
-    .badge-neutral {
-        display: inline-flex;
-        align-items: center;
-        background-color: rgba(148, 163, 184, 0.12);
-        color: #94a3b8;
-        font-size: 0.82rem;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 9999px;
+        color: #f8fafc;
+        margin-bottom: 6px;
     }
 
-    /* Boutons Modernes Style Material 3 */
+    /* Onglets Finary (Segmented Pills Bar) */
+    [data-baseweb="tab-list"] {
+        background: rgba(11, 15, 23, 0.8) !important;
+        padding: 6px !important;
+        border-radius: 18px !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        gap: 6px !important;
+        margin-bottom: 24px !important;
+    }
+    [data-baseweb="tab"] {
+        border-radius: 12px !important;
+        padding: 10px 22px !important;
+        color: #64748b !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    [data-baseweb="tab"]:hover {
+        color: #cbd5e1 !important;
+    }
+    [data-baseweb="tab"][aria-selected="true"] {
+        background: #171f2d !important;
+        color: #38bdf8 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+        border: 1px solid rgba(56, 189, 248, 0.25) !important;
+    }
+
+    /* Boutons Modernes */
     .stButton > button {
         border-radius: 14px !important;
         font-weight: 600 !important;
         letter-spacing: 0.02em !important;
-        padding: 10px 20px !important;
+        padding: 10px 22px !important;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
     .stButton > button[kind="primary"] {
         background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%) !important;
         color: #ffffff !important;
         border: none !important;
-        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.35) !important;
+        box-shadow: 0 4px 16px rgba(14, 165, 233, 0.35) !important;
     }
     .stButton > button[kind="primary"]:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5) !important;
+        box-shadow: 0 6px 22px rgba(14, 165, 233, 0.5) !important;
     }
     .stButton > button[kind="secondary"] {
-        background: rgba(30, 41, 59, 0.65) !important;
+        background: rgba(17, 24, 39, 0.8) !important;
         color: #f1f5f9 !important;
     }
     .stButton > button[kind="secondary"]:hover {
-        background: rgba(51, 65, 85, 0.8) !important;
+        background: rgba(30, 41, 59, 0.9) !important;
         border-color: #38bdf8 !important;
         transform: translateY(-1px) !important;
     }
 
-    /* Onglets Modernes Material Pill */
-    [data-baseweb="tab-list"] {
-        background: rgba(15, 23, 42, 0.65) !important;
-        padding: 6px !important;
-        border-radius: 16px !important;
-        border: 1px solid rgba(255, 255, 255, 0.06) !important;
-        gap: 6px !important;
-    }
-    [data-baseweb="tab"] {
-        border-radius: 12px !important;
-        padding: 8px 16px !important;
-        color: #94a3b8 !important;
-        font-weight: 600 !important;
-        border: none !important;
-        transition: all 0.2s ease !important;
-    }
-    [data-baseweb="tab"][aria-selected="true"] {
-        background: #1e293b !important;
-        color: #38bdf8 !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-    }
-
     /* Ranking Cards (Top Gainers / Flops) */
     .ranking-card {
-        background: linear-gradient(145deg, #182234 0%, #111a29 100%);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 16px;
+        background: linear-gradient(145deg, #10141d 0%, #0b0e14 100%);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 18px;
         padding: 14px 18px;
         margin-bottom: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         transition: all 0.2s ease;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
     }
     .ranking-card:hover {
-        background: #1e2c44;
+        background: #141a26;
         border-color: rgba(56, 189, 248, 0.3);
-        transform: translateX(3px);
+        transform: translateX(4px);
     }
 
     .company-logo {
@@ -339,44 +383,56 @@ st.markdown("""
         height: 38px;
         border-radius: 12px;
         object-fit: cover;
-        background-color: #1e293b;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: #171f2d;
+        border: 1px solid rgba(255, 255, 255, 0.08);
         padding: 3px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    /* Optimisations Spécifiques pour Écran Mobile (Responsive Phone) */
+    /* Optimisations Mobiles */
     @media (max-width: 768px) {
-        .dashboard-header {
+        .block-container {
+            padding-top: 1rem !important;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+        }
+        .finary-hero {
+            padding: 22px 20px !important;
             flex-direction: column !important;
             align-items: flex-start !important;
-            padding: 18px 20px !important;
-            gap: 14px !important;
+            gap: 16px !important;
         }
-        .dashboard-header > div:last-child {
-            text-align: left !important;
+        .finary-hero-value {
+            font-size: 2.2rem !important;
+        }
+        .finary-hero > div:last-child {
+            align-items: flex-start !important;
             width: 100% !important;
-            border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-            padding-top: 12px !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+            padding-top: 14px !important;
         }
-        /* Transformer les colonnes côte-à-côte en grille lisible sur mobile */
         [data-testid="stHorizontalBlock"] {
             flex-wrap: wrap !important;
-            gap: 12px !important;
+            gap: 10px !important;
         }
         [data-testid="stHorizontalBlock"] > [data-testid="column"] {
-            flex: 1 1 calc(50% - 12px) !important;
-            min-width: 145px !important;
+            flex: 1 1 calc(50% - 10px) !important;
+            min-width: 140px !important;
         }
-        .metric-value {
+        .kpi-value {
             font-size: 1.35rem !important;
         }
-        .metric-title {
-            font-size: 0.75rem !important;
+        .kpi-label {
+            font-size: 0.68rem !important;
         }
         [data-baseweb="tab-list"] {
             overflow-x: auto !important;
             scrollbar-width: none !important;
+        }
+        [data-baseweb="tab"] {
+            padding: 8px 14px !important;
+            font-size: 0.82rem !important;
+            white-space: nowrap !important;
         }
     }
 </style>
@@ -732,218 +788,546 @@ prelevements_sociaux = max(0.0, plus_value_latente_titres * 0.172)
 valeur_nette_apres_ps = valeur_totale_portefeuille - prelevements_sociaux
 
 # -------------------------------------------------------------
-# EN-TÊTE PRINCIPAL DU DASHBOARD
+# EN-TÊTE PRINCIPAL DU DASHBOARD (STYLE FINARY)
 # -------------------------------------------------------------
 st.markdown(f"""
-<div class="dashboard-header">
+<div class="finary-hero">
     <div>
-        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
-            <h1 style="margin:0; font-size: 1.85rem; font-weight:800; color:#f8fafc; letter-spacing:-0.02em;">
+        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+            <h1 style="margin:0; font-size: 2.1rem; font-weight:800; color:#ffffff; letter-spacing:-0.03em;">
                 Mon Portefeuille PEA
             </h1>
-            <span class="badge-pea">PEA Actif</span>
-            <span class="badge-live"><span class="pulsing-dot"></span> Live</span>
+            <span class="finary-pill-blue">PEA ACTIF</span>
+            <span class="finary-pill-live"><span class="pulsing-dot"></span> MARCHÉ EN DIRECT</span>
         </div>
-        <p style="margin:6px 0 0 0; color:#94a3b8; font-size:0.92rem;">
-            Dashboard inspiré de <b>Baggr</b> & IA <b>Groq ({groq_model})</b> • {nb_positions} positions • Supabase ({nb_snaps_db} instantanés)
+        <p style="margin:0; color:#94a3b8; font-size:0.92rem; font-weight:500;">
+            Architecture <b style="color:#f8fafc;">Finary & Baggr</b> • Moteur IA <b style="color:#38bdf8;">Groq ({groq_model})</b> • {nb_positions} positions en portefeuille
         </p>
     </div>
     <div style="text-align:right;">
-        <span style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.06em; font-weight:700;">
-            Valorisation Totale (avec liquidités)
-        </span>
-        <div style="font-size:2.1rem; font-weight:800; color:#38bdf8; letter-spacing:-0.03em;">
-            {valeur_totale_portefeuille:,.2f} €
-        </div>
+        <div class="finary-hero-label">Patrimoine Total (avec liquidités)</div>
+        <div class="finary-hero-value">{valeur_totale_portefeuille:,.2f} €</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Cartes KPIs
+# Cartes KPIs Finary
 kpi_cols = st.columns(5)
 
 with kpi_cols[0]:
     st.markdown(f"""
-    <div class="metric-card">
+    <div class="kpi-card">
         <div>
-            <div class="metric-title">📊 Valeur Titres</div>
-            <div class="metric-value">{valeur_titres:,.2f} €</div>
+            <div class="kpi-label">Valeur Titres</div>
+            <div class="kpi-value">{valeur_titres:,.2f} €</div>
         </div>
-        <div class="badge-neutral">+{cash:,.2f} € en espèces</div>
+        <div>
+            <span class="finary-pill-neutral">+{cash:,.2f} € liquidités</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 with kpi_cols[1]:
     st.markdown(f"""
-    <div class="metric-card">
+    <div class="kpi-card">
         <div>
-            <div class="metric-title">💳 Total Investi</div>
-            <div class="metric-value">{cout_total_investi:,.2f} €</div>
+            <div class="kpi-label">Total Investi</div>
+            <div class="kpi-value">{cout_total_investi:,.2f} €</div>
         </div>
-        <div class="badge-neutral">Capital d'origine</div>
+        <div>
+            <span class="finary-pill-neutral">Prix de Revient (PRU)</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 with kpi_cols[2]:
-    badge_pv_cls = "badge-positive" if plus_value_latente_titres >= 0 else "badge-negative"
     sign_pv = "+" if plus_value_latente_titres >= 0 else ""
-    color_pv = "#34d399" if plus_value_latente_titres >= 0 else "#f87171"
+    color_pv = "#10b981" if plus_value_latente_titres >= 0 else "#f43f5e"
+    badge_pv_pill = "finary-pill-green" if plus_value_latente_titres >= 0 else "finary-pill-red"
     st.markdown(f"""
-    <div class="metric-card">
+    <div class="kpi-card">
         <div>
-            <div class="metric-title">📈 Plus-Value Latente</div>
-            <div class="metric-value" style="color: {color_pv};">
-                {sign_pv}{plus_value_latente_titres:,.2f} €
-            </div>
+            <div class="kpi-label">Plus-Value Latente</div>
+            <div class="kpi-value" style="color: {color_pv};">{sign_pv}{plus_value_latente_titres:,.2f} €</div>
         </div>
         <div>
-            <span class="{badge_pv_cls}">{sign_pv}{perf_globale_pct:.2f} %</span>
+            <span class="{badge_pv_pill}">{sign_pv}{perf_globale_pct:.2f} %</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 with kpi_cols[3]:
-    badge_intra_cls = "badge-positive" if intraday_euro_total >= 0 else "badge-negative"
     sign_intra = "+" if intraday_euro_total >= 0 else ""
-    color_intra = "#34d399" if intraday_euro_total >= 0 else "#f87171"
+    color_intra = "#10b981" if intraday_euro_total >= 0 else "#f43f5e"
+    badge_intra_pill = "finary-pill-green" if intraday_euro_total >= 0 else "finary-pill-red"
     st.markdown(f"""
-    <div class="metric-card">
+    <div class="kpi-card">
         <div>
-            <div class="metric-title">⚡ Variation Jour</div>
-            <div class="metric-value" style="color: {color_intra};">
-                {sign_intra}{intraday_euro_total:,.2f} €
-            </div>
+            <div class="kpi-label">Variation du Jour</div>
+            <div class="kpi-value" style="color: {color_intra};">{sign_intra}{intraday_euro_total:,.2f} €</div>
         </div>
         <div>
-            <span class="{badge_intra_cls}">{sign_intra}{intraday_pct_total:.2f} %</span>
+            <span class="{badge_intra_pill}">{sign_intra}{intraday_pct_total:.2f} %</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 with kpi_cols[4]:
     st.markdown(f"""
-    <div class="metric-card">
+    <div class="kpi-card">
         <div>
-            <div class="metric-title">💰 Dividendes Est.</div>
-            <div class="metric-value" style="color: #38bdf8;">~ {total_dividendes_annuels:,.0f} €/an</div>
+            <div class="kpi-label">Dividendes Est.</div>
+            <div class="kpi-value" style="color: #38bdf8;">~ {total_dividendes_annuels:,.0f} €<span style="font-size:1rem; font-weight:600; color:#94a3b8;">/an</span></div>
         </div>
-        <div class="badge-neutral">Rendement : {rendement_div_moyen:.2f}%</div>
+        <div>
+            <span class="finary-pill-neutral">Rendement : {rendement_div_moyen:.2f}%</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# ONGLETS DE L'APPLICATION
+# 5 ONGLETS CONSOLIDÉS (DESIGN FINARY x BAGGR)
 # -------------------------------------------------------------
-tab_baggr, tab_ollama, tab_bourseai, tab_history, tab_sectors, tab_inspector, tab_charts, tab_positions, tab_fiscal = st.tabs([
-    "📊 Synthèse",
-    "🧠 IA Advisor",
-    "🤖 BourseAi",
-    "📈 Historique",
-    "🏢 Secteurs",
-    "🔍 Fiche Titre",
-    "📊 Graphiques",
-    "📋 Positions",
-    "⚖️ Fiscalité"
+tab_overview, tab_positions, tab_analytics, tab_history, tab_ai_tax = st.tabs([
+    "Vue d'ensemble",
+    "Positions & Titres",
+    "Analyses & Performance",
+    "Historique",
+    "Intelligence IA & Fiscalité"
 ])
 
 # =============================================================
-# ONGLET 1 : DASHBOARD STYLE BAGGR
+# ONGLET 1 : VUE D'ENSEMBLE (STYLE BAGGR & FINARY)
 # =============================================================
-with tab_baggr:
+with tab_overview:
     c1, c2 = st.columns([1.6, 1])
     with c1:
-        st.subheader("🗺️ Carte thermique des positions (Treemap)")
+        st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Carte thermique des positions (Treemap)</h3>", unsafe_allow_html=True)
         fig_tree = px.treemap(
             df,
             path=[px.Constant("Portefeuille PEA"), 'type', 'name'],
             values='amount', color='variation',
-            color_continuous_scale=[[0.0, '#ef4444'], [0.45, '#7f1d1d'], [0.50, '#334155'], [0.55, '#065f46'], [1.0, '#10b981']],
+            color_continuous_scale=[[0.0, '#f43f5e'], [0.48, '#881337'], [0.50, '#1e293b'], [0.52, '#064e3b'], [1.0, '#10b981']],
             color_continuous_midpoint=0,
             hover_data={'amount': ':.2f €', 'variation': ':.2f %', 'amountVariation': ':.2f €', 'lastPrice': ':.2f €'}
         )
-        fig_tree.update_layout(margin=dict(t=10, l=10, r=10, b=10), paper_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), height=370)
+        fig_tree.update_layout(
+            margin=dict(t=8, l=8, r=8, b=8),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#f8fafc", family="Plus Jakarta Sans"),
+            height=370
+        )
         st.plotly_chart(fig_tree, use_container_width=True)
 
     with c2:
-        st.subheader("🍩 Allocation du Portefeuille")
-        fig_donut = px.pie(df, names='name', values='amount', hole=0.62, color_discrete_sequence=px.colors.qualitative.Prism)
-        fig_donut.update_traces(textposition='inside', textinfo='percent', marker=dict(line=dict(color='#0b0f19', width=2)))
+        st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Allocation du Portefeuille</h3>", unsafe_allow_html=True)
+        fig_donut = px.pie(
+            df, names='name', values='amount', hole=0.66,
+            color_discrete_sequence=['#0ea5e9', '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6', '#f43f5e', '#a855f7', '#38bdf8']
+        )
+        fig_donut.update_traces(
+            textposition='inside', textinfo='percent',
+            marker=dict(line=dict(color='#06080d', width=2))
+        )
         fig_donut.update_layout(
-            margin=dict(t=10, l=10, r=10, b=10), showlegend=True,
-            legend=dict(orientation="v", x=1.05, y=0.5, font=dict(size=10, color="#94a3b8")),
-            paper_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), height=370,
-            annotations=[dict(text=f"Total<br><b>{valeur_titres:,.0f} €</b>", x=0.5, y=0.5, font_size=15, showarrow=False, font_color="#38bdf8")]
+            margin=dict(t=8, l=8, r=8, b=8),
+            showlegend=True,
+            legend=dict(orientation="v", x=1.02, y=0.5, font=dict(size=10, color="#94a3b8")),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#f8fafc", family="Plus Jakarta Sans"),
+            height=370,
+            annotations=[dict(
+                text=f"<span style='font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;'>TOTAL ACTIFS</span><br><b style='font-size:18px; color:#ffffff;'>{valeur_titres:,.0f} €</b>",
+                x=0.5, y=0.5, showarrow=False
+            )]
         )
         st.plotly_chart(fig_donut, use_container_width=True)
 
-    st.markdown("<hr style='border-color: #334155; margin: 20px 0;'>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
     c_gainers, c_losers, c_type = st.columns([1.2, 1.2, 1])
     sorted_pv = df.sort_values(by='variation', ascending=False)
     
     with c_gainers:
-        st.markdown("### 🚀 Top Plus-Values")
+        st.markdown("<h4 style='font-size:0.95rem; font-weight:700; color:#10b981; margin-bottom:12px; letter-spacing:0.04em; text-transform:uppercase;'>Top Plus-Values</h4>", unsafe_allow_html=True)
         for _, row in sorted_pv.head(3).iterrows():
             st.markdown(f"""
             <div class="ranking-card">
                 <div style="display:flex; align-items:center; gap:12px;">
                     <img src="{row['logo_url']}" class="company-logo" alt="logo" />
                     <div>
-                        <div style="font-weight:700; color:#f8fafc; font-size:0.95rem;">{row['name']}</div>
-                        <div style="font-size:0.8rem; color:#94a3b8;">Val: {row['amount']:,.2f} € • PV: +{row['amountVariation']:,.2f} €</div>
+                        <div style="font-weight:700; color:#f8fafc; font-size:0.92rem;">{row['name']}</div>
+                        <div style="font-size:0.78rem; color:#94a3b8;">Val: {row['amount']:,.2f} € • +{row['amountVariation']:,.2f} €</div>
                     </div>
                 </div>
-                <div class="badge-positive" style="font-size:0.88rem;">+{row['variation']:.2f} %</div>
+                <div class="finary-pill-green" style="font-size:0.8rem;">+{row['variation']:.2f}%</div>
             </div>
             """, unsafe_allow_html=True)
             
     with c_losers:
-        st.markdown("### 🔻 Moins-Values / Flops")
+        st.markdown("<h4 style='font-size:0.95rem; font-weight:700; color:#f43f5e; margin-bottom:12px; letter-spacing:0.04em; text-transform:uppercase;'>Moins-Values</h4>", unsafe_allow_html=True)
         for _, row in sorted_pv.tail(3).sort_values(by='variation', ascending=True).iterrows():
-            b_cls = "badge-negative" if row['variation'] < 0 else "badge-positive"
+            b_pill = "finary-pill-red" if row['variation'] < 0 else "finary-pill-green"
             prefix = "+" if row['variation'] >= 0 else ""
             st.markdown(f"""
             <div class="ranking-card">
                 <div style="display:flex; align-items:center; gap:12px;">
                     <img src="{row['logo_url']}" class="company-logo" alt="logo" />
                     <div>
-                        <div style="font-weight:700; color:#f8fafc; font-size:0.95rem;">{row['name']}</div>
-                        <div style="font-size:0.8rem; color:#94a3b8;">Val: {row['amount']:,.2f} € • Var: {prefix}{row['amountVariation']:,.2f} €</div>
+                        <div style="font-weight:700; color:#f8fafc; font-size:0.92rem;">{row['name']}</div>
+                        <div style="font-size:0.78rem; color:#94a3b8;">Val: {row['amount']:,.2f} € • {prefix}{row['amountVariation']:,.2f} €</div>
                     </div>
                 </div>
-                <div class="{b_cls}" style="font-size:0.88rem;">{prefix}{row['variation']:.2f} %</div>
+                <div class="{b_pill}" style="font-size:0.8rem;">{prefix}{row['variation']:.2f}%</div>
             </div>
             """, unsafe_allow_html=True)
 
     with c_type:
-        st.markdown("### 🏷️ Allocation Actions vs ETF")
+        st.markdown("<h4 style='font-size:0.95rem; font-weight:700; color:#94a3b8; margin-bottom:12px; letter-spacing:0.04em; text-transform:uppercase;'>Actions vs ETF</h4>", unsafe_allow_html=True)
         type_agg = df.groupby('type')['amount'].sum().reset_index()
         fig_type = px.bar(
             type_agg, x='type', y='amount', color='type',
             text=type_agg['amount'].apply(lambda x: f"{x:,.0f} € ({x/valeur_titres*100:.1f}%)"),
-            color_discrete_map={'ETF': '#38bdf8', 'Action': '#818cf8'}
+            color_discrete_map={'ETF': '#0ea5e9', 'Action': '#6366f1'}
         )
         fig_type.update_layout(
-            margin=dict(t=10, l=10, r=10, b=10), paper_bgcolor="#1e293b", plot_bgcolor="#1e293b",
-            font=dict(color="#f8fafc", family="Plus Jakarta Sans"), height=200,
-            xaxis=dict(title=None, showgrid=False), yaxis=dict(title=None, showgrid=False, visible=False), showlegend=False
+            margin=dict(t=8, l=8, r=8, b=8),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#f8fafc", family="Plus Jakarta Sans"),
+            height=200,
+            xaxis=dict(title=None, showgrid=False),
+            yaxis=dict(title=None, showgrid=False, visible=False),
+            showlegend=False
         )
         fig_type.update_traces(textposition='outside')
         st.plotly_chart(fig_type, use_container_width=True)
 
-# =============================================================
-# ONGLET 2 : DIAGNOSTIC & MÉTÉO ACTUS IA (GROQ)
-# =============================================================
-with tab_ollama:
-    st.subheader(f"🧠 Diagnostic Global PEA & Météo Synthétique avec `{groq_model}`")
-    st.caption("Analyse en temps réel via l'API Groq (très légère en RAM).")
 
-    subtab_diag, subtab_weather = st.tabs(["📋 Diagnostic Global Allocation", "🌡️ Météo Synthétique & Actus"])
+# =============================================================
+# ONGLET 2 : POSITIONS & TITRES (TABLEAU + FICHE TITRE)
+# =============================================================
+with tab_positions:
+    st.markdown("<h3 style='font-size:1.2rem; font-weight:700; color:#f8fafc; margin-bottom:16px;'>Positions en Portefeuille</h3>", unsafe_allow_html=True)
+    
+    # Barre de filtre et de recherche
+    f1, f2, f3 = st.columns([2, 1, 1])
+    with f1: search_kw = st.text_input("Recherche rapide", placeholder="Rechercher par libellé ou code ISIN...")
+    with f2: type_filter = st.selectbox("Type d'instrument", ["Tous", "Action", "ETF"])
+    with f3: perf_filter = st.selectbox("Filtre performance", ["Toutes", "En Plus-Value", "En Moins-Value"])
 
-    with subtab_diag:
-        if st.button(f"🤖 Lancer le Diagnostic Global avec {groq_model}", type="primary"):
-            with st.spinner(f"Analyse globale en cours avec le modèle {groq_model}..."):
+    filtered = df.copy()
+    if search_kw:
+        mask = filtered['name'].str.contains(search_kw, case=False, na=False) | filtered['isin'].str.contains(search_kw, case=False, na=False)
+        filtered = filtered[mask]
+    if type_filter != "Tous":
+        filtered = filtered[filtered['type'] == type_filter]
+    if perf_filter == "En Plus-Value":
+        filtered = filtered[filtered['amountVariation'] >= 0]
+    elif perf_filter == "En Moins-Value":
+        filtered = filtered[filtered['amountVariation'] < 0]
+
+    cols_to_show = ['logo_url', 'name', 'isin', 'sector', 'quantity', 'buyingPrice', 'lastPrice', 'amount', 'weight', 'amountVariation', 'variation', 'intradayVariation']
+    st.data_editor(
+        filtered[cols_to_show],
+        column_config={
+            "logo_url": st.column_config.ImageColumn("Logo", width="small"),
+            "name": st.column_config.TextColumn("Titre", width="medium"),
+            "isin": st.column_config.TextColumn("ISIN", width="small"),
+            "sector": st.column_config.TextColumn("Secteur", width="small"),
+            "quantity": st.column_config.NumberColumn("Quantité", format="%.2f"),
+            "buyingPrice": st.column_config.NumberColumn("PRU", format="%.2f €"),
+            "lastPrice": st.column_config.NumberColumn("Dernier cours", format="%.2f €"),
+            "amount": st.column_config.NumberColumn("Valorisation", format="%.2f €"),
+            "weight": st.column_config.ProgressColumn("Poids (%)", format="%.1f%%", min_value=0, max_value=100),
+            "amountVariation": st.column_config.NumberColumn("+/- Value (€)", format="%+,.2f €"),
+            "variation": st.column_config.ProgressColumn("+/- Value (%)", format="%+.2f%%", min_value=-100, max_value=100),
+            "intradayVariation": st.column_config.NumberColumn("Var. Jour (%)", format="%+.2f%%")
+        },
+        hide_index=True,
+        use_container_width=True,
+        height=420
+    )
+
+    csv_bytes = filtered.to_csv(index=False, sep=';').encode('utf-8')
+    st.download_button("Télécharger les positions (CSV)", data=csv_bytes, file_name=f"export_portefeuille_pea_{datetime.now().strftime('%Y%m%d')}.csv", mime="text/csv")
+
+    st.markdown("<hr style='border-color: rgba(255,255,255,0.06); margin: 32px 0 24px 0;'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:1.2rem; font-weight:700; color:#f8fafc; margin-bottom:14px;'>Inspecteur d'Actif / Fiche Titre</h3>", unsafe_allow_html=True)
+    
+    selected_stock_name = st.selectbox("Sélectionner une position à inspecter", options=df['name'].tolist(), key="sb_inspector_stock")
+    stock_row = df[df['name'] == selected_stock_name].iloc[0]
+    
+    inspect_c1, inspect_c2 = st.columns([1, 1.8])
+    with inspect_c1:
+        st.markdown(f"""
+        <div style="background: rgba(18, 24, 35, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 24px;">
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px;">
+                <img src="{stock_row['logo_url']}" style="width:52px; height:52px; border-radius:14px; object-fit:contain; background:#ffffff; padding:4px;" />
+                <div>
+                    <h3 style="margin:0; color:#ffffff; font-size:1.25rem; font-weight:700;">{stock_row['name']}</h3>
+                    <span style="color:#64748b; font-size:0.8rem; font-weight:600;">{stock_row['isin']} • {stock_row['type']}</span>
+                </div>
+            </div>
+            <div style="font-size:0.9rem; color:#cbd5e1; line-height:2.1;">
+                <div style="display:flex; justify-content:space-between;"><span style="color:#64748b;">Quantité :</span> <b>{stock_row['quantity']:,.2f} titres</b></div>
+                <div style="display:flex; justify-content:space-between;"><span style="color:#64748b;">PRU d'achat :</span> <b>{stock_row['buyingPrice']:,.2f} €</b></div>
+                <div style="display:flex; justify-content:space-between;"><span style="color:#64748b;">Dernier Cours :</span> <b>{stock_row['lastPrice']:,.2f} €</b></div>
+                <div style="display:flex; justify-content:space-between;"><span style="color:#64748b;">Valorisation :</span> <b style="color:#38bdf8;">{stock_row['amount']:,.2f} €</b></div>
+                <div style="display:flex; justify-content:space-between;"><span style="color:#64748b;">Poids Portefeuille :</span> <b>{stock_row['weight']:.2f}%</b></div>
+                <div style="display:flex; justify-content:space-between;"><span style="color:#64748b;">Performance :</span> <b style="color:{'#10b981' if stock_row['amountVariation']>=0 else '#f43f5e'};">{'+' if stock_row['amountVariation']>=0 else ''}{stock_row['amountVariation']:,.2f} € ({'+' if stock_row['variation']>=0 else ''}{stock_row['variation']:.2f}%)</b></div>
+                <div style="display:flex; justify-content:space-between;"><span style="color:#64748b;">Secteur :</span> <b>{stock_row['sector']}</b></div>
+                <div style="display:flex; justify-content:space-between;"><span style="color:#64748b;">Rendement Div. :</span> <b style="color:#38bdf8;">{stock_row['div_yield']:.2f}% (~{stock_row['annual_div_euro']:,.1f} €/an)</b></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with inspect_c2:
+        yf_sym = stock_row.get('yf_symbol')
+        st.markdown(f"<div style='font-size:0.95rem; font-weight:700; color:#94a3b8; margin-bottom:8px;'>Historique Boursier (1 An) • <code>{yf_sym if yf_sym else stock_row['name']}</code></div>", unsafe_allow_html=True)
+        if yf_sym:
+            try:
+                hist_data = yf.Ticker(yf_sym).history(period="1y")
+                if not hist_data.empty:
+                    fig_stock_hist = px.line(hist_data, x=hist_data.index, y='Close', labels={'Close': 'Cours (€)', 'Date': 'Date'})
+                    fig_stock_hist.update_traces(line_color="#0ea5e9", line_width=2.5)
+                    fig_stock_hist.update_layout(
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(0,0,0,0)",
+                        font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+                        margin=dict(t=10, l=10, r=10, b=20),
+                        height=350,
+                        xaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None),
+                        yaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None)
+                    )
+                    st.plotly_chart(fig_stock_hist, use_container_width=True)
+                else:
+                    st.info("Données historiques Yahoo Finance non disponibles pour ce titre.")
+            except Exception:
+                st.info("Historique boursier indisponible.")
+        else:
+            st.info("Symbole boursier non renseigné.")
+
+
+# =============================================================
+# ONGLET 3 : ANALYSES & PERFORMANCE
+# =============================================================
+with tab_analytics:
+    sec_col1, sec_col2 = st.columns([1.3, 1.2])
+    with sec_col1:
+        st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Allocation par Secteur</h3>", unsafe_allow_html=True)
+        sec_agg = df.groupby('sector')['amount'].sum().reset_index()
+        fig_sec = px.pie(sec_agg, names='sector', values='amount', hole=0.62, color_discrete_sequence=px.colors.qualitative.Prism)
+        fig_sec.update_traces(textposition='inside', textinfo='percent+label', marker=dict(line=dict(color='#06080d', width=2)))
+        fig_sec.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#f8fafc", family="Plus Jakarta Sans"), 
+            margin=dict(t=10, l=10, r=10, b=10),
+            height=340,
+            showlegend=False
+        )
+        st.plotly_chart(fig_sec, use_container_width=True)
+
+    with sec_col2:
+        st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Dividendes Annuels Estimés (€/an)</h3>", unsafe_allow_html=True)
+        div_df = df[df['annual_div_euro'] > 0].sort_values(by='annual_div_euro', ascending=False)
+        if not div_df.empty:
+            fig_div_bar = px.bar(
+                div_df, x='name', y='annual_div_euro',
+                text=div_df['annual_div_euro'].apply(lambda x: f"{x:,.1f} €"),
+                color='annual_div_euro', color_continuous_scale=['#0ea5e9', '#10b981']
+            )
+            fig_div_bar.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+                margin=dict(t=10, l=10, r=10, b=30),
+                height=340,
+                xaxis=dict(title=None, tickangle=-30, gridcolor="rgba(255,255,255,0.06)"),
+                yaxis=dict(title=None, gridcolor="rgba(255,255,255,0.06)"),
+                coloraxis_showscale=False
+            )
+            fig_div_bar.update_traces(textposition='outside')
+            st.plotly_chart(fig_div_bar, use_container_width=True)
+        else:
+            st.info("Aucun dividende détecté sur les positions actuelles.")
+
+    st.markdown("<hr style='border-color: rgba(255,255,255,0.06); margin: 24px 0;'>", unsafe_allow_html=True)
+
+    col_a1, col_a2 = st.columns(2)
+    with col_a1:
+        st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Contribution aux Gains & Pertes (€)</h3>", unsafe_allow_html=True)
+        df_sorted_gains = df.sort_values(by='amountVariation', ascending=True).copy()
+        df_sorted_gains['status'] = np.where(df_sorted_gains['amountVariation'] >= 0, 'Plus-Value', 'Moins-Value')
+        fig_bars = px.bar(
+            df_sorted_gains,
+            x='amountVariation',
+            y='name',
+            orientation='h',
+            color='status',
+            color_discrete_map={'Plus-Value': '#10b981', 'Moins-Value': '#f43f5e'},
+            text=df_sorted_gains['amountVariation'].apply(lambda x: f"{'+' if x>0 else ''}{x:,.2f} €"),
+            labels={'amountVariation': 'Plus/Moins-value (€)', 'name': 'Titre'}
+        )
+        fig_bars.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+            margin=dict(t=10, l=10, r=60, b=10),
+            height=400,
+            showlegend=False,
+            xaxis=dict(title=None, gridcolor="rgba(255,255,255,0.06)"),
+            yaxis=dict(title=None, gridcolor="rgba(255,255,255,0.06)")
+        )
+        fig_bars.update_traces(textposition='outside')
+        st.plotly_chart(fig_bars, use_container_width=True)
+
+    with col_a2:
+        st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Comparatif PRU vs Dernier Cours (€)</h3>", unsafe_allow_html=True)
+        fig_compare = go.Figure()
+        fig_compare.add_trace(go.Bar(x=df['name'], y=df['buyingPrice'], name="PRU (Prix d'achat)", marker_color="#475569"))
+        fig_compare.add_trace(go.Bar(x=df['name'], y=df['lastPrice'], name="Dernier Cours", marker_color="#0ea5e9"))
+        fig_compare.update_layout(
+            barmode='group',
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+            margin=dict(t=10, l=10, r=10, b=50),
+            height=400,
+            xaxis=dict(tickangle=-40, gridcolor="rgba(255,255,255,0.06)"),
+            yaxis=dict(title=None, gridcolor="rgba(255,255,255,0.06)"),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        st.plotly_chart(fig_compare, use_container_width=True)
+
+    st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Matrice Poids (%) vs Performance (%)</h3>", unsafe_allow_html=True)
+    fig_matrix = px.scatter(
+        df, x='variation', y='weight', size='amount', color='variation',
+        hover_name='name', color_continuous_scale=['#f43f5e', '#64748b', '#10b981'],
+        color_continuous_midpoint=0, text='name'
+    )
+    fig_matrix.update_traces(textposition='top center')
+    fig_matrix.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+        margin=dict(t=20, l=10, r=10, b=20),
+        height=420,
+        xaxis=dict(title="Performance globale (%)", gridcolor="rgba(255,255,255,0.06)"),
+        yaxis=dict(title="Poids dans le portefeuille (%)", gridcolor="rgba(255,255,255,0.06)")
+    )
+    st.plotly_chart(fig_matrix, use_container_width=True)
+
+
+# =============================================================
+# ONGLET 4 : HISTORIQUE TEMPOREL (SUPABASE)
+# =============================================================
+with tab_history:
+    st.markdown("<h3 style='font-size:1.2rem; font-weight:700; color:#f8fafc; margin-bottom:8px;'>Évolution du Patrimoine & Instantanés</h3>", unsafe_allow_html=True)
+    st.caption("Données horodatées enregistrées en direct dans la base Supabase.")
+    snaps_df = get_snapshots_df()
+    
+    if snaps_df.empty:
+        st.info("Aucun instantané enregistré dans l'historique pour le moment. Cliquez sur 'Rafraîchir les cours' dans la barre latérale pour enregistrer vos premiers points.")
+    else:
+        if len(snaps_df) == 1:
+            st.info("💡 **1 seul instantané est actuellement enregistré en base.** Pour visualiser une courbe d'évolution dans le temps, cliquez sur **'🔄 Rafraîchir les cours'** dans la barre latérale : chaque rafraîchissement crée un nouvel instantané horodaté !")
+
+        snaps_df['snapshot_date_dt'] = pd.to_datetime(snaps_df['snapshot_date'])
+        snaps_df = snaps_df.sort_values(by='snapshot_date_dt')
+        
+        fig_hist_val = go.Figure()
+        fig_hist_val.add_trace(go.Scatter(
+            x=snaps_df['snapshot_date_dt'], y=snaps_df['total_valeur'],
+            mode='lines+markers', name="Valorisation Totale (€)",
+            line=dict(color="#0ea5e9", width=3), fill='tonexty', fillcolor='rgba(14, 165, 233, 0.08)'
+        ))
+        fig_hist_val.add_trace(go.Scatter(
+            x=snaps_df['snapshot_date_dt'], y=snaps_df['cout_investi'],
+            mode='lines+markers', name="Capital Investi (PRU Total)",
+            line=dict(color="#64748b", width=2, dash='dash')
+        ))
+        fig_hist_val.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+            margin=dict(t=20, l=10, r=10, b=20),
+            height=380,
+            xaxis=dict(title=None, gridcolor="rgba(255,255,255,0.06)"),
+            yaxis=dict(title="Montant (€)", gridcolor="rgba(255,255,255,0.06)"),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        st.plotly_chart(fig_hist_val, use_container_width=True)
+
+        col_h1, col_h2 = st.columns(2)
+        with col_h1:
+            st.markdown("<h4 style='font-size:0.95rem; font-weight:700; color:#10b981; margin-bottom:8px;'>Plus-Value Latente (€)</h4>", unsafe_allow_html=True)
+            fig_hist_pv = px.line(snaps_df, x='snapshot_date_dt', y='plus_value', markers=True)
+            fig_hist_pv.update_traces(line_color="#10b981", line_width=2.5)
+            fig_hist_pv.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+                margin=dict(t=10, l=10, r=10, b=10),
+                height=260,
+                xaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None),
+                yaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None)
+            )
+            st.plotly_chart(fig_hist_pv, use_container_width=True)
+
+        with col_h2:
+            st.markdown("<h4 style='font-size:0.95rem; font-weight:700; color:#8b5cf6; margin-bottom:8px;'>Performance Globale (%)</h4>", unsafe_allow_html=True)
+            fig_hist_pct = px.line(snaps_df, x='snapshot_date_dt', y='plus_value_pct', markers=True)
+            fig_hist_pct.update_traces(line_color="#8b5cf6", line_width=2.5)
+            fig_hist_pct.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+                margin=dict(t=10, l=10, r=10, b=10),
+                height=260,
+                xaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None),
+                yaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None)
+            )
+            st.plotly_chart(fig_hist_pct, use_container_width=True)
+
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.06); margin: 24px 0;'>", unsafe_allow_html=True)
+        st.markdown("<h4 style='font-size:1rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Instantanés enregistrés en Base de Données</h4>", unsafe_allow_html=True)
+        table_snaps = snaps_df[['id', 'snapshot_date', 'total_valeur', 'cout_investi', 'plus_value', 'plus_value_pct', 'source_filename']].copy()
+        table_snaps.columns = ['ID', 'Date Snapshot', 'Valorisation (€)', 'Investi (€)', 'Plus-Value (€)', 'Perf (%)', 'Fichier Source']
+        st.dataframe(
+            table_snaps.style.format({
+                'Valorisation (€)': '{:,.2f} €',
+                'Investi (€)': '{:,.2f} €',
+                'Plus-Value (€)': '{:+,.2f} €',
+                'Perf (%)': '{:+.2f} %'
+            }),
+            use_container_width=True
+        )
+
+
+# =============================================================
+# ONGLET 5 : INTELLIGENCE IA & FISCALITÉ
+# =============================================================
+with tab_ai_tax:
+    sub_tab_diag, sub_tab_weather, sub_tab_bourseai, sub_tab_fiscal = st.tabs([
+        "Diagnostic Global (Groq)",
+        "Météo Synthétique & Actus",
+        "Synthèse BourseAi",
+        "Fiscalité PEA & Projection"
+    ])
+
+    # 1. DIAGNOSTIC GLOBAL
+    with sub_tab_diag:
+        st.markdown(f"<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:6px;'>Diagnostic Portefeuille avec <code>{groq_model}</code></h3>", unsafe_allow_html=True)
+        st.caption("Évaluation de la diversification, détection des risques et recommandations PEA.")
+
+        if st.button(f"Lancer le Diagnostic Global avec {groq_model}", type="primary"):
+            with st.spinner(f"Analyse globale en cours avec {groq_model}..."):
                 diag_res = analyze_portfolio_global(df, model=groq_model)
                 st.session_state['global_diag_res'] = diag_res
 
@@ -958,28 +1342,32 @@ with tab_ollama:
 
             c_pf, c_al = st.columns(2)
             with c_pf:
-                st.markdown("#### ✅ Points Forts du Portefeuille")
+                st.markdown("#### Points Forts du Portefeuille")
                 for pt in d_res.get("points_forts", []):
                     st.success(f"• {pt}")
 
-                st.markdown("#### 💡 Recommandations PEA")
+                st.markdown("#### Recommandations PEA")
                 for rec in d_res.get("recommandations_pea", []):
                     st.write(f"👉 {rec}")
 
             with c_al:
-                st.markdown("#### ⚠️ Alertes & Risques de Concentration")
+                st.markdown("#### Alertes & Risques de Concentration")
                 for alt in d_res.get("alertes_et_risques", []):
                     st.error(f"• {alt}")
 
-    with subtab_weather:
-        if st.button(f"🔎 Analyser l'Actualité avec {groq_model}", type="primary"):
+    # 2. MÉTÉO SYNTHÉTIQUE
+    with sub_tab_weather:
+        st.markdown(f"<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:6px;'>Météo & Sentiment des Actualités</h3>", unsafe_allow_html=True)
+        st.caption("Analyse NLP des dernières actualités boursières sur vos positions.")
+
+        if st.button(f"Analyser l'Actualité des Titres avec {groq_model}", type="primary"):
             sentiments_results = {}
             p_text = st.empty()
             p_bar = st.progress(0)
 
             for idx, row in df.iterrows():
                 tk_sym = row.get('yf_symbol') or row.get('name')
-                p_text.text(f"Analyse des actualités de {row['name']} ({tk_sym}) avec {groq_model}...")
+                p_text.text(f"Analyse des actualités de {row['name']} ({tk_sym})...")
                 news_items = fetch_ticker_news(tk_sym)
                 try:
                     analysis = analyze_news_sentiment(tk_sym, news_items, model=groq_model)
@@ -996,13 +1384,12 @@ with tab_ollama:
             s_dict = st.session_state["sentiments_results"]
             score_w, icon_w, label_w = compute_portfolio_weather(df, s_dict)
 
-            st.markdown("#### 🌡️ Météo Synthétique du Portefeuille")
             col_m1, col_m2 = st.columns([1, 2])
             with col_m1:
                 st.metric(
                     label=f"Météo Portefeuille : {label_w}",
                     value=f"{icon_w} {score_w:+.2f}",
-                    delta="Score pondéré par le poids des positions"
+                    delta="Score pondéré par les poids"
                 )
             with col_m2:
                 st.write("**Impact de l'actualité par position :**")
@@ -1013,11 +1400,9 @@ with tab_ollama:
                     s_score = s_dict.get(tk_name, {}).get("score_global", 0.0)
                     st.caption(f"• **{r['name']}** ({wt:.1f}% du PEA) : Sentiment {s_score:+.2f}")
 
-            st.markdown("<hr style='border-color: #334155; margin: 20px 0;'>", unsafe_allow_html=True)
-            st.markdown("#### 📰 Détail des Actualités par Action")
-
+            st.markdown("<hr style='border-color: rgba(255,255,255,0.06); margin: 20px 0;'>", unsafe_allow_html=True)
             stock_names_list = df['name'].tolist()
-            selected_t_name = st.selectbox("Consulter les actualités d'une action :", stock_names_list, key="sb_news_stock")
+            selected_t_name = st.selectbox("Consulter les actualités d'une action :", stock_names_list, key="sb_news_stock_tab5")
             selected_row = df[df['name'] == selected_t_name].iloc[0]
             tk_key = selected_row.get('yf_symbol') or selected_row.get('name')
 
@@ -1037,351 +1422,138 @@ with tab_ollama:
                         else:
                             st.info(f"Score : {s_score:+.2f} ⚪")
 
-# =============================================================
-# ONGLET 3 : SYNTHÈSE IA & ZONEBOURSE (BOURSEAI INTEGRATION)
-# =============================================================
-with tab_bourseai:
-    st.subheader("🤖 Générateur de Synthèses Boursières & Recommandation IA")
-    st.caption("Implémentation inspirée du projet open-source **[YR72dpi/BourseAi](https://github.com/YR72dpi/BourseAi)** : Analyse automatique à partir d'un lien ZoneBourse ou d'un actif du PEA.")
+    # 3. BOURSEAI
+    with sub_tab_bourseai:
+        st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:6px;'>Générateur de Synthèses Boursières BourseAi</h3>", unsafe_allow_html=True)
+        st.caption("Inspiré du projet open-source YR72dpi/BourseAi : Scraping ZoneBourse + Modèle Groq.")
 
-    ai_c1, ai_c2 = st.columns([1.5, 1])
-    with ai_c1:
-        selected_ai_stock = st.selectbox("Choisir un actif de votre portefeuille", options=df['name'].tolist(), key="sb_ai_stock")
-    with ai_c2:
-        custom_zb_link = st.text_input("Ou coller un lien personnalisé ZoneBourse", placeholder="https://www.zonebourse.fr/cours/action/...")
+        ai_c1, ai_c2 = st.columns([1.5, 1])
+        with ai_c1:
+            selected_ai_stock = st.selectbox("Choisir un actif de votre portefeuille", options=df['name'].tolist(), key="sb_ai_stock_tab5")
+        with ai_c2:
+            custom_zb_link = st.text_input("Ou coller un lien personnalisé ZoneBourse", placeholder="https://www.zonebourse.fr/cours/action/...")
 
-    btn_analyze = st.button("🚀 Lancer la Synthèse BourseAi", type="primary")
+        btn_analyze = st.button("Lancer la Synthèse BourseAi", type="primary")
 
-    if btn_analyze or 'last_ai_res' in st.session_state:
-        if btn_analyze:
-            selected_row = df[df['name'] == selected_ai_stock].iloc[0]
-            with st.spinner("Analyse en cours via BourseAi (ZoneBourse + Yahoo Finance + IA)..."):
-                ai_res = analyze_stock_with_ai(
-                    stock_name=selected_ai_stock,
-                    isin=selected_row.get('isin'),
-                    yf_symbol=selected_row.get('yf_symbol'),
-                    custom_url=custom_zb_link if custom_zb_link else None
-                )
-                st.session_state['last_ai_res'] = ai_res
-        else:
-            ai_res = st.session_state['last_ai_res']
+        if btn_analyze or 'last_ai_res' in st.session_state:
+            if btn_analyze:
+                selected_row = df[df['name'] == selected_ai_stock].iloc[0]
+                with st.spinner("Analyse en cours via BourseAi (ZoneBourse + Yahoo Finance + Groq)..."):
+                    ai_res = analyze_stock_with_ai(
+                        stock_name=selected_ai_stock,
+                        isin=selected_row.get('isin'),
+                        yf_symbol=selected_row.get('yf_symbol'),
+                        custom_url=custom_zb_link if custom_zb_link else None
+                    )
+                    st.session_state['last_ai_res'] = ai_res
+            else:
+                ai_res = st.session_state['last_ai_res']
 
-        st.markdown("<hr style='border-color: #334155; margin: 20px 0;'>", unsafe_allow_html=True)
-        rec_badge = "🟢 Faut-il investir ? OUI (Opportunité)" if ai_res['should_invest'] else "🔴 Faut-il investir ? NON (Prudence)"
-        rec_color = "#10b981" if ai_res['should_invest'] else "#ef4444"
-        
-        st.markdown(f"""
-        <div style="background:#1e293b; border:1px solid #3b82f6; border-radius:16px; padding:24px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-                <div>
-                    <h2 style="margin:0; color:#f8fafc; font-size:1.5rem;">Analyse BourseAi : {ai_res['company_name']}</h2>
-                    <span style="color:#94a3b8; font-size:0.85rem;">Source : {ai_res['source']}</span>
-                </div>
-                <div style="text-align:right;">
-                    <div style="font-size:1.4rem; font-weight:800; color:{rec_color};">{rec_badge}</div>
-                    <span style="font-size:0.95rem; color:#f8fafc;">Score Qualité : <b>{ai_res['score_percent']}/100</b></span>
+            rec_badge = "Faut-il investir ? OUI (Opportunité)" if ai_res['should_invest'] else "Faut-il investir ? NON (Prudence)"
+            rec_color = "#10b981" if ai_res['should_invest'] else "#f43f5e"
+            
+            st.markdown(f"""
+            <div style="background: rgba(18, 24, 35, 0.75); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 18px; padding: 22px; margin: 18px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h2 style="margin:0; color:#f8fafc; font-size:1.35rem; font-weight:700;">{ai_res['company_name']}</h2>
+                        <span style="color:#64748b; font-size:0.8rem;">Source : {ai_res['source']}</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:1.2rem; font-weight:800; color:{rec_color};">{rec_badge}</div>
+                        <span style="font-size:0.88rem; color:#f8fafc;">Score Qualité : <b>{ai_res['score_percent']}/100</b></span>
+                    </div>
                 </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-        st.progress(ai_res['score_percent'] / 100)
+            st.progress(ai_res['score_percent'] / 100)
 
-        col_pros, col_cons = st.columns(2)
-        with col_pros:
-            st.markdown("#### 🚀 Pourquoi Investir (Points Forts)")
-            st.success(ai_res['pros'])
-        with col_cons:
-            st.markdown("#### ⚠️ Risques & Points Faibles (Pourquoi être Prudent)")
-            st.error(ai_res['cons'])
+            col_pros, col_cons = st.columns(2)
+            with col_pros:
+                st.markdown("#### Points Forts (Pourquoi Investir)")
+                st.success(ai_res['pros'])
+            with col_cons:
+                st.markdown("#### Risques & Vigilance")
+                st.error(ai_res['cons'])
 
-        st.markdown("#### 📋 Synthèse du Profil & Données Clés (Tableau BourseAi)")
-        st.info(ai_res['summary'])
+            st.markdown("#### Synthèse du Profil & Données Clés")
+            st.info(ai_res['summary'])
 
-        m = ai_res['metrics']
-        m_c1, m_c2, m_c3, m_c4, m_c5 = st.columns(5)
-        m_c1.metric("Cours Actuel", f"{m['price']:.2f} €")
-        m_c2.metric("Ratio PER", f"{m['per']:.1f}x")
-        m_c3.metric("Rendement Div.", f"{m['div_yield']:.2f}%")
-        m_c4.metric("Objectif Analystes", f"{m['target_price']:.2f} €")
-        m_c5.metric("Consensus", m['recommendation'])
+            m = ai_res['metrics']
+            m_c1, m_c2, m_c3, m_c4, m_c5 = st.columns(5)
+            m_c1.metric("Cours Actuel", f"{m['price']:.2f} €")
+            m_c2.metric("Ratio PER", f"{m['per']:.1f}x")
+            m_c3.metric("Rendement Div.", f"{m['div_yield']:.2f}%")
+            m_c4.metric("Objectif Analystes", f"{m['target_price']:.2f} €")
+            m_c5.metric("Consensus", m['recommendation'])
 
-        if ai_res.get('target_url'):
-            st.markdown(f"🔗 [Consulter la fiche complète sur ZoneBourse]({ai_res['target_url']})")
+            if ai_res.get('target_url'):
+                st.markdown(f"🔗 [Consulter la fiche complète sur ZoneBourse]({ai_res['target_url']})")
 
-# =============================================================
-# ONGLET 4 : HISTORIQUE & ÉVOLUTION TEMPORELLE (BASE SQLITE)
-# =============================================================
-with tab_history:
-    st.subheader("📈 Évolution du Portefeuille dans le Temps")
-    st.caption("Suivi historique automatisé basé sur la base de données Supabase.")
-    snaps_df = get_snapshots_df()
-    
-    if snaps_df.empty:
-        st.info("Aucun instantané enregistré dans l'historique pour le moment. Cliquez sur '🔄 Rafraîchir les cours' dans la barre latérale pour enregistrer vos premiers points.")
-    else:
-        if len(snaps_df) == 1:
-            st.info("💡 **1 seul instantané est actuellement enregistré en base.** Pour visualiser une courbe d'évolution dans le temps, cliquez sur **'🔄 Rafraîchir les cours'** dans la barre latérale : chaque rafraîchissement crée un nouvel instantané horodaté !")
+    # 4. FISCALITÉ PEA & SIMULATEUR
+    with sub_tab_fiscal:
+        f_col1, f_col2 = st.columns(2)
+        with f_col1:
+            st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:8px;'>Cadre Fiscal du PEA</h3>", unsafe_allow_html=True)
+            st.markdown("""
+            Le **Plan d'Épargne en Actions (PEA)** permet une exonération d'impôt sur le revenu après 5 ans :
+            - **Avant 5 ans** : Tout retrait entraîne la clôture et Flat Tax de 30%.
+            - **Après 5 ans** : Exonération d'IR (0%), seuls les prélèvements sociaux (17,2%) s'appliquent sur les gains nets.
+            """)
+            st.markdown(f"""
+            <div style="background: rgba(18, 24, 35, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 20px; margin-top: 15px;">
+                <h4 style="margin-top:0; color:#38bdf8; font-size:1rem; font-weight:700;">Bilan Fiscal des Plus-Values</h4>
+                <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                    <tr><td style="padding:6px 0; color:#94a3b8;">Total Plus-Value Latente :</td><td style="text-align:right; font-weight:700; color:{'#10b981' if plus_value_latente_titres>=0 else '#f43f5e'};">{plus_value_latente_titres:,.2f} €</td></tr>
+                    <tr><td style="padding:6px 0; color:#94a3b8;">Prélèvements Sociaux estimés (17.2%) :</td><td style="text-align:right; font-weight:700; color:#f43f5e;">-{prelevements_sociaux:,.2f} €</td></tr>
+                    <tr style="border-top: 1px solid rgba(255,255,255,0.08);"><td style="padding:8px 0; font-weight:700; color:#f8fafc;">Gain Réel Net d'Impôt :</td><td style="text-align:right; font-weight:800; color:#10b981; font-size:1.05rem;">+{plus_value_latente_titres - prelevements_sociaux:,.2f} €</td></tr>
+                    <tr><td style="padding:6px 0; font-weight:700; color:#f8fafc;">Capital Retirable Net (Titres + Cash) :</td><td style="text-align:right; font-weight:800; color:#38bdf8; font-size:1.05rem;">{valeur_nette_apres_ps:,.2f} €</td></tr>
+                </table>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
+            st.markdown("<h4 style='font-size:0.95rem; font-weight:700; color:#94a3b8;'>Plafond des versements (150 000 €)</h4>", unsafe_allow_html=True)
+            plafond = 150000.0
+            pct_plafond = min(100.0, (cout_total_investi / plafond) * 100)
+            st.progress(pct_plafond / 100)
+            st.caption(f"Capacité de versement restante : **{plafond - cout_total_investi:,.2f} €** ({pct_plafond:.1f}% du plafond atteint)")
 
-        snaps_df['snapshot_date_dt'] = pd.to_datetime(snaps_df['snapshot_date'])
-        snaps_df = snaps_df.sort_values(by='snapshot_date_dt')
-        
-        fig_hist_val = go.Figure()
-        fig_hist_val.add_trace(go.Scatter(
-            x=snaps_df['snapshot_date_dt'], y=snaps_df['total_valeur'],
-            mode='lines+markers', name="Valorisation Totale (€)",
-            line=dict(color="#38bdf8", width=3), fill='tonexty', fillcolor='rgba(56, 189, 248, 0.1)'
-        ))
-        fig_hist_val.add_trace(go.Scatter(
-            x=snaps_df['snapshot_date_dt'], y=snaps_df['cout_investi'],
-            mode='lines+markers', name="Capital Investi (PRU Total)",
-            line=dict(color="#94a3b8", width=2, dash='dash')
-        ))
-        fig_hist_val.update_layout(
-            paper_bgcolor="#1e293b", plot_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"),
-            margin=dict(t=20, l=10, r=10, b=20), height=380,
-            xaxis=dict(title="Date de l'instantané", gridcolor="#334155"), yaxis=dict(title="Montant (€)", gridcolor="#334155"),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-        )
-        st.plotly_chart(fig_hist_val, use_container_width=True)
-
-        col_h1, col_h2 = st.columns(2)
-        with col_h1:
-            st.markdown("#### 💶 Plus-Value Latente (€)")
-            fig_hist_pv = px.line(snaps_df, x='snapshot_date_dt', y='plus_value', markers=True)
-            fig_hist_pv.update_traces(line_color="#10b981", line_width=3)
-            fig_hist_pv.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), margin=dict(t=10, l=10, r=10, b=10), height=280, xaxis=dict(gridcolor="#334155"), yaxis=dict(gridcolor="#334155"))
-            st.plotly_chart(fig_hist_pv, use_container_width=True)
-
-        with col_h2:
-            st.markdown("#### 📊 Performance Globale (%)")
-            fig_hist_pct = px.line(snaps_df, x='snapshot_date_dt', y='plus_value_pct', markers=True)
-            fig_hist_pct.update_traces(line_color="#a78bfa", line_width=3)
-            fig_hist_pct.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), margin=dict(t=10, l=10, r=10, b=10), height=280, xaxis=dict(gridcolor="#334155"), yaxis=dict(gridcolor="#334155"))
-            st.plotly_chart(fig_hist_pct, use_container_width=True)
-
-        st.markdown("---")
-        st.markdown("#### 🗄️ Liste des Instantanés enregistrés en Base")
-        table_snaps = snaps_df[['id', 'snapshot_date', 'total_valeur', 'cout_investi', 'plus_value', 'plus_value_pct', 'source_filename']].copy()
-        table_snaps.columns = ['ID', 'Date Snapshot', 'Valorisation (€)', 'Investi (€)', 'Plus-Value (€)', 'Perf (%)', 'Fichier Source']
-        st.dataframe(table_snaps.style.format({'Valorisation (€)': '{:,.2f} €', 'Investi (€)': '{:,.2f} €', 'Plus-Value (€)': '{:+,.2f} €', 'Perf (%)': '{:+.2f} %'}), use_container_width=True)
-
-# =============================================================
-# ONGLET 5 : SECTEURS & DIVIDENDES
-# =============================================================
-with tab_sectors:
-    st.subheader("🏢 Répartition Sectorielle & Revenus Passifs")
-    sec_col1, sec_col2 = st.columns([1.5, 1])
-    with sec_col1:
-        st.markdown("#### 🌐 Allocation par Secteur d'Activité")
-        sec_agg = df.groupby('sector')['amount'].sum().reset_index()
-        fig_sec = px.pie(sec_agg, names='sector', values='amount', hole=0.55, color_discrete_sequence=px.colors.qualitative.Prism)
-        fig_sec.update_traces(textposition='inside', textinfo='percent+label', marker=dict(line=dict(color='#0b0f19', width=2)))
-        fig_sec.update_layout(
-            paper_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), 
-            margin=dict(t=10, l=10, r=10, b=10), height=360, showlegend=False
-        )
-        st.plotly_chart(fig_sec, use_container_width=True)
-
-    with sec_col2:
-        st.markdown("#### 💰 Estimation des Dividendes Annuels par Ligne")
-        div_df = df[df['annual_div_euro'] > 0].sort_values(by='annual_div_euro', ascending=False)
-        if not div_df.empty:
-            fig_div_bar = px.bar(
-                div_df, x='name', y='annual_div_euro',
-                text=div_df['annual_div_euro'].apply(lambda x: f"{x:,.1f} €/an"),
-                color='annual_div_euro', color_continuous_scale=['#38bdf8', '#10b981']
+        with f_col2:
+            st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:8px;'>Simulateur d'Intérêts Composés</h3>", unsafe_allow_html=True)
+            horizon_ans = st.slider("Horizon de placement (Années)", min_value=1, max_value=30, value=10)
+            epargne_mensuelle = st.number_input("Versement mensuel supplémentaire (€)", min_value=0.0, value=250.0, step=50.0)
+            rendement_annuel = st.slider("Rendement annuel moyen espéré (%)", min_value=1.0, max_value=15.0, value=7.5, step=0.5)
+            
+            r_mensuel = (1 + rendement_annuel / 100) ** (1/12) - 1
+            nb_mois = horizon_ans * 12
+            annees_list, val_list, versements_list = [0], [valeur_totale_portefeuille], [cout_total_investi]
+            curr_val, curr_verse = valeur_totale_portefeuille, cout_total_investi
+            
+            for m in range(1, nb_mois + 1):
+                curr_val = curr_val * (1 + r_mensuel) + epargne_mensuelle
+                curr_verse += epargne_mensuelle
+                if m % 12 == 0:
+                    annees_list.append(m // 12)
+                    val_list.append(curr_val)
+                    versements_list.append(curr_verse)
+                    
+            fig_compound = go.Figure()
+            fig_compound.add_trace(go.Scatter(x=annees_list, y=val_list, mode='lines+markers', name="Valeur Projetée", line=dict(color="#10b981", width=3)))
+            fig_compound.add_trace(go.Scatter(x=annees_list, y=versements_list, mode='lines', name="Capital Versé", line=dict(color="#64748b", dash='dash')))
+            fig_compound.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+                margin=dict(t=20, l=10, r=10, b=20),
+                height=320,
+                xaxis=dict(title="Années", gridcolor="rgba(255,255,255,0.06)"),
+                yaxis=dict(title="Montant (€)", gridcolor="rgba(255,255,255,0.06)"),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
-            fig_div_bar.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), margin=dict(t=10, l=10, r=10, b=30), height=360, xaxis=dict(title=None, tickangle=-30, gridcolor="#334155"), yaxis=dict(title="Dividende estimé (€/an)", gridcolor="#334155"), coloraxis_showscale=False)
-            st.plotly_chart(fig_div_bar, use_container_width=True)
+            st.plotly_chart(fig_compound, use_container_width=True)
+            gain_projeté = val_list[-1] - versements_list[-1]
+            st.success(f"🎯 Dans **{horizon_ans} ans**, votre portefeuille atteindrait **{val_list[-1]:,.2f} €**, dont **{gain_projeté:,.2f} €** d'intérêts générés !")
 
-# =============================================================
-# ONGLET 6 : FICHE TITRE (INSPECTEUR D'ACTIF)
-# =============================================================
-with tab_inspector:
-    st.subheader("🔍 Inspecteur d'Actif / Fiche Entreprise")
-    selected_stock_name = st.selectbox("Choisir une position en portefeuille", options=df['name'].tolist())
-    stock_row = df[df['name'] == selected_stock_name].iloc[0]
-    
-    inspect_c1, inspect_c2 = st.columns([1, 2])
-    with inspect_c1:
-        st.markdown(f"""
-        <div style="background:#1e293b; border:1px solid #334155; border-radius:14px; padding:20px;">
-            <div style="display:flex; align-items:center; gap:14px; margin-bottom:15px;">
-                <img src="{stock_row['logo_url']}" style="width:48px; height:48px; border-radius:50%;" />
-                <div>
-                    <h3 style="margin:0; color:#f8fafc; font-size:1.25rem;">{stock_row['name']}</h3>
-                    <span style="color:#94a3b8; font-size:0.85rem;">ISIN: {stock_row['isin']} • {stock_row['type']}</span>
-                </div>
-            </div>
-            <hr style="border-color:#334155; margin:12px 0;" />
-            <div style="font-size:0.9rem; color:#cbd5e1; line-height:1.8;">
-                • <b>Quantité :</b> {stock_row['quantity']:,.2f} titres<br>
-                • <b>PRU :</b> {stock_row['buyingPrice']:,.2f} €<br>
-                • <b>Dernier Cours :</b> {stock_row['lastPrice']:,.2f} €<br>
-                • <b>Valorisation :</b> <span style="color:#38bdf8; font-weight:700;">{stock_row['amount']:,.2f} €</span><br>
-                • <b>Poids :</b> {stock_row['weight']:.2f}%<br>
-                • <b>Plus/Moins-value :</b> <span style="color:{'#10b981' if stock_row['amountVariation']>=0 else '#ef4444'}; font-weight:700;">{'+' if stock_row['amountVariation']>=0 else ''}{stock_row['amountVariation']:,.2f} € ({'+' if stock_row['variation']>=0 else ''}{stock_row['variation']:.2f}%)</span><br>
-                • <b>Secteur :</b> {stock_row['sector']}<br>
-                • <b>Dividende estimé :</b> {stock_row['div_yield']:.2f}% (~{stock_row['annual_div_euro']:,.1f} €/an)
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with inspect_c2:
-        yf_sym = stock_row['yf_symbol']
-        st.markdown(f"#### 📉 Graphique Boursier (1 An) - `{yf_sym if yf_sym else stock_row['name']}`")
-        if yf_sym:
-            try:
-                hist_data = yf.Ticker(yf_sym).history(period="1y")
-                if not hist_data.empty:
-                    fig_stock_hist = px.line(hist_data, x=hist_data.index, y='Close', labels={'Close': 'Cours (€)', 'Date': 'Date'})
-                    fig_stock_hist.update_traces(line_color="#38bdf8", line_width=2)
-                    fig_stock_hist.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), margin=dict(t=10, l=10, r=10, b=20), height=350, xaxis=dict(gridcolor="#334155"), yaxis=dict(gridcolor="#334155"))
-                    st.plotly_chart(fig_stock_hist, use_container_width=True)
-            except Exception:
-                st.info("Historique boursier indisponible.")
-
-# =============================================================
-# ONGLET 7 : ANALYSES VISUELLES & PERFORMANCE
-# =============================================================
-with tab_charts:
-    col_a1, col_a2 = st.columns(2)
-    with col_a1:
-        st.subheader("💶 Contribution aux Gains / Pertes (€)")
-        df_sorted_gains = df.sort_values(by='amountVariation', ascending=True).copy()
-        df_sorted_gains['status'] = np.where(df_sorted_gains['amountVariation'] >= 0, 'Plus-Value', 'Moins-Value')
-        fig_bars = px.bar(
-            df_sorted_gains,
-            x='amountVariation',
-            y='name',
-            orientation='h',
-            color='status',
-            color_discrete_map={'Plus-Value': '#10b981', 'Moins-Value': '#ef4444'},
-            text=df_sorted_gains['amountVariation'].apply(lambda x: f"{'+' if x>0 else ''}{x:,.2f} €"),
-            labels={'amountVariation': 'Plus/Moins-value (€)', 'name': 'Titre'}
-        )
-        fig_bars.update_layout(
-            paper_bgcolor="#1e293b",
-            plot_bgcolor="#1e293b",
-            font=dict(color="#f8fafc", family="Plus Jakarta Sans"),
-            margin=dict(t=10, l=10, r=60, b=10),
-            height=420,
-            showlegend=False,
-            xaxis=dict(title="Plus/Moins-value (€)", gridcolor="#334155"),
-            yaxis=dict(title=None, gridcolor="#334155")
-        )
-        fig_bars.update_traces(textposition='outside')
-        st.plotly_chart(fig_bars, use_container_width=True)
-
-    with col_a2:
-        st.subheader("🎯 Comparatif PRU vs Dernier Cours (€)")
-        fig_compare = go.Figure()
-        fig_compare.add_trace(go.Bar(x=df['name'], y=df['buyingPrice'], name="PRU (Prix d'achat)", marker_color="#64748b"))
-        fig_compare.add_trace(go.Bar(x=df['name'], y=df['lastPrice'], name="Dernier Cours", marker_color="#38bdf8"))
-        fig_compare.update_layout(barmode='group', paper_bgcolor="#1e293b", plot_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), margin=dict(t=10, l=10, r=10, b=50), height=420, xaxis=dict(tickangle=-45, gridcolor="#334155"), yaxis=dict(title="Prix (€)", gridcolor="#334155"), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
-        st.plotly_chart(fig_compare, use_container_width=True)
-
-    st.subheader("⚖️ Matrice Poids vs Performance")
-    fig_matrix = px.scatter(df, x='variation', y='weight', size='amount', color='variation', hover_name='name', color_continuous_scale=['#ef4444', '#f1f5f9', '#10b981'], color_continuous_midpoint=0, text='name')
-    fig_matrix.update_traces(textposition='top center')
-    fig_matrix.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), margin=dict(t=20, l=10, r=10, b=20), height=450, xaxis=dict(title="Performance globale (%)", gridcolor="#334155"), yaxis=dict(title="Poids (%)", gridcolor="#334155"))
-    st.plotly_chart(fig_matrix, use_container_width=True)
-
-# =============================================================
-# ONGLET 8 : TABLEAU DÉTAILLÉ DES POSITIONS (AVEC LOGOS)
-# =============================================================
-with tab_positions:
-    st.subheader("📋 Liste des Positions Détaillées")
-    f1, f2, f3 = st.columns([2, 1, 1])
-    with f1: search_kw = st.text_input("🔍 Recherche rapide", placeholder="Ex: BNP, LVMH, FR00...")
-    with f2: type_filter = st.selectbox("Type d'instrument", ["Tous", "Action", "ETF"])
-    with f3: perf_filter = st.selectbox("Filtre performance", ["Toutes", "En Plus-Value", "En Moins-Value"])
-
-    filtered = df.copy()
-    if search_kw:
-        mask = filtered['name'].str.contains(search_kw, case=False, na=False) | filtered['isin'].str.contains(search_kw, case=False, na=False)
-        filtered = filtered[mask]
-    if type_filter != "Tous": filtered = filtered[filtered['type'] == type_filter]
-    if perf_filter == "En Plus-Value": filtered = filtered[filtered['amountVariation'] >= 0]
-    elif perf_filter == "En Moins-Value": filtered = filtered[filtered['amountVariation'] < 0]
-
-    cols_to_show = ['logo_url', 'name', 'isin', 'sector', 'quantity', 'buyingPrice', 'lastPrice', 'amount', 'weight', 'amountVariation', 'variation', 'intradayVariation']
-    st.data_editor(
-        filtered[cols_to_show],
-        column_config={
-            "logo_url": st.column_config.ImageColumn("Logo"),
-            "name": st.column_config.TextColumn("Titre"),
-            "isin": st.column_config.TextColumn("Code ISIN"),
-            "sector": st.column_config.TextColumn("Secteur"),
-            "quantity": st.column_config.NumberColumn("Quantité", format="%.2f"),
-            "buyingPrice": st.column_config.NumberColumn("PRU d'achat", format="%.2f €"),
-            "lastPrice": st.column_config.NumberColumn("Dernier cours", format="%.2f €"),
-            "amount": st.column_config.NumberColumn("Valorisation", format="%.2f €"),
-            "weight": st.column_config.ProgressColumn("Poids (%)", format="%.1f%%", min_value=0, max_value=100),
-            "amountVariation": st.column_config.NumberColumn("+/- Value (€)", format="%+,.2f €"),
-            "variation": st.column_config.ProgressColumn("+/- Value (%)", format="%+.2f%%", min_value=-100, max_value=100),
-            "intradayVariation": st.column_config.NumberColumn("Var. Jour (%)", format="%+.2f%%")
-        },
-        hide_index=True, use_container_width=True, height=450
-    )
-
-    csv_bytes = filtered.to_csv(index=False, sep=';').encode('utf-8')
-    st.download_button("📥 Télécharger les positions en CSV", data=csv_bytes, file_name=f"export_portefeuille_pea_{datetime.now().strftime('%Y%m%d')}.csv", mime="text/csv")
-
-# =============================================================
-# ONGLET 9 : FISCALITÉ PEA & SIMULATEUR DE PROJECTION
-# =============================================================
-with tab_fiscal:
-    f_col1, f_col2 = st.columns(2)
-    with f_col1:
-        st.subheader("⚖️ Fiscalité Spécifique au PEA")
-        st.markdown("""
-        Le **Plan d'Épargne en Actions (PEA)** permet d'optimiser la fiscalité de ses investissements :
-        - **Avant 5 ans** : Tout retrait entraîne la clôture du plan et Flat Tax à 30%.
-        - **Après 5 ans** : Exonération totale d'IR (0%) et 17,2% de Prélèvements Sociaux sur les gains uniquement.
-        """)
-        st.markdown(f"""
-        <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid #3b82f6; border-radius: 12px; padding: 18px; margin-top: 15px;">
-            <h4 style="margin-top:0; color:#38bdf8;">📊 Bilan Fiscal de vos Plus-Values</h4>
-            <table style="width:100%; border-collapse:collapse; font-size:0.92rem;">
-                <tr><td style="padding:6px 0; color:#94a3b8;">Total Plus-Value Latente :</td><td style="text-align:right; font-weight:700; color:{'#10b981' if plus_value_latente_titres>=0 else '#ef4444'};">{plus_value_latente_titres:,.2f} €</td></tr>
-                <tr><td style="padding:6px 0; color:#94a3b8;">Prélèvements Sociaux estimés (17.2%) :</td><td style="text-align:right; font-weight:700; color:#ef4444;">-{prelevements_sociaux:,.2f} €</td></tr>
-                <tr style="border-top: 1px solid #334155;"><td style="padding:8px 0; font-weight:700; color:#f8fafc;">Gain Réel Net d'Impôt :</td><td style="text-align:right; font-weight:800; color:#10b981; font-size:1.05rem;">+{plus_value_latente_titres - prelevements_sociaux:,.2f} €</td></tr>
-                <tr><td style="padding:6px 0; font-weight:700; color:#f8fafc;">Capital Retirable Net (Titres + Cash) :</td><td style="text-align:right; font-weight:800; color:#38bdf8; font-size:1.05rem;">{valeur_nette_apres_ps:,.2f} €</td></tr>
-            </table>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown("#### 🎯 Plafond des versements (150 000 €)")
-        plafond = 150000.0
-        pct_plafond = min(100.0, (cout_total_investi / plafond) * 100)
-        st.progress(pct_plafond / 100)
-        st.caption(f"Capacité de versement restante : **{plafond - cout_total_investi:,.2f} €** ({pct_plafond:.1f}% du plafond utilisé)")
-
-    with f_col2:
-        st.subheader("🚀 Simulateur d'Intérêts Composés")
-        horizon_ans = st.slider("Horizon de placement (Années)", min_value=1, max_value=30, value=10)
-        epargne_mensuelle = st.number_input("Versement mensuel supplémentaire (€)", min_value=0.0, value=250.0, step=50.0)
-        rendement_annuel = st.slider("Rendement annuel moyen espéré (%)", min_value=1.0, max_value=15.0, value=7.5, step=0.5)
-        
-        r_mensuel = (1 + rendement_annuel / 100) ** (1/12) - 1
-        nb_mois = horizon_ans * 12
-        annees_list, val_list, versements_list = [0], [valeur_totale_portefeuille], [cout_total_investi]
-        curr_val, curr_verse = valeur_totale_portefeuille, cout_total_investi
-        
-        for m in range(1, nb_mois + 1):
-            curr_val = curr_val * (1 + r_mensuel) + epargne_mensuelle
-            curr_verse += epargne_mensuelle
-            if m % 12 == 0:
-                annees_list.append(m // 12)
-                val_list.append(curr_val)
-                versements_list.append(curr_verse)
-                
-        fig_compound = go.Figure()
-        fig_compound.add_trace(go.Scatter(x=annees_list, y=val_list, mode='lines+markers', name="Valeur Portefeuille Projetée", line=dict(color="#10b981", width=3)))
-        fig_compound.add_trace(go.Scatter(x=annees_list, y=versements_list, mode='lines', name="Capital Total Versé", line=dict(color="#94a3b8", dash='dash')))
-        fig_compound.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b", font=dict(color="#f8fafc", family="Plus Jakarta Sans"), margin=dict(t=20, l=10, r=10, b=20), height=320, xaxis=dict(title="Années", gridcolor="#334155"), yaxis=dict(title="Montant (€)", gridcolor="#334155"), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
-        st.plotly_chart(fig_compound, use_container_width=True)
-        gain_projeté = val_list[-1] - versements_list[-1]
-        st.success(f"🎯 Dans **{horizon_ans} ans**, votre portefeuille atteindrait **{val_list[-1]:,.2f} €**, dont **{gain_projeté:,.2f} €** d'intérêts !")
 
