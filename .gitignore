@@ -33,7 +33,8 @@ ENV/
 portfolio.db
 *.db
 *.sqlite3
-export-positions-instantanees-*.csv
+*.csv
+portefeuille_demo.csv
 
 # Environment variables
 .env
