@@ -105,8 +105,45 @@ def enforce_groq_delay(min_delay=GROQ_MIN_DELAY_SECONDS):
         time.sleep(sleep_dur)
     _LAST_GROQ_CALL_TIME = time.time()
 
-def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
-    """Exécute une requête vers Groq avec extraction JSON robuste sur qwen/qwen3.8-27b."""
+def parse_json_from_response(content):
+    """Extrait et nettoie le JSON depuis la réponse Groq (supporte <think>, markdown et troncature)."""
+    if not content:
+        raise ValueError("Réponse Groq vide.")
+    # 1. Supprimer les balises de réflexion <think>...</think>
+    cleaned = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
+    # 2. Supprimer les balises de bloc de code markdown
+    cleaned = re.sub(r'^```json\s*', '', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'^```\s*', '', cleaned)
+    cleaned = re.sub(r'\s*```$', '', cleaned).strip()
+    
+    # 3. Tentative directe
+    try:
+        return json.loads(cleaned)
+    except Exception:
+        pass
+        
+    # 4. Extraction du bloc entre { et }
+    match = re.search(r'\{.*\}', cleaned, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group())
+        except Exception:
+            pass
+            
+    # 5. Tentative de fermeture si JSON coupé à la fin
+    start_brace = cleaned.find('{')
+    if start_brace != -1:
+        sub = cleaned[start_brace:].strip()
+        for suffix in ['"}', '"]}', '"}', '}', ']}']:
+            try:
+                return json.loads(sub + suffix)
+            except Exception:
+                continue
+
+    return json.loads(cleaned)
+
+def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL, max_tokens=650):
+    """Exécute une requête vers Groq avec extraction JSON robuste sur qwen/qwen3.8-27b sans forcer json_object."""
     if not HAS_GROQ_PKG:
         raise Exception("Le package 'groq' n'est pas installé.")
     api_key = get_groq_api_key()
@@ -119,12 +156,10 @@ def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
     full_user_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
     
     attempts = [
-        # Tentative 1 : Format standard avec system role et json_object
-        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": True},
-        # Tentative 2 : Format standard sans json_object forcé
-        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": False},
-        # Tentative 3 : Message unique utilisateur (pour les templates mono-message)
-        {"messages": [{"role": "user", "content": full_user_prompt}], "json": False}
+        # Tentative 1 : Format standard avec system role (sans forcer response_format json_object pour éviter json_validate_failed)
+        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]},
+        # Tentative 2 : Message unique utilisateur
+        {"messages": [{"role": "user", "content": full_user_prompt}]}
     ]
     
     last_err = None
@@ -138,18 +173,15 @@ def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
                     "messages": attempt["messages"],
                     "model": model,
                     "temperature": 0.2,
-                    "max_tokens": 320
+                    "max_tokens": max_tokens
                 }
-                if attempt["json"]:
-                    kwargs["response_format"] = {"type": "json_object"}
                 response = client.chat.completions.create(**kwargs)
                 content = response.choices[0].message.content
                 
-                # Extraction JSON robuste
-                match = re.search(r'\{.*\}', content, re.DOTALL)
-                if match:
-                    return json.loads(match.group())
-                return json.loads(content)
+                # Extraction et parsing JSON résilient
+                data = parse_json_from_response(content)
+                if data and isinstance(data, dict):
+                    return data
             except Exception as e:
                 err_str = str(e).lower()
                 last_err = e
@@ -187,16 +219,16 @@ def analyze_portfolio_global(portfolio_df, model=DEFAULT_MODEL, openai_key=None)
         })
 
     system_prompt = (
-        "Tu es un conseiller en gestion de patrimoine spécialiste du PEA. "
-        "Tu réponds STRICTEMENT avec un objet JSON valide en français."
+        "Tu es un conseiller financier expert du PEA. "
+        "Tu réponds STRICTEMENT avec un objet JSON valide en français, sans aucun texte d'introduction, sans balises markdown ni explication."
     )
     prompt = f"""
-    Analyse la composition de ce portefeuille PEA :
+    Analyse ce portefeuille PEA :
     {json.dumps(records, indent=2)}
 
-    Génère un JSON respectant EXACTEMENT cette structure :
+    Réponds UNIQUEMENT avec l'objet JSON ci-dessous rempli (2 phrases concises pour le diagnostic) :
     {{
-        "diagnostic_global": "Résumé court et percutant du portefeuille en français.",
+        "diagnostic_global": "Synthèse courte et percutante du portefeuille en 2 phrases.",
         "score_diversification": 8,
         "points_forts": ["Point fort 1", "Point fort 2"],
         "alertes_et_risques": ["Risque 1", "Risque 2"],
