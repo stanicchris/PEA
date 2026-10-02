@@ -16,11 +16,11 @@ except ImportError:
     HAS_GROQ_PKG = False
 
 AVAILABLE_GROQ_MODELS = [
+    "qwen/qwen3.8-27b",
     "llama-3.1-8b-instant",
-    "llama-3.3-70b-versatile",
-    "qwen/qwen3.8-27b"
+    "llama-3.3-70b-versatile"
 ]
-DEFAULT_MODEL = "llama-3.1-8b-instant"
+DEFAULT_MODEL = "qwen/qwen3.8-27b"
 
 def get_groq_api_key():
     """Récupère la clé API Groq depuis st.secrets ou les variables d'environnement."""
