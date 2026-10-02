@@ -64,6 +64,34 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+st.markdown(
+    """
+    <style>
+        /* 1. Masquer le menu hamburger (trois petits traits en haut à droite) */
+        #MainMenu {visibility: hidden;}
+
+        /* 2. Masquer le header et la barre d'outils (bouton GitHub, options, etc.) */
+        header {visibility: hidden;}
+        div[data-testid="stHeader"] {display: none;}
+        div[data-testid="stToolbar"] {visibility: hidden; height: 0%; position: fixed;}
+
+        /* 3. Masquer le pied de page "Made with Streamlit" */
+        footer {visibility: hidden;}
+
+        /* 4. Masquer le badge flottant "Hosted with Streamlit / Fork" en bas à droite */
+        div[class*="viewerBadge"] {display: none !important;}
+        .styles_viewerBadge__1yB5_ {display: none !important;}
+
+        /* 5. Réajuster le haut de la page pour ne pas laisser un grand espace blanc vide */
+        .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+    </style>
+""",
+    unsafe_allow_html=True,
+)
+
 # -------------------------------------------------------------
 # AUTHENTIFICATION SUPABASE
 # -------------------------------------------------------------
