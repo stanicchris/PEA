@@ -1,4 +1,5 @@
 import streamlit as st
+import time
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -773,7 +774,7 @@ groq_model = st.sidebar.selectbox(
     "Modèle IA (Groq)",
     options=available_groq_models,
     index=0,
-    help="Sélectionnez le modèle Groq pour l'analyse financière (ex: Llama 3.3 70B, Llama 3.1 8B, DeepSeek R1)."
+    help="Sélectionnez le modèle Groq. Conseil : 'llama-3.3-70b-versatile' et 'llama-3.1-8b-instant' disposent des quotas de tokens par minute (OTPM) les plus élevés sur le palier gratuit Groq."
 )
 
 st.sidebar.markdown("---")
@@ -1420,6 +1421,7 @@ with tab_ai_tax:
                 if tk_sym:
                     sentiments_results[tk_sym] = analysis
                 p_bar.progress((idx + 1) / len(df))
+                time.sleep(0.8) # Délai pour préserver les quotas Groq (OTPM/RPM)
 
             p_text.empty()
             p_bar.empty()

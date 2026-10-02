@@ -1,4 +1,5 @@
 import json
+import time
 import pandas as pd
 import yfinance as yf
 import re
@@ -181,40 +182,78 @@ def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
             "cons": "Modèle Prompt Guard 2 : pour un scoring financier détaillé, basculez sur Llama 3.3 70B."
         }
     
-    # Construction des messages (avec fallback mono-message si rejeté par le template)
-    full_user_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
-    
-    attempts = [
-        # Tentative 1 : Format standard avec system role et json_object
-        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": True},
-        # Tentative 2 : Format standard sans json_object forcé
-        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": False},
-        # Tentative 3 : Message unique utilisateur (pour les modèles qui n'acceptent pas le rôle system)
-        {"messages": [{"role": "user", "content": full_user_prompt}], "json": False}
-    ]
-    
+    # Liste de modèles avec bascule de secours si le modèle principal atteint son quota (OTPM/RPM)
+    models_to_try = [model]
+    if model != "llama-3.1-8b-instant" and model != "llama-3.3-70b-versatile":
+        models_to_try.append("llama-3.1-8b-instant")
+
     last_err = None
-    for attempt in attempts:
-        try:
-            kwargs = {
-                "messages": attempt["messages"],
-                "model": model,
-                "temperature": 0.2
-            }
-            if attempt["json"]:
-                kwargs["response_format"] = {"type": "json_object"}
-            response = client.chat.completions.create(**kwargs)
-            content = response.choices[0].message.content
-            
-            # Extraction JSON robuste (supporte les balises <think> de DeepSeek-R1)
-            match = re.search(r'\{.*\}', content, re.DOTALL)
-            if match:
-                return json.loads(match.group())
-            return json.loads(content)
-        except Exception as e:
-            last_err = e
+
+    for target_m in models_to_try:
+        attempts = [
+            # Tentative 1 : Format standard avec system role et json_object
+            {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": True},
+            # Tentative 2 : Format standard sans json_object forcé
+            {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": False},
+            # Tentative 3 : Message unique utilisateur (pour les modèles qui n'acceptent pas le rôle system)
+            {"messages": [{"role": "user", "content": full_user_prompt}], "json": False}
+        ]
+        
+        hit_rate_limit = False
+        for attempt in attempts:
+            try:
+                kwargs = {
+                    "messages": attempt["messages"],
+                    "model": target_m,
+                    "temperature": 0.2,
+                    "max_tokens": 450
+                }
+                if attempt["json"]:
+                    kwargs["response_format"] = {"type": "json_object"}
+                response = client.chat.completions.create(**kwargs)
+                content = response.choices[0].message.content
+                
+                # Extraction JSON robuste (supporte les balises <think> de DeepSeek-R1)
+                match = re.search(r'\{.*\}', content, re.DOTALL)
+                if match:
+                    return json.loads(match.group())
+                return json.loads(content)
+            except Exception as e:
+                err_str = str(e).lower()
+                last_err = e
+                # Détection de Rate Limit (HTTP 429 ou message Groq rate_limit_exceeded / OTPM)
+                if "rate limit" in err_str or "rate_limit" in err_str or "429" in err_str:
+                    hit_rate_limit = True
+                    # Extraire le temps d'attente recommandé par Groq s'il est spécifié (ex: 'Please try again in 3.24s')
+                    wait_sec = 3.5
+                    m_wait = re.search(r'try again in ([0-9\.]+)s', str(e), re.IGNORECASE)
+                    if m_wait:
+                        try:
+                            wait_sec = min(float(m_wait.group(1)) + 0.6, 6.0)
+                        except Exception:
+                            pass
+                    
+                    print(f"Notice Groq Rate Limit sur {target_m}: attente {wait_sec:.1f}s...")
+                    time.sleep(wait_sec)
+                    
+                    # Réessayer une fois après la pause avec le même format
+                    try:
+                        response = client.chat.completions.create(**kwargs)
+                        content = response.choices[0].message.content
+                        match = re.search(r'\{.*\}', content, re.DOTALL)
+                        if match:
+                            return json.loads(match.group())
+                        return json.loads(content)
+                    except Exception as e_retry:
+                        last_err = e_retry
+                        # Si le rate limit persiste sur ce modèle, passer directement au modèle de secours
+                        break
+                continue
+                
+        if hit_rate_limit and target_m != models_to_try[-1]:
+            print(f"Bascule automatique de secours de {target_m} vers {models_to_try[-1]} (quota plus élevé)...")
             continue
-            
+
     raise Exception(f"Erreur Groq ({model}): {last_err}")
 
 def analyze_portfolio_global(portfolio_df, model=DEFAULT_MODEL, openai_key=None):
