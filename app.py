@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 import io
 import os
+import re
 from urllib.parse import quote
 import yfinance as yf
 
