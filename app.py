@@ -416,7 +416,7 @@ def fetch_live_quotes(df):
 # -------------------------------------------------------------
 # SIDEBAR ET PARAMÈTRES
 # -------------------------------------------------------------
-DEFAULT_CSV = "export-positions-instantanees-27-09-2026_19-22-41.csv"
+DEFAULT_CSV = "portfolio.csv"
 
 st.sidebar.markdown("## 📊 Source de Données")
 uploaded_file = st.sidebar.file_uploader("Importer un export CSV", type=["csv"])

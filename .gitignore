@@ -43,3 +43,4 @@ export-positions-instantanees-*.csv
 .DS_Store
 Thumbs.db
 desktop.ini
+test.py
