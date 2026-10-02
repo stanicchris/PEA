@@ -11,7 +11,31 @@ try:
 except ImportError:
     HAS_GROQ_PKG = False
 
-DEFAULT_MODEL = "llama-3.1-8b-instant"
+AVAILABLE_GROQ_MODELS = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "deepseek-r1-distill-llama-70b",
+    "gemma2-9b-it"
+]
+DEFAULT_MODEL = "llama-3.3-70b-versatile"
+
+def get_available_groq_models():
+    """Récupère dynamiquement la liste des modèles Groq actifs."""
+    api_key = st.secrets.get("GROQ_API_KEY")
+    if api_key and HAS_GROQ_PKG:
+        try:
+            client = Groq(api_key=api_key)
+            remote = [m.id for m in client.models.list().data if 'llama' in m.id or 'deepseek' in m.id or 'gemma' in m.id]
+            if remote:
+                # Prioriser les modèles validés
+                ordered = [m for m in AVAILABLE_GROQ_MODELS if m in remote]
+                for r in remote:
+                    if r not in ordered and not r.startswith("whisper") and not r.startswith("distil-whisper"):
+                        ordered.append(r)
+                return ordered
+        except Exception:
+            pass
+    return AVAILABLE_GROQ_MODELS
 
 def fetch_ticker_news(ticker_symbol, max_news=3):
     """Récupère les dernières actualités d'un ticker boursier via yfinance."""
@@ -41,7 +65,7 @@ def fetch_ticker_news(ticker_symbol, max_news=3):
         return []
 
 def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
-    """Exécute une requête vers Groq en forçant le format JSON."""
+    """Exécute une requête vers Groq avec extraction JSON robuste (compatible Llama 3.3, 3.1 & DeepSeek R1)."""
     if not HAS_GROQ_PKG:
         raise Exception("Le package 'groq' n'est pas installé.")
     api_key = st.secrets.get("GROQ_API_KEY")
@@ -50,16 +74,34 @@ def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
         
     client = Groq(api_key=api_key)
     try:
-        response = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            model=model,
-            response_format={"type": "json_object"},
-            temperature=0.2,
-        )
-        content = response.choices[0].message.content
+        # 1. Tentative avec response_format JSON
+        try:
+            response = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                model=model,
+                response_format={"type": "json_object"},
+                temperature=0.2,
+            )
+            content = response.choices[0].message.content
+        except Exception:
+            # 2. Fallback sans format strict (ex: DeepSeek ou modèles spécifiques)
+            response = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                model=model,
+                temperature=0.2,
+            )
+            content = response.choices[0].message.content
+            
+        # Extraction regex du JSON (gère les balises <think> de DeepSeek-R1)
+        match = re.search(r'\{.*\}', content, re.DOTALL)
+        if match:
+            return json.loads(match.group())
         return json.loads(content)
     except Exception as e:
         raise Exception(f"Erreur Groq ({model}): {e}")

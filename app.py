@@ -24,7 +24,8 @@ from bourse_ai import analyze_stock_with_ai, ZONEBOURSE_URLS
 # Module AI Advisor (Groq & News Sentiment)
 from ai_advisor import (
     analyze_portfolio_global, fetch_ticker_news, 
-    analyze_news_sentiment, compute_portfolio_weather, DEFAULT_MODEL
+    analyze_news_sentiment, compute_portfolio_weather,
+    get_available_groq_models, DEFAULT_MODEL
 )
 
 # -------------------------------------------------------------
@@ -542,11 +543,12 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("## 🧠 Configuration IA (Groq)")
 
 # Modèle Groq
+available_groq_models = get_available_groq_models()
 groq_model = st.sidebar.selectbox(
     "Modèle IA (Groq)",
-    options=[DEFAULT_MODEL, "llama3-70b-8192", "mixtral-8x7b-32768"],
+    options=available_groq_models,
     index=0,
-    help="Sélectionnez le modèle Groq pour l'analyse."
+    help="Sélectionnez le modèle Groq pour l'analyse financière (ex: Llama 3.3 70B, Llama 3.1 8B, DeepSeek R1)."
 )
 
 st.sidebar.markdown("---")
