@@ -121,134 +121,262 @@ if st.sidebar.button("🚪 Déconnexion"):
 # -------------------------------------------------------------
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
     
     html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
     
     .stApp {
-        background-color: #0b0f19;
+        background: radial-gradient(1200px 800px at 50% -100px, #172554 0%, #090d16 55%, #050811 100%) !important;
         color: #f1f5f9;
     }
     
+    /* En-tête Material 3 Dashboard */
     .dashboard-header {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        border-radius: 16px;
-        padding: 22px 28px;
-        margin-bottom: 20px;
-        border: 1px solid #334155;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 24px 30px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 15px;
+        gap: 16px;
     }
     
     .badge-pea {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
         color: white;
-        padding: 4px 12px;
+        padding: 4px 14px;
         border-radius: 9999px;
         font-size: 0.75rem;
         font-weight: 700;
         letter-spacing: 0.05em;
         text-transform: uppercase;
-        display: inline-block;
-        margin-left: 10px;
+        box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .badge-live {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: 1px solid rgba(52, 211, 153, 0.25);
+    }
+    .pulsing-dot {
+        width: 7px;
+        height: 7px;
+        background-color: #10b981;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #10b981;
+        animation: pulse-live 2s infinite;
+    }
+    @keyframes pulse-live {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.85); }
     }
 
-    /* Effet Glassmorphism sur toutes les métriques et cartes KPI */
+    /* Cartes KPIs Material Design 3 avec Glassmorphism & Elevation */
     [data-testid="stMetric"], .metric-card {
-        background: rgba(30, 41, 59, 0.6) !important;
+        background: linear-gradient(145deg, rgba(30, 41, 59, 0.65) 0%, rgba(15, 23, 42, 0.75) 100%) !important;
         backdrop-filter: blur(16px) !important;
         -webkit-backdrop-filter: blur(16px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        border-radius: 16px !important;
-        padding: 16px 20px !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35) !important;
-        transition: all 0.25s ease-in-out !important;
+        border: 1px solid rgba(255, 255, 255, 0.07) !important;
+        border-radius: 18px !important;
+        padding: 18px 20px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
     [data-testid="stMetric"]:hover, .metric-card:hover {
-        transform: translateY(-3px) !important;
-        border-color: rgba(56, 189, 248, 0.5) !important;
-        box-shadow: 0 12px 35px 0 rgba(56, 189, 248, 0.15) !important;
+        transform: translateY(-4px) !important;
+        border-color: rgba(56, 189, 248, 0.4) !important;
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.15) !important;
     }
+    
     .metric-title {
         color: #94a3b8;
-        font-size: 0.82rem;
-        font-weight: 600;
-        margin-bottom: 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        margin-bottom: 8px;
         display: flex;
         align-items: center;
         gap: 6px;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.06em;
     }
     .metric-value {
         color: #f8fafc;
-        font-size: 1.6rem;
+        font-size: 1.65rem;
         font-weight: 800;
-        margin-bottom: 6px;
-        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+        letter-spacing: -0.03em;
     }
     
+    /* Badges de variation Material Pill */
     .badge-positive {
         display: inline-flex;
         align-items: center;
-        background-color: rgba(16, 185, 129, 0.15);
-        color: #10b981;
+        background-color: rgba(16, 185, 129, 0.16);
+        color: #34d399;
         font-size: 0.82rem;
         font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 6px;
-        border: 1px solid rgba(16, 185, 129, 0.3);
+        padding: 4px 10px;
+        border-radius: 9999px;
+        border: 1px solid rgba(52, 211, 153, 0.25);
     }
     .badge-negative {
         display: inline-flex;
         align-items: center;
-        background-color: rgba(239, 68, 68, 0.15);
-        color: #ef4444;
+        background-color: rgba(239, 68, 68, 0.16);
+        color: #f87171;
         font-size: 0.82rem;
         font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 6px;
-        border: 1px solid rgba(239, 68, 68, 0.3);
+        padding: 4px 10px;
+        border-radius: 9999px;
+        border: 1px solid rgba(248, 113, 113, 0.25);
     }
     .badge-neutral {
         display: inline-flex;
         align-items: center;
-        background-color: rgba(148, 163, 184, 0.15);
+        background-color: rgba(148, 163, 184, 0.12);
         color: #94a3b8;
         font-size: 0.82rem;
         font-weight: 600;
-        padding: 3px 8px;
-        border-radius: 6px;
+        padding: 4px 10px;
+        border-radius: 9999px;
     }
-    
+
+    /* Boutons Modernes Style Material 3 */
+    .stButton > button {
+        border-radius: 14px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.02em !important;
+        padding: 10px 20px !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.35) !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5) !important;
+    }
+    .stButton > button[kind="secondary"] {
+        background: rgba(30, 41, 59, 0.65) !important;
+        color: #f1f5f9 !important;
+    }
+    .stButton > button[kind="secondary"]:hover {
+        background: rgba(51, 65, 85, 0.8) !important;
+        border-color: #38bdf8 !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Onglets Modernes Material Pill */
+    [data-baseweb="tab-list"] {
+        background: rgba(15, 23, 42, 0.65) !important;
+        padding: 6px !important;
+        border-radius: 16px !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        gap: 6px !important;
+    }
+    [data-baseweb="tab"] {
+        border-radius: 12px !important;
+        padding: 8px 16px !important;
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    [data-baseweb="tab"][aria-selected="true"] {
+        background: #1e293b !important;
+        color: #38bdf8 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Ranking Cards (Top Gainers / Flops) */
     .ranking-card {
-        background: #182234;
-        border: 1px solid #2d3b52;
-        border-radius: 12px;
-        padding: 12px 14px;
-        margin-bottom: 9px;
+        background: linear-gradient(145deg, #182234 0%, #111a29 100%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 14px 18px;
+        margin-bottom: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        transition: background-color 0.15s ease;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     .ranking-card:hover {
-        background-color: #1e2c44;
+        background: #1e2c44;
+        border-color: rgba(56, 189, 248, 0.3);
+        transform: translateX(3px);
     }
 
     .company-logo {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
         object-fit: cover;
-        background-color: #334155;
-        border: 1px solid #475569;
+        background-color: #1e293b;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 3px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Optimisations Spécifiques pour Écran Mobile (Responsive Phone) */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            padding: 18px 20px !important;
+            gap: 14px !important;
+        }
+        .dashboard-header > div:last-child {
+            text-align: left !important;
+            width: 100% !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+            padding-top: 12px !important;
+        }
+        /* Transformer les colonnes côte-à-côte en grille lisible sur mobile */
+        [data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+            gap: 12px !important;
+        }
+        [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+            flex: 1 1 calc(50% - 12px) !important;
+            min-width: 145px !important;
+        }
+        .metric-value {
+            font-size: 1.35rem !important;
+        }
+        .metric-title {
+            font-size: 0.75rem !important;
+        }
+        [data-baseweb="tab-list"] {
+            overflow-x: auto !important;
+            scrollbar-width: none !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -594,21 +722,22 @@ valeur_nette_apres_ps = valeur_totale_portefeuille - prelevements_sociaux
 st.markdown(f"""
 <div class="dashboard-header">
     <div>
-        <div style="display:flex; align-items:center;">
+        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
             <h1 style="margin:0; font-size: 1.85rem; font-weight:800; color:#f8fafc; letter-spacing:-0.02em;">
-                💼 Mon Portefeuille PEA
+                Mon Portefeuille PEA
             </h1>
-            <span class="badge-pea">Plan d'Épargne en Actions</span>
+            <span class="badge-pea">PEA Actif</span>
+            <span class="badge-live"><span class="pulsing-dot"></span> Live</span>
         </div>
         <p style="margin:6px 0 0 0; color:#94a3b8; font-size:0.92rem;">
-            Dashboard inspiré de <b>Baggr</b> & <b>Groq ({groq_model})</b> • {nb_positions} positions • Supabase ({nb_snaps_db} instantanés)
+            Dashboard inspiré de <b>Baggr</b> & IA <b>Groq ({groq_model})</b> • {nb_positions} positions • Supabase ({nb_snaps_db} instantanés)
         </p>
     </div>
     <div style="text-align:right;">
-        <span style="font-size:0.82rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">
+        <span style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.06em; font-weight:700;">
             Valorisation Totale (avec liquidités)
         </span>
-        <div style="font-size:2rem; font-weight:800; color:#38bdf8; letter-spacing:-0.03em;">
+        <div style="font-size:2.1rem; font-weight:800; color:#38bdf8; letter-spacing:-0.03em;">
             {valeur_totale_portefeuille:,.2f} €
         </div>
     </div>
@@ -633,7 +762,7 @@ with kpi_cols[1]:
     st.markdown(f"""
     <div class="metric-card">
         <div>
-            <div class="metric-title">💳 Total Investi (PRU)</div>
+            <div class="metric-title">💳 Total Investi</div>
             <div class="metric-value">{cout_total_investi:,.2f} €</div>
         </div>
         <div class="badge-neutral">Capital d'origine</div>
@@ -643,7 +772,7 @@ with kpi_cols[1]:
 with kpi_cols[2]:
     badge_pv_cls = "badge-positive" if plus_value_latente_titres >= 0 else "badge-negative"
     sign_pv = "+" if plus_value_latente_titres >= 0 else ""
-    color_pv = "#10b981" if plus_value_latente_titres >= 0 else "#ef4444"
+    color_pv = "#34d399" if plus_value_latente_titres >= 0 else "#f87171"
     st.markdown(f"""
     <div class="metric-card">
         <div>
@@ -661,7 +790,7 @@ with kpi_cols[2]:
 with kpi_cols[3]:
     badge_intra_cls = "badge-positive" if intraday_euro_total >= 0 else "badge-negative"
     sign_intra = "+" if intraday_euro_total >= 0 else ""
-    color_intra = "#10b981" if intraday_euro_total >= 0 else "#ef4444"
+    color_intra = "#34d399" if intraday_euro_total >= 0 else "#f87171"
     st.markdown(f"""
     <div class="metric-card">
         <div>
@@ -680,7 +809,7 @@ with kpi_cols[4]:
     st.markdown(f"""
     <div class="metric-card">
         <div>
-            <div class="metric-title">💰 Dividendes / An</div>
+            <div class="metric-title">💰 Dividendes Est.</div>
             <div class="metric-value" style="color: #38bdf8;">~ {total_dividendes_annuels:,.0f} €/an</div>
         </div>
         <div class="badge-neutral">Rendement : {rendement_div_moyen:.2f}%</div>
@@ -693,15 +822,15 @@ st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
 # ONGLETS DE L'APPLICATION
 # -------------------------------------------------------------
 tab_baggr, tab_ollama, tab_bourseai, tab_history, tab_sectors, tab_inspector, tab_charts, tab_positions, tab_fiscal = st.tabs([
-    "📊 Vue d'ensemble (Baggr)",
-    f"🧠 Diagnostic & Météo IA ({groq_model})",
-    "🤖 Synthèse IA (BourseAi)",
-    "📈 Historique & Évolution DB",
-    "🏢 Secteurs & Dividendes",
-    "🔍 Fiche Titre (Inspecteur)",
-    "📊 Analyses & Performance",
-    "📋 Positions Détaillées",
-    "🧮 Fiscalité PEA & Projections"
+    "📊 Synthèse",
+    "🧠 IA Advisor",
+    "🤖 BourseAi",
+    "📈 Historique",
+    "🏢 Secteurs",
+    "🔍 Fiche Titre",
+    "📊 Graphiques",
+    "📋 Positions",
+    "⚖️ Fiscalité"
 ])
 
 # =============================================================
