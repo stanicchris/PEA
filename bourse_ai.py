@@ -158,7 +158,7 @@ def analyze_stock_with_ai(stock_name, isin=None, yf_symbol=None, custom_url=None
         "pros": "\n• ".join([""] + pros) if pros else "Positions établies sur son secteur.",
         "cons": "\n• ".join([""] + cons) if cons else "Sensibilité aux conditions de marché globales.",
         "target_url": target_url,
-        "source": "Moteur Analyse Financière BourseAi (ZoneBourse + Yahoo Finance)",
+        "source": "Moteur Analyse Financière BourseAi (ZoneBourse + Données de marché en direct)",
         "metrics": {
             'price': price,
             'per': per,

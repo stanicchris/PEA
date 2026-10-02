@@ -122,7 +122,7 @@ if st.sidebar.button("🚪 Déconnexion"):
 
 
 # -------------------------------------------------------------
-# THÈME ET CSS SUR MESURE (FINTECH STYLE BAGGR)
+# THÈME ET CSS SUR MESURE (FINTECH DARK)
 # -------------------------------------------------------------
 st.markdown("""
 <style>
@@ -154,14 +154,14 @@ st.markdown("""
         color: #f8fafc !important;
     }
     
-    /* Barre latérale Finary */
+    /* Barre latérale */
     [data-testid="stSidebar"] {
         background-color: #090c12 !important;
         border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
     }
     
-    /* Hero Header Finary */
-    .finary-hero {
+    /* Hero Header */
+    .portfolio-hero {
         background: linear-gradient(180deg, rgba(17, 23, 34, 0.8) 0%, rgba(10, 14, 22, 0.95) 100%);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
@@ -176,7 +176,7 @@ st.markdown("""
         flex-wrap: wrap;
         gap: 20px;
     }
-    .finary-hero-label {
+    .portfolio-hero-label {
         font-size: 0.72rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -184,7 +184,7 @@ st.markdown("""
         color: #64748b;
         margin-bottom: 6px;
     }
-    .finary-hero-value {
+    .portfolio-hero-value {
         font-size: 2.9rem;
         font-weight: 800;
         letter-spacing: -0.04em;
@@ -192,8 +192,8 @@ st.markdown("""
         line-height: 1.05;
     }
     
-    /* Badges & Pills Finary */
-    .finary-pill-blue {
+    /* Badges & Pills */
+    .pill-blue {
         display: inline-flex;
         align-items: center;
         background: rgba(14, 165, 233, 0.14);
@@ -206,7 +206,7 @@ st.markdown("""
         border-radius: 9999px;
         border: 1px solid rgba(56, 189, 248, 0.25);
     }
-    .finary-pill-live {
+    .pill-live {
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -231,7 +231,7 @@ st.markdown("""
         0%, 100% { opacity: 1; transform: scale(1); }
         50% { opacity: 0.35; transform: scale(0.85); }
     }
-    .finary-pill-green {
+    .pill-green {
         display: inline-flex;
         align-items: center;
         gap: 4px;
@@ -243,7 +243,7 @@ st.markdown("""
         border-radius: 9999px;
         border: 1px solid rgba(16, 185, 129, 0.25);
     }
-    .finary-pill-red {
+    .pill-red {
         display: inline-flex;
         align-items: center;
         gap: 4px;
@@ -255,7 +255,7 @@ st.markdown("""
         border-radius: 9999px;
         border: 1px solid rgba(244, 63, 94, 0.25);
     }
-    .finary-pill-neutral {
+    .pill-neutral {
         display: inline-flex;
         align-items: center;
         background: rgba(148, 163, 184, 0.08);
@@ -267,7 +267,7 @@ st.markdown("""
         border: 1px solid rgba(148, 163, 184, 0.15);
     }
 
-    /* Cartes KPIs Finary Style */
+    /* Cartes KPIs */
     [data-testid="stMetric"], .kpi-card {
         background: linear-gradient(165deg, rgba(18, 24, 35, 0.75) 0%, rgba(11, 15, 23, 0.85) 100%) !important;
         backdrop-filter: blur(20px) !important;
@@ -305,7 +305,7 @@ st.markdown("""
         margin-bottom: 6px;
     }
 
-    /* Onglets Finary (Segmented Pills Bar) */
+    /* Onglets du tableau de bord (Segmented Pills Bar) */
     [data-baseweb="tab-list"] {
         background: rgba(11, 15, 23, 0.8) !important;
         padding: 6px !important;
@@ -400,16 +400,16 @@ st.markdown("""
             padding-left: 0.8rem !important;
             padding-right: 0.8rem !important;
         }
-        .finary-hero {
+        .portfolio-hero {
             padding: 22px 20px !important;
             flex-direction: column !important;
             align-items: flex-start !important;
             gap: 16px !important;
         }
-        .finary-hero-value {
+        .portfolio-hero-value {
             font-size: 2.2rem !important;
         }
-        .finary-hero > div:last-child {
+        .portfolio-hero > div:last-child {
             align-items: flex-start !important;
             width: 100% !important;
             border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
@@ -610,11 +610,11 @@ def parse_portfolio_csv(file_content, filename="portfolio.csv"):
     return df
 
 # -------------------------------------------------------------
-# ACTUALISATION YAHOO FINANCE (MIS EN CACHE DYNAMIQUE)
+# ACTUALISATION DES COURS EN DIRECT (MIS EN CACHE DYNAMIQUE)
 # -------------------------------------------------------------
 @st.cache_data(ttl=60)
 def fetch_market_prices(symbols_tuple):
-    """Récupère les derniers cours de marché Yahoo Finance (cache TTL 60s)."""
+    """Récupère les derniers cours de marché en direct (cache TTL 60s)."""
     if not symbols_tuple:
         return {}
     results = {}
@@ -634,7 +634,7 @@ def fetch_market_prices(symbols_tuple):
                 except Exception:
                     pass
     except Exception as e:
-        print(f"Erreur Yahoo Finance : {e}")
+        print(f"Erreur marché en direct : {e}")
     return results
 
 def apply_live_quotes(df, force_refresh=False):
@@ -642,7 +642,7 @@ def apply_live_quotes(df, force_refresh=False):
     updated_df = df.copy()
     symbols = tuple(sorted([s for s in updated_df['yf_symbol'].dropna().unique() if s]))
     if not symbols:
-        return updated_df, "Aucun symbole Yahoo Finance configuré."
+        return updated_df, "Aucun symbole configuré."
         
     if force_refresh:
         fetch_market_prices.clear()
@@ -785,16 +785,16 @@ db_snapshots = get_snapshots_df()
 nb_snaps_db = len(db_snapshots)
 st.sidebar.caption(f"📦 Historique actuel : **{nb_snaps_db} instantané(s)**")
 
-# Auto-update ou Bouton Live Yahoo Finance
+# Auto-update ou Bouton Live
 st.sidebar.markdown("---")
 st.sidebar.markdown("## 🔴 Cours du Marché en Direct")
-force_refresh = st.sidebar.button("🔄 Rafraîchir les cours (Yahoo Finance)")
+force_refresh = st.sidebar.button("🔄 Rafraîchir les cours en direct")
 df, msg = apply_live_quotes(df, force_refresh=force_refresh)
 if force_refresh:
     # Créer automatiquement un NOUVEL instantané dans Supabase à l'heure locale française (Europe/Paris)
     now_dt = get_now_paris()
     now_iso = now_dt.strftime("%Y-%m-%d %H:%M:%S")
-    now_label = f"Live Yahoo ({now_dt.strftime('%d/%m/%Y %H:%M:%S')})"
+    now_label = f"Actualisation en direct ({now_dt.strftime('%d/%m/%Y %H:%M:%S')})"
     new_snap_id = save_snapshot(df, cash=cash, source_filename=now_label, custom_date=now_iso)
     update_user_cash(cash)
     st.session_state["current_snapshot_id"] = new_snap_id
@@ -823,30 +823,30 @@ prelevements_sociaux = max(0.0, plus_value_latente_titres * 0.172)
 valeur_nette_apres_ps = valeur_totale_portefeuille - prelevements_sociaux
 
 # -------------------------------------------------------------
-# EN-TÊTE PRINCIPAL DU DASHBOARD (STYLE FINARY)
+# EN-TÊTE PRINCIPAL DU DASHBOARD
 # -------------------------------------------------------------
 st.markdown(f"""
-<div class="finary-hero">
+<div class="portfolio-hero">
     <div>
         <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
             <h1 style="margin:0; font-size: 2.1rem; font-weight:800; color:#ffffff; letter-spacing:-0.03em;">
                 Mon Portefeuille PEA
             </h1>
-            <span class="finary-pill-blue">PEA ACTIF</span>
-            <span class="finary-pill-live"><span class="pulsing-dot"></span> MARCHÉ EN DIRECT</span>
+            <span class="pill-blue">PEA ACTIF</span>
+            <span class="pill-live"><span class="pulsing-dot"></span> MARCHÉ EN DIRECT</span>
         </div>
         <p style="margin:0; color:#94a3b8; font-size:0.92rem; font-weight:500;">
-            Architecture <b style="color:#f8fafc;">Finary & Baggr</b> • Moteur IA <b style="color:#38bdf8;">Groq ({groq_model})</b> • {nb_positions} positions en portefeuille
+            Suivi de portefeuille en temps réel • Moteur IA <b style="color:#38bdf8;">Groq ({groq_model})</b> • {nb_positions} positions en portefeuille
         </p>
     </div>
     <div style="text-align:right;">
-        <div class="finary-hero-label">Patrimoine Total (avec liquidités)</div>
-        <div class="finary-hero-value">{valeur_totale_portefeuille:,.2f} €</div>
+        <div class="portfolio-hero-label">Patrimoine Total (avec liquidités)</div>
+        <div class="portfolio-hero-value">{valeur_totale_portefeuille:,.2f} €</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Cartes KPIs Finary
+# Cartes KPIs
 kpi_cols = st.columns(5)
 
 with kpi_cols[0]:
@@ -857,7 +857,7 @@ with kpi_cols[0]:
             <div class="kpi-value">{valeur_titres:,.2f} €</div>
         </div>
         <div>
-            <span class="finary-pill-neutral">+{cash:,.2f} € liquidités</span>
+            <span class="pill-neutral">+{cash:,.2f} € liquidités</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -870,7 +870,7 @@ with kpi_cols[1]:
             <div class="kpi-value">{cout_total_investi:,.2f} €</div>
         </div>
         <div>
-            <span class="finary-pill-neutral">Prix de Revient (PRU)</span>
+            <span class="pill-neutral">Prix de Revient (PRU)</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -878,7 +878,7 @@ with kpi_cols[1]:
 with kpi_cols[2]:
     sign_pv = "+" if plus_value_latente_titres >= 0 else ""
     color_pv = "#10b981" if plus_value_latente_titres >= 0 else "#f43f5e"
-    badge_pv_pill = "finary-pill-green" if plus_value_latente_titres >= 0 else "finary-pill-red"
+    badge_pv_pill = "pill-green" if plus_value_latente_titres >= 0 else "pill-red"
     st.markdown(f"""
     <div class="kpi-card">
         <div>
@@ -894,7 +894,7 @@ with kpi_cols[2]:
 with kpi_cols[3]:
     sign_intra = "+" if intraday_euro_total >= 0 else ""
     color_intra = "#10b981" if intraday_euro_total >= 0 else "#f43f5e"
-    badge_intra_pill = "finary-pill-green" if intraday_euro_total >= 0 else "finary-pill-red"
+    badge_intra_pill = "pill-green" if intraday_euro_total >= 0 else "pill-red"
     st.markdown(f"""
     <div class="kpi-card">
         <div>
@@ -915,7 +915,7 @@ with kpi_cols[4]:
             <div class="kpi-value" style="color: #38bdf8;">~ {total_dividendes_annuels:,.0f} €<span style="font-size:1rem; font-weight:600; color:#94a3b8;">/an</span></div>
         </div>
         <div>
-            <span class="finary-pill-neutral">Rendement : {rendement_div_moyen:.2f}%</span>
+            <span class="pill-neutral">Rendement : {rendement_div_moyen:.2f}%</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -923,7 +923,7 @@ with kpi_cols[4]:
 st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 5 ONGLETS CONSOLIDÉS (DESIGN FINARY x BAGGR)
+# ONGLETS DU DASHBOARD
 # -------------------------------------------------------------
 tab_overview, tab_positions, tab_analytics, tab_history, tab_ai_tax = st.tabs([
     "Vue d'ensemble",
@@ -934,7 +934,7 @@ tab_overview, tab_positions, tab_analytics, tab_history, tab_ai_tax = st.tabs([
 ])
 
 # =============================================================
-# ONGLET 1 : VUE D'ENSEMBLE (STYLE BAGGR & FINARY)
+# ONGLET 1 : VUE D'ENSEMBLE
 # =============================================================
 with tab_overview:
     c1, c2 = st.columns([1.6, 1])
@@ -998,14 +998,14 @@ with tab_overview:
                         <div style="font-size:0.78rem; color:#94a3b8;">Val: {row['amount']:,.2f} € • +{row['amountVariation']:,.2f} €</div>
                     </div>
                 </div>
-                <div class="finary-pill-green" style="font-size:0.8rem;">+{row['variation']:.2f}%</div>
+                <div class="pill-green" style="font-size:0.8rem;">+{row['variation']:.2f}%</div>
             </div>
             """, unsafe_allow_html=True)
             
     with c_losers:
         st.markdown("<h4 style='font-size:0.95rem; font-weight:700; color:#f43f5e; margin-bottom:12px; letter-spacing:0.04em; text-transform:uppercase;'>Moins-Values</h4>", unsafe_allow_html=True)
         for _, row in sorted_pv.tail(3).sort_values(by='variation', ascending=True).iterrows():
-            b_pill = "finary-pill-red" if row['variation'] < 0 else "finary-pill-green"
+            b_pill = "pill-red" if row['variation'] < 0 else "pill-green"
             prefix = "+" if row['variation'] >= 0 else ""
             st.markdown(f"""
             <div class="ranking-card">
@@ -1140,7 +1140,7 @@ with tab_positions:
                     )
                     st.plotly_chart(fig_stock_hist, use_container_width=True)
                 else:
-                    st.info("Données historiques Yahoo Finance non disponibles pour ce titre.")
+                    st.info("Données historiques non disponibles pour ce titre.")
             except Exception:
                 st.info("Historique boursier indisponible.")
         else:
@@ -1473,7 +1473,7 @@ with tab_ai_tax:
         if btn_analyze or 'last_ai_res' in st.session_state:
             if btn_analyze:
                 selected_row = df[df['name'] == selected_ai_stock].iloc[0]
-                with st.spinner("Analyse en cours via BourseAi (ZoneBourse + Yahoo Finance + Groq)..."):
+                with st.spinner("Analyse en cours via BourseAi (ZoneBourse + Données de marché + Groq)..."):
                     ai_res = analyze_stock_with_ai(
                         stock_name=selected_ai_stock,
                         isin=selected_row.get('isin'),

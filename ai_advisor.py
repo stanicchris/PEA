@@ -54,7 +54,7 @@ def fetch_ticker_news(ticker_symbol, max_news=3):
             content = item.get("content", item)
             title = content.get("title", "Actualité Boursière")
             summary = content.get("summary", content.get("description", "Pas de résumé disponible."))
-            provider = content.get("provider", {}).get("displayName", "Yahoo Finance")
+            provider = content.get("provider", {}).get("displayName", "Actualités Marché")
             link = content.get("canonicalUrl", {}).get("url", "") or item.get("link", "")
 
             cleaned_news.append({
