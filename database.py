@@ -4,6 +4,18 @@ import re
 import streamlit as st
 from supabase import create_client, Client
 
+try:
+    from zoneinfo import ZoneInfo
+    PARIS_TZ = ZoneInfo("Europe/Paris")
+except Exception:
+    PARIS_TZ = None
+
+def get_now_paris():
+    """Retourne l'heure locale française (Europe/Paris) même sur les serveurs hébergés en UTC."""
+    if PARIS_TZ:
+        return datetime.now(PARIS_TZ)
+    return datetime.now()
+
 # Initialisation du client Supabase par session utilisateur
 def get_supabase_client() -> Client:
     if "supabase_client" not in st.session_state:
@@ -17,7 +29,7 @@ def extract_date_from_filename(filename):
     Extrait la date et l'heure à partir de noms de fichiers types.
     """
     if not filename:
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return get_now_paris().strftime("%Y-%m-%d %H:%M:%S")
         
     match = re.search(r'(\d{2})-(\d{2})-(\d{4})_(\d{2})-(\d{2})-(\d{2})', filename)
     if match:
@@ -34,7 +46,7 @@ def extract_date_from_filename(filename):
         day, month, year = match_fr.groups()
         return f"{year}-{month}-{day} 12:00:00"
         
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return get_now_paris().strftime("%Y-%m-%d %H:%M:%S")
 
 def is_snapshot_saved(snapshot_date, filename=""):
     """Vérifie si un instantané existe déjà pour cette date ou ce fichier via Supabase."""
@@ -230,7 +242,7 @@ def update_snapshot_data(snapshot_id, df, cash=0.0):
             positions_data.append({
                 "user_id": user_id,
                 "snapshot_id": snapshot_id,
-                "snapshot_date": str(row.get('snapshot_date', datetime.now().strftime("%Y-%m-%d %H:%M:%S"))),
+                "snapshot_date": str(row.get('snapshot_date', get_now_paris().strftime("%Y-%m-%d %H:%M:%S"))),
                 "name": str(row.get('name', '')),
                 "isin": str(row.get('isin', '')),
                 "type": str(row.get('type', 'Action')),

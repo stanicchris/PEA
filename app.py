@@ -15,7 +15,8 @@ from database import (
     get_supabase_client, save_snapshot, get_snapshots_df, 
     get_positions_history_df, delete_snapshot, 
     is_snapshot_saved, extract_date_from_filename,
-    get_latest_portfolio, update_snapshot_data
+    get_latest_portfolio, update_snapshot_data,
+    get_now_paris
 )
 
 # Module BourseAi (ZoneBourse + Synthèse)
@@ -700,13 +701,13 @@ st.sidebar.markdown("## 🔴 Cours du Marché en Direct")
 force_refresh = st.sidebar.button("🔄 Rafraîchir les cours (Yahoo Finance)")
 df, msg = apply_live_quotes(df, force_refresh=force_refresh)
 if force_refresh:
-    # Créer automatiquement un NOUVEL instantané dans Supabase avec horodatage exact
-    now_dt = datetime.now()
+    # Créer automatiquement un NOUVEL instantané dans Supabase à l'heure locale française (Europe/Paris)
+    now_dt = get_now_paris()
     now_iso = now_dt.strftime("%Y-%m-%d %H:%M:%S")
     now_label = f"Live Yahoo ({now_dt.strftime('%d/%m/%Y %H:%M:%S')})"
     new_snap_id = save_snapshot(df, cash=cash, source_filename=now_label, custom_date=now_iso)
     st.session_state["current_snapshot_id"] = new_snap_id
-    st.toast(f"✅ Nouvel instantané du {now_dt.strftime('%d/%m %H:%M:%S')} créé dans l'historique !", icon="📈")
+    st.toast(f"✅ Nouvel instantané du {now_dt.strftime('%d/%m à %H:%M:%S')} créé dans l'historique !", icon="📈")
     # Forcer la réévaluation immédiate pour que l'onglet Historique trace le nouveau point
     st.rerun()
 
@@ -1112,26 +1113,15 @@ with tab_bourseai:
 # ONGLET 4 : HISTORIQUE & ÉVOLUTION TEMPORELLE (BASE SQLITE)
 # =============================================================
 with tab_history:
-    h_c1, h_c2 = st.columns([3, 1])
-    with h_c1:
-        st.subheader("📈 Évolution du Portefeuille dans le Temps")
-        st.caption("Suivi historique automatisé basé sur la base de données Supabase.")
-    with h_c2:
-        if st.button("📸 Créer un instantané", use_container_width=True):
-            now_dt = datetime.now()
-            now_iso = now_dt.strftime("%Y-%m-%d %H:%M:%S")
-            now_label = f"Instantané Manuel ({now_dt.strftime('%d/%m/%Y %H:%M:%S')})"
-            save_snapshot(df, cash=cash, source_filename=now_label, custom_date=now_iso)
-            st.toast("✅ Nouvel instantané enregistré dans l'historique !", icon="📈")
-            st.rerun()
-
+    st.subheader("📈 Évolution du Portefeuille dans le Temps")
+    st.caption("Suivi historique automatisé basé sur la base de données Supabase.")
     snaps_df = get_snapshots_df()
     
     if snaps_df.empty:
-        st.info("Aucun instantané enregistré dans l'historique pour le moment. Téléversez de nouveaux fichiers CSV ou cliquez sur 'Rafraîchir les cours' pour alimenter la base de données.")
+        st.info("Aucun instantané enregistré dans l'historique pour le moment. Cliquez sur '🔄 Rafraîchir les cours' dans la barre latérale pour enregistrer vos premiers points.")
     else:
         if len(snaps_df) == 1:
-            st.info("💡 **1 seul instantané est actuellement enregistré en base.** Pour visualiser une courbe d'évolution dans le temps, cliquez sur **'🔄 Rafraîchir les cours'** ou **'📸 Créer un instantané'** : un nouveau point sera tracé avec les dernières variations !")
+            st.info("💡 **1 seul instantané est actuellement enregistré en base.** Pour visualiser une courbe d'évolution dans le temps, cliquez sur **'🔄 Rafraîchir les cours'** dans la barre latérale : chaque rafraîchissement crée un nouvel instantané horodaté !")
 
         snaps_df['snapshot_date_dt'] = pd.to_datetime(snaps_df['snapshot_date'])
         snaps_df = snaps_df.sort_values(by='snapshot_date_dt')
