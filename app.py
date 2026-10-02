@@ -158,10 +158,11 @@ st.markdown("""
         -webkit-font-smoothing: antialiased;
     }
     
-    /* Masquer le menu hamburger, la barre Streamlit et le footer pour un effet 100% SaaS */
-    #MainMenu, header, footer {
+    /* Masquer le menu hamburger, la barre Streamlit, le bandeau décoratif et le footer pour un effet 100% SaaS */
+    #MainMenu, header, footer, div[data-testid="stDecoration"] {
         visibility: hidden !important;
         height: 0 !important;
+        display: none !important;
     }
     
     .block-container {
@@ -170,19 +171,19 @@ st.markdown("""
         max-width: 1280px !important;
     }
     
-    /* Fond Luxury Dark OLED */
+    /* Fond Dark Minimaliste BoursoBank */
     .stApp {
-        background-color: #06080d !important;
+        background-color: #0E1117 !important;
         background-image: 
-            radial-gradient(at 15% 0%, rgba(14, 165, 233, 0.08) 0px, transparent 55%),
-            radial-gradient(at 85% 15%, rgba(99, 102, 241, 0.06) 0px, transparent 55%) !important;
+            radial-gradient(at 15% 0%, rgba(41, 98, 255, 0.08) 0px, transparent 55%),
+            radial-gradient(at 85% 15%, rgba(14, 165, 233, 0.05) 0px, transparent 55%) !important;
         color: #f8fafc !important;
     }
     
     /* Barre latérale */
     [data-testid="stSidebar"] {
-        background-color: #090c12 !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background-color: #1C1F26 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
     }
     
     /* Hero Header */
@@ -292,16 +293,16 @@ st.markdown("""
         border: 1px solid rgba(148, 163, 184, 0.15);
     }
 
-    /* Cartes KPIs */
+    /* Cartes KPIs & st.metric (Glassmorphism & BoursoBank Dark) */
     [data-testid="stMetric"], .kpi-card {
-        background: linear-gradient(165deg, rgba(18, 24, 35, 0.75) 0%, rgba(11, 15, 23, 0.85) 100%) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.06) !important;
-        border-radius: 20px !important;
-        padding: 20px 22px !important;
-        box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        background: #1C1F26 !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 14px !important;
+        padding: 18px 20px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease !important;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -309,9 +310,9 @@ st.markdown("""
         min-height: 125px;
     }
     [data-testid="stMetric"]:hover, .kpi-card:hover {
-        transform: translateY(-3px) !important;
-        border-color: rgba(56, 189, 248, 0.35) !important;
-        box-shadow: 0 16px 35px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.1) !important;
+        transform: translateY(-4px) !important;
+        border-color: #2962FF !important;
+        box-shadow: 0 12px 30px -8px rgba(41, 98, 255, 0.25), 0 0 15px rgba(41, 98, 255, 0.12) !important;
     }
     
     .kpi-label {
@@ -1038,17 +1039,16 @@ with tab_overview:
     with c2:
         st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Allocation du Portefeuille</h3>", unsafe_allow_html=True)
         fig_donut = px.pie(
-            df, names='name', values='amount', hole=0.66,
-            color_discrete_sequence=['#0ea5e9', '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6', '#f43f5e', '#a855f7', '#38bdf8']
+            df, names='name', values='amount', hole=0.65,
+            color_discrete_sequence=['#2962FF', '#0ea5e9', '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6', '#f43f5e', '#a855f7']
         )
         fig_donut.update_traces(
             textposition='inside', textinfo='percent',
-            marker=dict(line=dict(color='#06080d', width=2))
+            marker=dict(line=dict(color='#0E1117', width=2))
         )
         fig_donut.update_layout(
             margin=dict(t=8, l=8, r=8, b=8),
-            showlegend=True,
-            legend=dict(orientation="v", x=1.02, y=0.5, font=dict(size=10, color="#94a3b8")),
+            showlegend=False,
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             font=dict(color="#f8fafc", family="Plus Jakarta Sans"),
@@ -1233,8 +1233,8 @@ with tab_analytics:
     with sec_col1:
         st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Allocation par Secteur</h3>", unsafe_allow_html=True)
         sec_agg = df.groupby('sector')['amount'].sum().reset_index()
-        fig_sec = px.pie(sec_agg, names='sector', values='amount', hole=0.62, color_discrete_sequence=px.colors.qualitative.Prism)
-        fig_sec.update_traces(textposition='inside', textinfo='percent+label', marker=dict(line=dict(color='#06080d', width=2)))
+        fig_sec = px.pie(sec_agg, names='sector', values='amount', hole=0.65, color_discrete_sequence=px.colors.qualitative.Prism)
+        fig_sec.update_traces(textposition='inside', textinfo='percent+label', marker=dict(line=dict(color='#0E1117', width=2)))
         fig_sec.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",

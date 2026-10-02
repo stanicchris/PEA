@@ -16,9 +16,11 @@ except ImportError:
     HAS_GROQ_PKG = False
 
 AVAILABLE_GROQ_MODELS = [
+    "llama-3.1-8b-instant",
+    "llama-3.3-70b-versatile",
     "qwen/qwen3.8-27b"
 ]
-DEFAULT_MODEL = "qwen/qwen3.8-27b"
+DEFAULT_MODEL = "llama-3.1-8b-instant"
 
 def get_groq_api_key():
     """Récupère la clé API Groq depuis st.secrets ou les variables d'environnement."""
@@ -30,7 +32,7 @@ def get_groq_api_key():
     return os.environ.get("GROQ_API_KEY", "")
 
 def get_available_groq_models():
-    """Retourne uniquement le modèle Groq configuré."""
+    """Retourne la liste des modèles Groq disponibles pour l'analyse."""
     return AVAILABLE_GROQ_MODELS
 
 def fetch_ticker_news(ticker_symbol=None, company_name=None, max_news=3):
@@ -143,30 +145,30 @@ def parse_json_from_response(content):
     return json.loads(cleaned)
 
 def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL, max_tokens=650):
-    """Exécute une requête vers Groq avec extraction JSON robuste sur qwen/qwen3.8-27b sans forcer json_object."""
+    """Exécute une requête vers Groq avec extraction JSON robuste (support Llama 3.1, 3.3 et Qwen)."""
     if not HAS_GROQ_PKG:
         raise Exception("Le package 'groq' n'est pas installé.")
     api_key = get_groq_api_key()
     if not api_key:
         raise Exception("Clé API Groq manquante (GROQ_API_KEY non configurée dans secrets ou environnement).")
         
-    model = "qwen/qwen3.8-27b"
+    model = model or DEFAULT_MODEL
     client = Groq(api_key=api_key)
 
     full_user_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
     
+    # Llama 3.1 supporte nativement le json_object strict
+    use_json = "llama" in model.lower()
     attempts = [
-        # Tentative 1 : Format standard avec system role (sans forcer response_format json_object pour éviter json_validate_failed)
-        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]},
-        # Tentative 2 : Message unique utilisateur
-        {"messages": [{"role": "user", "content": full_user_prompt}]}
+        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": use_json},
+        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": False},
+        {"messages": [{"role": "user", "content": full_user_prompt}], "json": False}
     ]
     
     last_err = None
     for attempt in attempts:
         for retry_num in range(3):
             try:
-                # Respecter strictement la pause minimale de 15s entre chaque appel API
                 enforce_groq_delay(15.0)
 
                 kwargs = {
@@ -175,6 +177,8 @@ def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL, max_tokens=65
                     "temperature": 0.2,
                     "max_tokens": max_tokens
                 }
+                if attempt.get("json"):
+                    kwargs["response_format"] = {"type": "json_object"}
                 response = client.chat.completions.create(**kwargs)
                 content = response.choices[0].message.content
                 
