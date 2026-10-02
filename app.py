@@ -1,3 +1,11 @@
+import sys
+import os
+
+# S'assurer que le répertoire racine de l'application est en tête de sys.path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import streamlit as st
 import time
 import pandas as pd
@@ -6,21 +14,35 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import io
-import os
 import re
 import json
 import urllib.request
 from urllib.parse import quote
 import yfinance as yf
 
-# Module base de données Supabase
-from database import (
-    get_supabase_client, save_snapshot, get_snapshots_df, 
-    get_positions_history_df, delete_snapshot, 
-    is_snapshot_saved, extract_date_from_filename,
-    get_latest_portfolio, update_snapshot_data,
-    get_now_paris, get_user_cash, update_user_cash
-)
+# Module base de données Supabase (import sécurisé contre les race conditions Streamlit/importlib)
+try:
+    from database import (
+        get_supabase_client, save_snapshot, get_snapshots_df, 
+        get_positions_history_df, delete_snapshot, 
+        is_snapshot_saved, extract_date_from_filename,
+        get_latest_portfolio, update_snapshot_data,
+        get_now_paris, get_user_cash, update_user_cash
+    )
+except (KeyError, ImportError, Exception):
+    import database
+    get_supabase_client = database.get_supabase_client
+    save_snapshot = database.save_snapshot
+    get_snapshots_df = database.get_snapshots_df
+    get_positions_history_df = database.get_positions_history_df
+    delete_snapshot = database.delete_snapshot
+    is_snapshot_saved = database.is_snapshot_saved
+    extract_date_from_filename = database.extract_date_from_filename
+    get_latest_portfolio = database.get_latest_portfolio
+    update_snapshot_data = database.update_snapshot_data
+    get_now_paris = database.get_now_paris
+    get_user_cash = database.get_user_cash
+    update_user_cash = database.update_user_cash
 
 # Module BourseAi (ZoneBourse + Synthèse)
 from bourse_ai import analyze_stock_with_ai, ZONEBOURSE_URLS
