@@ -8,6 +8,8 @@ from datetime import datetime
 import io
 import os
 import re
+import json
+import urllib.request
 from urllib.parse import quote
 import yfinance as yf
 
@@ -504,10 +506,56 @@ def resolve_div_yield(isin, name):
         return ISIN_METADATA[isin_clean]['div']
     return 0.0
 
+@st.cache_data(ttl=86400, show_spinner=False)
+def search_yf_symbol_online(query):
+    """Recherche dynamique du ticker Yahoo Finance par code ISIN ou nom (API Yahoo Search)."""
+    if not query:
+        return None
+    try:
+        q_clean = quote(str(query).strip())
+        url = f"https://query2.finance.yahoo.com/v1/finance/search?q={q_clean}&newsCount=0"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            quotes = data.get('quotes', [])
+            if not quotes:
+                return None
+            # 1. Priorité aux actions de la bourse de Paris (.PA)
+            for q in quotes:
+                sym = q.get('symbol', '')
+                if sym.endswith('.PA'):
+                    return sym
+            # 2. Sinon premier symbole valide
+            for q in quotes:
+                sym = q.get('symbol', '')
+                if sym and not sym.startswith('^'):
+                    return sym
+    except Exception as e:
+        print(f"Notice auto-découverte Yahoo Finance pour {query}: {e}")
+    return None
+
 def resolve_yf_symbol(isin, name):
+    """Résout le ticker Yahoo Finance en combinant le dictionnaire local et l'auto-découverte en ligne."""
     isin_clean = str(isin).strip().upper() if pd.notna(isin) else ""
-    if isin_clean in ISIN_METADATA:
+    # 1. Dictionnaire local prioritaire
+    if isin_clean in ISIN_METADATA and ISIN_METADATA[isin_clean].get('yf'):
         return ISIN_METADATA[isin_clean]['yf']
+        
+    # 2. Découverte automatique en ligne via le code ISIN
+    if isin_clean and len(isin_clean) >= 9:
+        online_sym = search_yf_symbol_online(isin_clean)
+        if online_sym:
+            return online_sym
+            
+    # 3. Découverte automatique en ligne via le nom du titre
+    if name and pd.notna(name):
+        clean_name = re.sub(r'[^a-zA-Z0-9\s]', ' ', str(name)).strip()
+        first_token = clean_name.split()[0] if clean_name else ""
+        if len(first_token) >= 3:
+            online_sym = search_yf_symbol_online(clean_name) or search_yf_symbol_online(first_token)
+            if online_sym:
+                return online_sym
+                
     return None
 
 # -------------------------------------------------------------
@@ -545,6 +593,7 @@ def parse_portfolio_csv(file_content, filename="portfolio.csv"):
     mapping = {
         'name': 'name', 'nom': 'name', 'valeur': 'name', 'titre': 'name', 'libellé': 'name', 'libelle': 'name',
         'isin': 'isin', 'code isin': 'isin', 'code': 'isin',
+        'ticker': 'yf_symbol', 'symbole': 'yf_symbol', 'symbol': 'yf_symbol', 'mnemo': 'yf_symbol', 'code mnemo': 'yf_symbol', 'code mnémo': 'yf_symbol',
         'quantity': 'quantity', 'quantité': 'quantity', 'qte': 'quantity', 'nb': 'quantity',
         'buyingprice': 'buyingPrice', 'pru': 'buyingPrice', 'prix d\'achat': 'buyingPrice', 'cours d\'achat': 'buyingPrice',
         'lastprice': 'lastPrice', 'cours': 'lastPrice', 'dernier cours': 'lastPrice', 'prix actuel': 'lastPrice',
@@ -603,7 +652,7 @@ def parse_portfolio_csv(file_content, filename="portfolio.csv"):
     df['sector'] = df.apply(lambda r: resolve_sector(r.get('isin'), r.get('name')), axis=1)
     df['div_yield'] = df.apply(lambda r: resolve_div_yield(r.get('isin'), r.get('name')), axis=1)
     df['annual_div_euro'] = df['amount'] * (df['div_yield'] / 100)
-    df['yf_symbol'] = df.apply(lambda r: resolve_yf_symbol(r.get('isin'), r.get('name')), axis=1)
+    df['yf_symbol'] = df.apply(lambda r: r.get('yf_symbol') if pd.notna(r.get('yf_symbol')) and str(r.get('yf_symbol')).strip() else resolve_yf_symbol(r.get('isin'), r.get('name')), axis=1)
 
     total_val = df['amount'].sum()
     df['weight'] = (df['amount'] / total_val * 100) if total_val > 0 else 0.0
@@ -727,8 +776,8 @@ if df is None:
             df['div_yield'] = df.apply(lambda r: resolve_div_yield(r.get('isin'), r.get('name')), axis=1)
         if 'annual_div_euro' not in df.columns or df['annual_div_euro'].isna().all():
             df['annual_div_euro'] = df['amount'] * (df['div_yield'] / 100)
-        if 'yf_symbol' not in df.columns or df['yf_symbol'].isna().all():
-            df['yf_symbol'] = df.apply(lambda r: resolve_yf_symbol(r.get('isin'), r.get('name')), axis=1)
+        if 'yf_symbol' not in df.columns or df['yf_symbol'].isna().any():
+            df['yf_symbol'] = df.apply(lambda r: r.get('yf_symbol') if pd.notna(r.get('yf_symbol')) and str(r.get('yf_symbol')).strip() else resolve_yf_symbol(r.get('isin'), r.get('name')), axis=1)
         
         snap_date_str = latest_snap.get('snapshot_date', '') if latest_snap else ''
         source_label = f"Base Supabase (Instantané du {snap_date_str})"
