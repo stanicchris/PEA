@@ -1,7 +1,11 @@
-streamlit
+fastapi
+uvicorn[standard]
+python-multipart
+python-dotenv
 pandas
 numpy
-plotly
 yfinance
 supabase
 groq
+beautifulsoup4
+requests
