@@ -3,7 +3,6 @@ import time
 import pandas as pd
 import yfinance as yf
 import re
-import streamlit as st
 import os
 import urllib.request
 import urllib.parse
@@ -23,12 +22,7 @@ AVAILABLE_GROQ_MODELS = [
 DEFAULT_MODEL = "qwen/qwen3.8-27b"
 
 def get_groq_api_key():
-    """Récupère la clé API Groq depuis st.secrets ou les variables d'environnement."""
-    try:
-        if hasattr(st, "secrets") and "GROQ_API_KEY" in st.secrets:
-            return st.secrets["GROQ_API_KEY"]
-    except Exception:
-        pass
+    import os
     return os.environ.get("GROQ_API_KEY", "")
 
 def get_available_groq_models():
