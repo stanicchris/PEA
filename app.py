@@ -38,36 +38,78 @@ st.set_page_config(
 # -------------------------------------------------------------
 # AUTHENTIFICATION SUPABASE
 # -------------------------------------------------------------
+# AUTHENTIFICATION SUPABASE (NOM DE COMPTE + MOT DE PASSE)
+# -------------------------------------------------------------
 if "user_id" not in st.session_state:
     st.session_state["user_id"] = None
+if "username" not in st.session_state:
+    st.session_state["username"] = None
 
 supabase = get_supabase_client()
 
+def to_synthetic_email(uname: str) -> str:
+    cleaned = re.sub(r'[^a-zA-Z0-9_\-\.]', '', uname.strip().lower())
+    return f"{cleaned}@pea.local"
+
 if not st.session_state["user_id"]:
-    st.title("🔐 Connexion PEA Tracker")
-    email = st.text_input("Email")
-    password = st.text_input("Mot de passe", type="password")
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("Se connecter"):
-            try:
-                res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-                st.session_state["user_id"] = res.user.id
-                st.rerun()
-            except Exception as e:
-                st.error(f"Erreur de connexion : {e}")
-    with c2:
-        if st.button("S'inscrire"):
-            try:
-                res = supabase.auth.sign_up({"email": email, "password": password})
-                st.success("Inscription réussie. Vérifiez vos emails si nécessaire ou connectez-vous.")
-            except Exception as e:
-                st.error(f"Erreur d'inscription : {e}")
+    col_l1, col_l2, col_l3 = st.columns([1, 1.8, 1])
+    with col_l2:
+        st.markdown("""
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:14px; padding:25px; margin-top:40px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            <h2 style="margin:0 0 10px 0; color:#f8fafc; font-size:1.6rem; font-weight:800;">🔐 Connexion PEA Tracker</h2>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:20px;">Accédez à votre portefeuille en toute sécurité.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        username = st.text_input("👤 Nom de compte (identifiant)", placeholder="Ex: chris, portfolio1...", key="input_username")
+        password = st.text_input("🔑 Mot de passe", type="password", key="input_pwd")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("Se connecter", type="primary", use_container_width=True):
+                if not username.strip():
+                    st.warning("Veuillez saisir votre nom de compte.")
+                elif not password:
+                    st.warning("Veuillez saisir votre mot de passe.")
+                else:
+                    try:
+                        email_alias = to_synthetic_email(username)
+                        res = supabase.auth.sign_in_with_password({"email": email_alias, "password": password})
+                        if res.user:
+                            st.session_state["user_id"] = res.user.id
+                            st.session_state["username"] = username.strip()
+                            st.rerun()
+                        else:
+                            st.error("Identifiants invalides.")
+                    except Exception as e:
+                        st.error(f"Erreur de connexion : {e}")
+        with c2:
+            if st.button("Créer ce compte", use_container_width=True):
+                if not username.strip():
+                    st.warning("Veuillez saisir un nom de compte.")
+                elif len(password) < 6:
+                    st.warning("Le mot de passe doit comporter au moins 6 caractères.")
+                else:
+                    try:
+                        email_alias = to_synthetic_email(username)
+                        res = supabase.auth.sign_up({"email": email_alias, "password": password})
+                        if res.user:
+                            st.session_state["user_id"] = res.user.id
+                            st.session_state["username"] = username.strip()
+                            st.success(f"Compte '{username.strip()}' créé avec succès !")
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"Erreur lors de la création : {e}")
     st.stop()
 
-if st.sidebar.button("Déconnexion"):
-    supabase.auth.sign_out()
+st.sidebar.markdown(f"👤 Connecté : **{st.session_state.get('username', 'Mon Compte')}**")
+if st.sidebar.button("🚪 Déconnexion"):
+    try:
+        supabase.auth.sign_out()
+    except Exception:
+        pass
     st.session_state["user_id"] = None
+    st.session_state["username"] = None
     st.rerun()
 
 
