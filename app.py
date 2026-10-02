@@ -70,7 +70,7 @@ if not st.session_state["user_id"]:
         
         c1, c2 = st.columns(2)
         with c1:
-            if st.button("Se connecter", type="primary", use_container_width=True):
+            if st.button("Se connecter", type="primary", width="stretch"):
                 if not username.strip():
                     st.warning("Veuillez saisir votre nom de compte.")
                 elif not password:
@@ -88,7 +88,7 @@ if not st.session_state["user_id"]:
                     except Exception as e:
                         st.error(f"Erreur de connexion : {e}")
         with c2:
-            if st.button("Créer ce compte", use_container_width=True):
+            if st.button("Créer ce compte", width="stretch"):
                 if not username.strip():
                     st.warning("Veuillez saisir un nom de compte.")
                 elif len(password) < 6:
@@ -955,7 +955,7 @@ with tab_overview:
             font=dict(color="#f8fafc", family="Plus Jakarta Sans"),
             height=370
         )
-        st.plotly_chart(fig_tree, use_container_width=True)
+        st.plotly_chart(fig_tree, width="stretch")
 
     with c2:
         st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Allocation du Portefeuille</h3>", unsafe_allow_html=True)
@@ -980,7 +980,7 @@ with tab_overview:
                 x=0.5, y=0.5, showarrow=False
             )]
         )
-        st.plotly_chart(fig_donut, use_container_width=True)
+        st.plotly_chart(fig_donut, width="stretch")
 
     st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
     c_gainers, c_losers, c_type = st.columns([1.2, 1.2, 1])
@@ -1039,7 +1039,7 @@ with tab_overview:
             showlegend=False
         )
         fig_type.update_traces(textposition='outside')
-        st.plotly_chart(fig_type, use_container_width=True)
+        st.plotly_chart(fig_type, width="stretch")
 
 
 # =============================================================
@@ -1083,7 +1083,7 @@ with tab_positions:
             "intradayVariation": st.column_config.NumberColumn("Var. Jour (%)", format="%+.2f%%")
         },
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
         height=420
     )
 
@@ -1138,7 +1138,7 @@ with tab_positions:
                         xaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None),
                         yaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None)
                     )
-                    st.plotly_chart(fig_stock_hist, use_container_width=True)
+                    st.plotly_chart(fig_stock_hist, width="stretch")
                 else:
                     st.info("Données historiques non disponibles pour ce titre.")
             except Exception:
@@ -1165,7 +1165,7 @@ with tab_analytics:
             height=340,
             showlegend=False
         )
-        st.plotly_chart(fig_sec, use_container_width=True)
+        st.plotly_chart(fig_sec, width="stretch")
 
     with sec_col2:
         st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Dividendes Annuels Estimés (€/an)</h3>", unsafe_allow_html=True)
@@ -1187,7 +1187,7 @@ with tab_analytics:
                 coloraxis_showscale=False
             )
             fig_div_bar.update_traces(textposition='outside')
-            st.plotly_chart(fig_div_bar, use_container_width=True)
+            st.plotly_chart(fig_div_bar, width="stretch")
         else:
             st.info("Aucun dividende détecté sur les positions actuelles.")
 
@@ -1219,7 +1219,7 @@ with tab_analytics:
             yaxis=dict(title=None, gridcolor="rgba(255,255,255,0.06)")
         )
         fig_bars.update_traces(textposition='outside')
-        st.plotly_chart(fig_bars, use_container_width=True)
+        st.plotly_chart(fig_bars, width="stretch")
 
     with col_a2:
         st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Comparatif PRU vs Dernier Cours (€)</h3>", unsafe_allow_html=True)
@@ -1237,7 +1237,7 @@ with tab_analytics:
             yaxis=dict(title=None, gridcolor="rgba(255,255,255,0.06)"),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
-        st.plotly_chart(fig_compare, use_container_width=True)
+        st.plotly_chart(fig_compare, width="stretch")
 
     st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
     st.markdown("<h3 style='font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Matrice Poids (%) vs Performance (%)</h3>", unsafe_allow_html=True)
@@ -1256,7 +1256,7 @@ with tab_analytics:
         xaxis=dict(title="Performance globale (%)", gridcolor="rgba(255,255,255,0.06)"),
         yaxis=dict(title="Poids dans le portefeuille (%)", gridcolor="rgba(255,255,255,0.06)")
     )
-    st.plotly_chart(fig_matrix, use_container_width=True)
+    st.plotly_chart(fig_matrix, width="stretch")
 
 
 # =============================================================
@@ -1297,7 +1297,7 @@ with tab_history:
             yaxis=dict(title="Montant (€)", gridcolor="rgba(255,255,255,0.06)"),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
-        st.plotly_chart(fig_hist_val, use_container_width=True)
+        st.plotly_chart(fig_hist_val, width="stretch")
 
         col_h1, col_h2 = st.columns(2)
         with col_h1:
@@ -1313,7 +1313,7 @@ with tab_history:
                 xaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None),
                 yaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None)
             )
-            st.plotly_chart(fig_hist_pv, use_container_width=True)
+            st.plotly_chart(fig_hist_pv, width="stretch")
 
         with col_h2:
             st.markdown("<h4 style='font-size:0.95rem; font-weight:700; color:#8b5cf6; margin-bottom:8px;'>Performance Globale (%)</h4>", unsafe_allow_html=True)
@@ -1328,7 +1328,7 @@ with tab_history:
                 xaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None),
                 yaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=None)
             )
-            st.plotly_chart(fig_hist_pct, use_container_width=True)
+            st.plotly_chart(fig_hist_pct, width="stretch")
 
         st.markdown("<hr style='border-color: rgba(255,255,255,0.06); margin: 24px 0;'>", unsafe_allow_html=True)
         st.markdown("<h4 style='font-size:1rem; font-weight:700; color:#f8fafc; margin-bottom:12px;'>Instantanés enregistrés en Base de Données</h4>", unsafe_allow_html=True)
@@ -1341,7 +1341,7 @@ with tab_history:
                 'Plus-Value (€)': '{:+,.2f} €',
                 'Perf (%)': '{:+.2f} %'
             }),
-            use_container_width=True
+            width="stretch"
         )
 
 
@@ -1587,7 +1587,7 @@ with tab_ai_tax:
                 yaxis=dict(title="Montant (€)", gridcolor="rgba(255,255,255,0.06)"),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
-            st.plotly_chart(fig_compound, use_container_width=True)
+            st.plotly_chart(fig_compound, width="stretch")
             gain_projeté = val_list[-1] - versements_list[-1]
             st.success(f"🎯 Dans **{horizon_ans} ans**, votre portefeuille atteindrait **{val_list[-1]:,.2f} €**, dont **{gain_projeté:,.2f} €** d'intérêts générés !")
 
