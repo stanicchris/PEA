@@ -774,7 +774,7 @@ groq_model = st.sidebar.selectbox(
     "Modèle IA (Groq)",
     options=available_groq_models,
     index=0,
-    help="Sélectionnez le modèle Groq. Conseil : 'llama-3.3-70b-versatile' et 'llama-3.1-8b-instant' disposent des quotas de tokens par minute (OTPM) les plus élevés sur le palier gratuit Groq."
+    help="Modèle Groq configuré : qwen/qwen3.8-27b."
 )
 
 st.sidebar.markdown("---")
@@ -1421,7 +1421,7 @@ with tab_ai_tax:
                 if tk_sym:
                     sentiments_results[tk_sym] = analysis
                 p_bar.progress((idx + 1) / len(df))
-                time.sleep(0.8) # Délai pour préserver les quotas Groq (OTPM/RPM)
+                time.sleep(2.0) # Délai pour respecter la limite OTPM de 1000 tokens/min de Qwen 27B
 
             p_text.empty()
             p_bar.empty()

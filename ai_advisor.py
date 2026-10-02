@@ -16,14 +16,9 @@ except ImportError:
     HAS_GROQ_PKG = False
 
 AVAILABLE_GROQ_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "meta-llama/llama-prompt-guard-2-22m",
-    "meta-llama/llama-prompt-guard-2-86m",
-    "deepseek-r1-distill-llama-70b",
-    "gemma2-9b-it"
+    "qwen/qwen3.8-27b"
 ]
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "qwen/qwen3.8-27b"
 
 def get_groq_api_key():
     """Récupère la clé API Groq depuis st.secrets ou les variables d'environnement."""
@@ -35,32 +30,7 @@ def get_groq_api_key():
     return os.environ.get("GROQ_API_KEY", "")
 
 def get_available_groq_models():
-    """Récupère dynamiquement la liste des modèles Groq disponibles."""
-    api_key = get_groq_api_key()
-    if api_key and HAS_GROQ_PKG:
-        try:
-            client = Groq(api_key=api_key)
-            remote = [
-                m.id for m in client.models.list().data 
-                if (
-                    'llama' in m.id.lower() or 
-                    'deepseek' in m.id.lower() or 
-                    'gemma' in m.id.lower() or 
-                    'qwen' in m.id.lower() or 
-                    'prompt-guard' in m.id.lower()
-                ) and not any(bad in m.id.lower() for bad in ['whisper', 'vision', 'embedding', 'embed', 'distil-whisper'])
-            ]
-            if remote:
-                ordered = [m for m in AVAILABLE_GROQ_MODELS if m in remote]
-                for r in remote:
-                    if r not in ordered:
-                        ordered.append(r)
-                for m in AVAILABLE_GROQ_MODELS:
-                    if m not in ordered:
-                        ordered.append(m)
-                return ordered
-        except Exception as e:
-            print(f"Notice modèles Groq : {e}")
+    """Retourne uniquement le modèle Groq configuré."""
     return AVAILABLE_GROQ_MODELS
 
 def fetch_ticker_news(ticker_symbol=None, company_name=None, max_news=3):
@@ -123,97 +93,43 @@ def fetch_ticker_news(ticker_symbol=None, company_name=None, max_news=3):
     return cleaned_news
 
 def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
-    """Exécute une requête vers Groq avec extraction JSON robuste (compatible Llama 3.3, 3.1, DeepSeek R1 et Prompt Guard)."""
+    """Exécute une requête vers Groq avec extraction JSON robuste sur qwen/qwen3.8-27b."""
     if not HAS_GROQ_PKG:
         raise Exception("Le package 'groq' n'est pas installé.")
     api_key = get_groq_api_key()
     if not api_key:
         raise Exception("Clé API Groq manquante (GROQ_API_KEY non configurée dans secrets ou environnement).")
         
-    # Sécurité anti-modèle audio/whisper
-    if not model or 'whisper' in model.lower():
-        model = DEFAULT_MODEL
-
+    model = "qwen/qwen3.8-27b"
     client = Groq(api_key=api_key)
 
-    # Traitement dédié pour meta-llama/llama-prompt-guard-2 (modèle de classification / garde de sécurité, contexte max 512 tokens)
-    if 'prompt-guard' in model.lower():
-        short_prompt = (f"{system_prompt}\n{prompt}" if system_prompt else prompt)[:450]
-        try:
-            response = client.chat.completions.create(
-                messages=[{"role": "user", "content": short_prompt}],
-                model=model,
-                max_tokens=60
-            )
-            content = (response.choices[0].message.content or "BENIGN").strip()
-        except Exception as e_pg:
-            print(f"Erreur appel Groq prompt-guard ({model}) : {e_pg}")
-            content = "BENIGN"
-
-        is_safe = "MALICIOUS" not in content.upper()
-        return {
-            "model_used": model,
-            "status": "success",
-            "security_label": content,
-            "diagnostic_global": f"Scan de sécurité validé par {model} (Statut : {content}). Portefeuille sain et conforme aux critères PEA.",
-            "score_diversification": 8 if is_safe else 5,
-            "points_forts": [
-                f"Validation de prompt réussie via {model} ({content})",
-                "Bonne diversification des positions du portefeuille"
-            ],
-            "alertes_et_risques": [
-                f"Modèle {model} : spécialisé en sécurité & latence ultra-faible. Pour des commentaires financiers complets, privilégiez Llama 3.3 70B."
-            ],
-            "recommandations_pea": [
-                "Conserver et poursuivre les versements programmés selon votre stratégie."
-            ],
-            "sentiment_global": "Positif" if is_safe else "Neutre",
-            "score_global": 0.6 if is_safe else 0.0,
-            "impact_court_terme": "Favorable" if is_safe else "Neutre",
-            "points_cles": [
-                f"Validation Groq ({model}) : statut '{content}'"
-            ],
-            "analyse_news": [],
-            "company_name": "Titre",
-            "should_invest": is_safe,
-            "score_percent": 80 if is_safe else 50,
-            "summary": f"Analyse et classification exécutées avec succès via {model} sur Groq. Statut : {content}.",
-            "pros": f"Vérification de sécurité et conformité réussie ({content}) via l'API Groq.",
-            "cons": "Modèle Prompt Guard 2 : pour un scoring financier détaillé, basculez sur Llama 3.3 70B."
-        }
+    full_user_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
     
-    # Liste de modèles avec bascule de secours si le modèle principal atteint son quota (OTPM/RPM)
-    models_to_try = [model]
-    if model != "llama-3.1-8b-instant" and model != "llama-3.3-70b-versatile":
-        models_to_try.append("llama-3.1-8b-instant")
-
+    attempts = [
+        # Tentative 1 : Format standard avec system role et json_object
+        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": True},
+        # Tentative 2 : Format standard sans json_object forcé
+        {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": False},
+        # Tentative 3 : Message unique utilisateur (pour les templates mono-message)
+        {"messages": [{"role": "user", "content": full_user_prompt}], "json": False}
+    ]
+    
     last_err = None
-
-    for target_m in models_to_try:
-        attempts = [
-            # Tentative 1 : Format standard avec system role et json_object
-            {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": True},
-            # Tentative 2 : Format standard sans json_object forcé
-            {"messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}], "json": False},
-            # Tentative 3 : Message unique utilisateur (pour les modèles qui n'acceptent pas le rôle system)
-            {"messages": [{"role": "user", "content": full_user_prompt}], "json": False}
-        ]
-        
-        hit_rate_limit = False
-        for attempt in attempts:
+    for attempt in attempts:
+        for retry_num in range(3):
             try:
                 kwargs = {
                     "messages": attempt["messages"],
-                    "model": target_m,
+                    "model": model,
                     "temperature": 0.2,
-                    "max_tokens": 450
+                    "max_tokens": 320
                 }
                 if attempt["json"]:
                     kwargs["response_format"] = {"type": "json_object"}
                 response = client.chat.completions.create(**kwargs)
                 content = response.choices[0].message.content
                 
-                # Extraction JSON robuste (supporte les balises <think> de DeepSeek-R1)
+                # Extraction JSON robuste
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     return json.loads(match.group())
@@ -221,39 +137,21 @@ def query_groq_safe(prompt, system_prompt="", model=DEFAULT_MODEL):
             except Exception as e:
                 err_str = str(e).lower()
                 last_err = e
-                # Détection de Rate Limit (HTTP 429 ou message Groq rate_limit_exceeded / OTPM)
+                # Détection de Rate Limit Groq (429 / OTPM)
                 if "rate limit" in err_str or "rate_limit" in err_str or "429" in err_str:
-                    hit_rate_limit = True
-                    # Extraire le temps d'attente recommandé par Groq s'il est spécifié (ex: 'Please try again in 3.24s')
                     wait_sec = 3.5
                     m_wait = re.search(r'try again in ([0-9\.]+)s', str(e), re.IGNORECASE)
                     if m_wait:
                         try:
-                            wait_sec = min(float(m_wait.group(1)) + 0.6, 6.0)
+                            wait_sec = float(m_wait.group(1)) + 0.8
                         except Exception:
                             pass
-                    
-                    print(f"Notice Groq Rate Limit sur {target_m}: attente {wait_sec:.1f}s...")
+                    print(f"Notice Groq Rate Limit ({model}) : pause de {wait_sec:.1f}s puis nouvelle tentative ({retry_num + 1}/3)...")
                     time.sleep(wait_sec)
+                    continue
+                else:
+                    break
                     
-                    # Réessayer une fois après la pause avec le même format
-                    try:
-                        response = client.chat.completions.create(**kwargs)
-                        content = response.choices[0].message.content
-                        match = re.search(r'\{.*\}', content, re.DOTALL)
-                        if match:
-                            return json.loads(match.group())
-                        return json.loads(content)
-                    except Exception as e_retry:
-                        last_err = e_retry
-                        # Si le rate limit persiste sur ce modèle, passer directement au modèle de secours
-                        break
-                continue
-                
-        if hit_rate_limit and target_m != models_to_try[-1]:
-            print(f"Bascule automatique de secours de {target_m} vers {models_to_try[-1]} (quota plus élevé)...")
-            continue
-
     raise Exception(f"Erreur Groq ({model}): {last_err}")
 
 def analyze_portfolio_global(portfolio_df, model=DEFAULT_MODEL, openai_key=None):
