@@ -1,50 +1,110 @@
-# 💼 Dashboard PEA Pro, Live, SQLite & IA (Inspiré de Baggr, BourseAi & Ollama)
+# 📈 PEA Tracker SaaS
 
-Application web complète de suivi, d'analyse, de diagnostic par IA et de projection de portefeuille **PEA** (Plan d'Épargne en Actions), développée en **Python, Streamlit, Plotly, SQLite, yfinance & Ollama**.
+Application web complète de suivi, d'analyse, de diagnostic par IA et de projection pour **PEA** (Plan d'Épargne en Actions). Cette application a été entièrement refondue d'une architecture locale Streamlit vers une architecture SaaS moderne, scalable et prête pour la production.
 
----
-
-## ✨ Fonctionnalités Avancées
-
-### 1. 🧠 Diagnostic Global IA & Météo des Actualités (Inspiré de `test.py`)
-- **Nouvel onglet `🧠 Diagnostic & Météo IA (Ollama)`** :
-  - **Diagnostic Global d'Allocation** : Analyse par modèle IA local (Ollama `llama3.2`, `mistral`...) ou moteur de secours. Génère un score de diversification sur 10, un résumé d'allocation, la liste des points forts, des alertes de concentration et des conseils PEA.
-  - **Météo Synthétique du Portefeuille (☀️ ⛅ ☁️ 🌧️ ⛈️)** : Calcule un score météo global (-1.0 à +1.0) en analysant le sentiment des actualités récentes de chaque action, pondéré par leur poids en capital.
-  - **Détail des Actualités par Titre** : Consultation des news récentes avec badges de sentiment (Vert/Rouge/Gris) et résumés d'impact.
-
-### 2. 🤖 Synthèse IA & Analyse ZoneBourse (BourseAi)
-- **Nouvel onglet `🤖 Synthèse IA (BourseAi)`** :
-  - Analyse automatique à partir du nom d'un actif du PEA ou d'un lien personnalisé **ZoneBourse.fr**.
-  - Recommandation d'investissement : **Faut-il investir ? (OUI / NON)** avec Score de Qualité (0-100%).
-  - Synthèse structurée : **Pourquoi Investir (Points forts)** vs **Pourquoi être Prudent (Risques)**.
-
-### 3. 🔴 Actualisation des Cours en Direct (Yahoo Finance)
-- Bouton **`⚡ Actualiser les cours (Yahoo Finance)`** dans la barre latérale.
-- Connexion en direct aux marchés Euronext pour réévaluer les cours, les valorisations et les variations du jour.
-
-### 4. 🏢 Analyse Sectorielle & Dividendes
-- Ventilation automatique par secteur d'activité (Finance, Énergie, Tech, Santé, Luxe...).
-- Estimation du revenu passif annuel (`~ €/an`) et du rendement moyen.
-
-### 5. 🔍 Fiche Titre & Inspecteur d'Actif
-- Fiche détaillée pour chaque ligne avec **graphique boursier sur 1 an (1Y)**.
-
-### 6. 🖼️ Logos d'Entreprises
-- Affichage des logos officiels dans le tableau (`ImageColumn`) et dans les cartes Top 3 Gagnants & Flops.
-
-### 7. 🗄️ Historique & Évolution Temporelle (`portfolio.db`)
-- Moteur SQLite enregistrant automatiquement chaque instantané CSV.
-- Graphiques d'évolution temporelle de la valorisation, du capital investi et des plus-values.
+![Vue.js](https://img.shields.io/badge/Vue.js-3.0-4FC08D?style=for-the-badge&logo=vuedotjs)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100-009688?style=for-the-badge&logo=fastapi)
+![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=for-the-badge&logo=supabase)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
+![Groq](https://img.shields.io/badge/Groq-AI-f55036?style=for-the-badge)
 
 ---
 
-## 🚀 Lancement
+## ✨ Fonctionnalités Principales
 
-### Option 1 : Double-clic
-Double-cliquez sur [`lancer_dashboard.bat`](file:///c:/Users/chris/Desktop/code/lancer_dashboard.bat).
+- 🔐 **Authentification Sécurisée** : Inscription et connexion gérées par Supabase Auth avec Tokens JWT (Bearer).
+- 🔴 **Données en Direct (Yahoo Finance)** : Actualisation instantanée des cours de bourse et de la valorisation globale du portefeuille.
+- 🤖 **Intelligence Artificielle Financière (Groq)** : 
+  - *Météo des Marchés* : Analyse du sentiment des actualités financières pour chaque action.
+  - *Asset Inspector (BourseAi)* : Synthèse fondamentale, score d'investissement (0-100%), points forts et risques pour n'importe quelle action ou recherche personnalisée.
+  - *Diagnostic Global* : Analyse de la diversification et de l'allocation stratégique de votre PEA.
+- 📊 **Tableaux de bord avancés (ECharts)** : Graphiques interactifs (Évolution temporelle, Treemap de la Heatmap sectorielle, Comparatif PRU vs Cours, Matrice Poids/Performance, Dividendes).
+- 🏢 **Gestion Boursorama** : Import direct des relevés de portefeuille (BoursoBank) formatés en CSV.
+- 📱 **Mobile-First & Responsive** : Interface "Glassmorphism" ultra-fluide avec barre de navigation mobile intuitive.
 
-### Option 2 : Ligne de commande
-```bash
-streamlit run app.py
+---
+
+## 🛠️ Stack Technique
+
+### Frontend (Interface)
+- **Vue 3** (Composition API) & **Vite**
+- **Tailwind CSS** (Design System, Mode sombre, Effets vitrés)
+- **Vue-ECharts** (Visualisation de données et graphiques complexes)
+
+### Backend (API)
+- **FastAPI** (Framework Python 3 asynchrone)
+- **Supabase-py** (Base de données PostgreSQL & Gestion Auth des utilisateurs)
+- **yfinance** (Récupération des flux de cotation en direct)
+- **Groq** (API LLM ultra-rapide pour l'analyse IA)
+- **BeautifulSoup4** (Scraping d'actualités financières et requêtes ZoneBourse)
+
+---
+
+## 🚀 Installation Locale
+
+### 1. Prérequis
+- Node.js & npm
+- Python 3.9+
+- Un compte [Supabase](https://supabase.com)
+- Une clé API [Groq](https://groq.com)
+
+### 2. Configuration Supabase (Base de données)
+Exécutez ce script SQL dans l'éditeur SQL de votre projet Supabase pour créer les tables :
+```sql
+CREATE TABLE snapshots (
+    id SERIAL PRIMARY KEY,
+    user_id UUID REFERENCES auth.users NOT NULL,
+    snapshot_date TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    cash REAL DEFAULT 0.0,
+    valeur_titres REAL DEFAULT 0.0,
+    total_valeur REAL DEFAULT 0.0,
+    cout_investi REAL DEFAULT 0.0,
+    plus_value REAL DEFAULT 0.0
+);
+
+CREATE TABLE snapshot_positions (
+    id SERIAL PRIMARY KEY,
+    snapshot_id INTEGER REFERENCES snapshots(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users NOT NULL,
+    name TEXT,
+    isin TEXT,
+    type TEXT,
+    quantity REAL,
+    buying_price REAL,
+    last_price REAL,
+    amount REAL,
+    amount_variation REAL,
+    variation REAL
+);
+-- Optionnel mais recommandé : Activez le RLS (Row Level Security) sur ces deux tables.
 ```
-Accès web : **[http://localhost:8501](http://localhost:8501)**
+
+### 3. Lancer le Backend (API Python)
+Créez un fichier `.env` à la racine :
+```env
+SUPABASE_URL=votre_url_supabase
+SUPABASE_KEY=votre_cle_anon_supabase
+GROQ_API_KEY=votre_cle_api_groq
+ALLOWED_ORIGINS=http://localhost:5173
+```
+Puis installez les dépendances et lancez le serveur :
+```bash
+pip install -r requirements.txt
+uvicorn backend.main:app --reload --port 8000
+```
+
+### 4. Lancer le Frontend (Vue.js)
+Dans un nouveau terminal :
+```bash
+npm install
+npm run dev
+```
+Accès web : **http://localhost:5173**
+
+---
+
+## 🌍 Déploiement en Production (Cloud)
+
+L'architecture du dépôt est conçue pour être déployée instantanément :
+- **Frontend** : Déployable sur **Vercel** (`vercel.json` inclus pour la gestion du routage SPA). Assurez-vous d'ajouter la variable d'environnement `VITE_API_BASE_URL` pointant vers l'URL du backend.
+- **Backend** : Déployable sur **Render** (`render.yaml` inclus comme blueprint d'infrastructure).
