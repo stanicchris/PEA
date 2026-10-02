@@ -140,3 +140,47 @@ def delete_snapshot(snapshot_id):
     # RLS ensures we only delete our own, but we can also add eq filter just in case
     supabase.table("snapshot_positions").delete().eq("snapshot_id", snapshot_id).eq("user_id", user_id).execute()
     supabase.table("snapshots").delete().eq("id", snapshot_id).eq("user_id", user_id).execute()
+
+def get_latest_portfolio():
+    """Récupère les positions du dernier instantané enregistré pour cet utilisateur."""
+    supabase = get_supabase_client()
+    user_id = st.session_state.get("user_id")
+    if not user_id: return None, 0.0, None
+    
+    try:
+        # Récupérer le dernier snapshot enregistré
+        res_snap = supabase.table("snapshots").select("*").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+        if not res_snap.data:
+            return None, 0.0, None
+        
+        latest_snap = res_snap.data[0]
+        snap_id = latest_snap['id']
+        saved_cash = float(latest_snap.get('cash', 0.0))
+        
+        # Récupérer les positions de ce snapshot
+        res_pos = supabase.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
+        if not res_pos.data:
+            return None, saved_cash, latest_snap
+            
+        df = pd.DataFrame(res_pos.data)
+        
+        # Mapper les noms de colonnes SQL -> pandas attendus par app.py
+        col_mapping = {
+            'buying_price': 'buyingPrice',
+            'last_price': 'lastPrice',
+            'amount_variation': 'amountVariation'
+        }
+        df = df.rename(columns=col_mapping)
+        
+        if 'totalCost' not in df.columns:
+            df['totalCost'] = df['quantity'] * df['buyingPrice']
+        if 'intradayVariation' not in df.columns:
+            df['intradayVariation'] = 0.0
+        if 'intradayAmount' not in df.columns:
+            df['intradayAmount'] = 0.0
+            
+        return df, saved_cash, latest_snap
+    except Exception as e:
+        st.warning(f"Erreur lors de la lecture Supabase : {e}")
+        return None, 0.0, None
+

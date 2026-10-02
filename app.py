@@ -14,7 +14,8 @@ import yfinance as yf
 from database import (
     get_supabase_client, save_snapshot, get_snapshots_df, 
     get_positions_history_df, delete_snapshot, 
-    is_snapshot_saved, extract_date_from_filename
+    is_snapshot_saved, extract_date_from_filename,
+    get_latest_portfolio
 )
 
 # Module BourseAi (ZoneBourse + Synthèse)
@@ -419,67 +420,123 @@ def parse_portfolio_csv(file_content, filename="portfolio.csv"):
     return df
 
 # -------------------------------------------------------------
-# ACTUALISATION YAHOO FINANCE
+# ACTUALISATION YAHOO FINANCE (MIS EN CACHE DYNAMIQUE)
 # -------------------------------------------------------------
 @st.cache_data(ttl=60)
-def fetch_live_quotes(df):
-    updated_df = df.copy()
-    symbols = [s for s in updated_df['yf_symbol'].dropna().unique() if s]
-    if not symbols:
-        return updated_df, "Aucun symbole Yahoo Finance configuré."
+def fetch_market_prices(symbols_tuple):
+    """Récupère les derniers cours de marché Yahoo Finance (cache TTL 60s)."""
+    if not symbols_tuple:
+        return {}
+    results = {}
     try:
-        tickers = yf.Tickers(' '.join(symbols))
-        live_count = 0
-        for idx, row in updated_df.iterrows():
-            sym = row['yf_symbol']
-            if sym and sym in tickers.tickers:
+        tickers = yf.Tickers(' '.join(symbols_tuple))
+        for sym in symbols_tuple:
+            if sym in tickers.tickers:
                 try:
-                    t = tickers.tickers[sym]
-                    info = t.fast_info
+                    info = tickers.tickers[sym].fast_info
                     live_p = info.last_price
                     prev_close = info.previous_close
                     if live_p and live_p > 0:
-                        updated_df.at[idx, 'lastPrice'] = live_p
-                        updated_df.at[idx, 'amount'] = row['quantity'] * live_p
-                        updated_df.at[idx, 'amountVariation'] = updated_df.at[idx, 'amount'] - row['totalCost']
-                        updated_df.at[idx, 'variation'] = (updated_df.at[idx, 'amountVariation'] / row['totalCost'] * 100) if row['totalCost'] > 0 else 0
-                        if prev_close and prev_close > 0:
-                            intra_pct = (live_p - prev_close) / prev_close * 100
-                            updated_df.at[idx, 'intradayVariation'] = intra_pct
-                            updated_df.at[idx, 'intradayAmount'] = updated_df.at[idx, 'amount'] - (updated_df.at[idx, 'amount'] / (1 + intra_pct / 100))
-                        live_count += 1
+                        results[sym] = {
+                            'last_price': float(live_p),
+                            'prev_close': float(prev_close) if prev_close else float(live_p)
+                        }
                 except Exception:
                     pass
-        total_val = updated_df['amount'].sum()
-        updated_df['weight'] = (updated_df['amount'] / total_val * 100) if total_val > 0 else 0.0
-        return updated_df, f"{live_count} cours actualisés en direct !"
     except Exception as e:
-        return updated_df, f"Erreur lors du rafraîchissement : {e}"
+        print(f"Erreur Yahoo Finance : {e}")
+    return results
+
+def apply_live_quotes(df, force_refresh=False):
+    """Applique les cours en direct au DataFrame de portefeuille sans altérer les données de base."""
+    updated_df = df.copy()
+    symbols = tuple(sorted([s for s in updated_df['yf_symbol'].dropna().unique() if s]))
+    if not symbols:
+        return updated_df, "Aucun symbole Yahoo Finance configuré."
+        
+    if force_refresh:
+        fetch_market_prices.clear()
+        
+    quotes = fetch_market_prices(symbols)
+    live_count = 0
+    for idx, row in updated_df.iterrows():
+        sym = row.get('yf_symbol')
+        if sym and sym in quotes:
+            live_p = quotes[sym]['last_price']
+            prev_close = quotes[sym]['prev_close']
+            updated_df.at[idx, 'lastPrice'] = live_p
+            updated_df.at[idx, 'amount'] = row['quantity'] * live_p
+            updated_df.at[idx, 'amountVariation'] = updated_df.at[idx, 'amount'] - row['totalCost']
+            updated_df.at[idx, 'variation'] = (updated_df.at[idx, 'amountVariation'] / row['totalCost'] * 100) if row['totalCost'] > 0 else 0.0
+            if prev_close and prev_close > 0:
+                intra_pct = (live_p - prev_close) / prev_close * 100
+                updated_df.at[idx, 'intradayVariation'] = intra_pct
+                updated_df.at[idx, 'intradayAmount'] = updated_df.at[idx, 'amount'] - (updated_df.at[idx, 'amount'] / (1 + intra_pct / 100))
+            live_count += 1
+            
+    total_val = updated_df['amount'].sum()
+    updated_df['weight'] = (updated_df['amount'] / total_val * 100) if total_val > 0 else 0.0
+    return updated_df, f"⚡ {live_count} cours actualisés en direct !"
 
 # -------------------------------------------------------------
 # SIDEBAR ET PARAMÈTRES
 # -------------------------------------------------------------
-DEFAULT_CSV = "portfolio.csv"
-
 st.sidebar.markdown("## 📊 Source de Données")
-uploaded_file = st.sidebar.file_uploader("Importer un export CSV", type=["csv"])
+uploaded_file = st.sidebar.file_uploader("Importer un nouvel export CSV", type=["csv"], help="Importez un nouveau CSV pour enregistrer ou mettre à jour votre portefeuille en base.")
 
-raw_bytes = None
-source_name = ""
+# -------------------------------------------------------------
+# CHARGEMENT DU PORTEFEUILLE (BASE DE DONNÉES EN PRIORITÉ)
+# -------------------------------------------------------------
+df = None
+default_cash = 500.0
+source_label = ""
 
+# Cas 1 : L'utilisateur a uploadé un nouveau fichier CSV
 if uploaded_file is not None:
     raw_bytes = uploaded_file.getvalue()
     source_name = uploaded_file.name
-    st.sidebar.success(f"Fichier : `{uploaded_file.name}`")
-elif os.path.exists(DEFAULT_CSV):
-    with open(DEFAULT_CSV, "rb") as f:
-        raw_bytes = f.read()
-    source_name = DEFAULT_CSV
-    st.sidebar.info(f"Fichier par défaut : `{DEFAULT_CSV}`")
+    parsed_df = parse_portfolio_csv(raw_bytes, source_name)
+    if parsed_df is not None and not parsed_df.empty:
+        df = parsed_df
+        source_label = f"Fichier importé : `{uploaded_file.name}`"
+        st.sidebar.success(source_label)
+        
+        # Enregistrement automatique dans Supabase
+        snapshot_date_str = extract_date_from_filename(source_name)
+        if not is_snapshot_saved(snapshot_date_str, source_name):
+            save_snapshot(df, cash=default_cash, source_filename=source_name, custom_date=snapshot_date_str)
+            st.toast(f"✅ Instantané du {snapshot_date_str} sauvegardé dans Supabase !", icon="💾")
+
+# Cas 2 : Aucun fichier uploadé dans la session -> chargement depuis Supabase
+if df is None:
+    db_df, saved_cash, latest_snap = get_latest_portfolio()
+    if db_df is not None and not db_df.empty:
+        df = db_df
+        default_cash = saved_cash
+        # Reconstituer les métadonnées (logos, secteurs, yf_symbols) si nécessaire
+        if 'logo_url' not in df.columns or df['logo_url'].isna().all():
+            df['logo_url'] = df.apply(lambda r: resolve_logo_url(r.get('isin'), r.get('name')), axis=1)
+        if 'sector' not in df.columns or df['sector'].isna().all():
+            df['sector'] = df.apply(lambda r: resolve_sector(r.get('isin'), r.get('name')), axis=1)
+        if 'div_yield' not in df.columns or df['div_yield'].isna().all():
+            df['div_yield'] = df.apply(lambda r: resolve_div_yield(r.get('isin'), r.get('name')), axis=1)
+        if 'annual_div_euro' not in df.columns or df['annual_div_euro'].isna().all():
+            df['annual_div_euro'] = df['amount'] * (df['div_yield'] / 100)
+        if 'yf_symbol' not in df.columns or df['yf_symbol'].isna().all():
+            df['yf_symbol'] = df.apply(lambda r: resolve_yf_symbol(r.get('isin'), r.get('name')), axis=1)
+        
+        snap_date_str = latest_snap.get('snapshot_date', '') if latest_snap else ''
+        source_label = f"Base Supabase (Instantané du {snap_date_str})"
+        st.sidebar.info(f"📦 {source_label}")
+
+# Cas 3 : Ni fichier ni BDD -> invite à l'import
+if df is None or df.empty:
+    st.info("👋 **Bienvenue sur votre PEA Tracker !**\n\nVotre compte ne contient encore aucun portefeuille en base de données.\n\nVeuillez importer votre premier fichier CSV (ex: export Boursorama / BoursoBank) dans la barre latérale pour initialiser vos positions.")
+    st.stop()
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("## 💰 Compte Espèces PEA")
-cash = st.sidebar.number_input("Liquidités disponibles (€)", min_value=0.0, value=500.0, step=100.0)
+cash = st.sidebar.number_input("Liquidités disponibles (€)", min_value=0.0, value=float(default_cash), step=100.0)
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("## 🧠 Configuration IA (Groq)")
@@ -497,39 +554,17 @@ st.sidebar.markdown("## 🤖 Configuration BourseAi")
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("## 💾 Base de Données Supabase")
-auto_save = st.sidebar.checkbox("⚡ Auto-enregistrer les nouveaux CSV", value=True)
 db_snapshots = get_snapshots_df()
 nb_snaps_db = len(db_snapshots)
 st.sidebar.caption(f"📦 Historique actuel : **{nb_snaps_db} instantané(s)**")
 
-if raw_bytes is None:
-    st.error("Aucune donnée disponible. Veuillez importer un fichier CSV.")
-    st.stop()
-
-df = parse_portfolio_csv(raw_bytes, source_name)
-if df is None or df.empty:
-    st.error("Impossible de lire les positions du portefeuille.")
-    st.stop()
-
 # Auto-update ou Bouton Live Yahoo Finance
 st.sidebar.markdown("---")
 st.sidebar.markdown("## 🔴 Cours du Marché en Direct")
-if st.sidebar.button("🔄 Rafraîchir les cours (Yahoo Finance)"):
-    # Clear cache to force refresh
-    st.cache_data.clear()
-    
-# Always try to fetch live quotes (it uses cache with 60s TTL)
-df, msg = fetch_live_quotes(df)
-st.sidebar.success(msg)
-
-# Auto-sauvegarde Supabase
-snapshot_date_str = extract_date_from_filename(source_name)
-already_saved_id = is_snapshot_saved(snapshot_date_str, source_name)
-
-if not already_saved_id and auto_save:
-    saved_id = save_snapshot(df, cash=cash, source_filename=source_name, custom_date=snapshot_date_str)
-    st.toast(f"✅ Instantané du {snapshot_date_str} enregistré en base !", icon="💾")
-    st.rerun()
+force_refresh = st.sidebar.button("🔄 Rafraîchir les cours (Yahoo Finance)")
+df, msg = apply_live_quotes(df, force_refresh=force_refresh)
+if force_refresh:
+    st.sidebar.success(msg)
 
 # -------------------------------------------------------------
 # CALCULS STATISTIQUES GLOBAUX
