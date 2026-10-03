@@ -34,8 +34,10 @@
         <div>
           <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Ratio de Sharpe (Est.)</p>
           <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-3xl font-black text-white font-mono">1.64</span>
-            <span class="text-xs text-neonLime font-bold">Excellent</span>
+            <span class="text-3xl font-black text-white font-mono">{{ sharpeRatio }}</span>
+            <span class="text-xs text-neonLime font-bold" v-if="sharpeRatio >= 1.5">Excellent</span>
+            <span class="text-xs text-amber-400 font-bold" v-else-if="sharpeRatio >= 1.0">Bon</span>
+            <span class="text-xs text-roseAcc font-bold" v-else>Faible</span>
           </div>
           <p class="text-white/40 text-[10px] mt-1">Surperformance nette du taux sans risque</p>
         </div>
@@ -48,10 +50,12 @@
         <div>
           <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Beta vs CAC 40</p>
           <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-3xl font-black text-white font-mono">0.88</span>
-            <span class="text-xs text-white/60">Défensif</span>
+            <span class="text-3xl font-black text-white font-mono">{{ betaCac40 }}</span>
+            <span class="text-xs text-white/60" v-if="betaCac40 < 1.0">Défensif</span>
+            <span class="text-xs text-white/60" v-else-if="betaCac40 > 1.1">Agressif</span>
+            <span class="text-xs text-white/60" v-else>Neutre</span>
           </div>
-          <p class="text-white/40 text-[10px] mt-1">Volatilité 12% inférieure à l'indice</p>
+          <p class="text-white/40 text-[10px] mt-1">Sensibilité du portefeuille au marché</p>
         </div>
         <div class="w-12 h-12 rounded-2xl liquid-glass-subtle border border-white/10 flex items-center justify-center text-white/80 text-xl shadow-inner">
           🛡️
@@ -215,18 +219,36 @@ const breakdownMode = ref('sector');
 
 const totalVal = computed(() => props.summary?.total_value || 36100);
 
-const diversificationScore = computed(() => {
-  const count = props.positions.length;
-  if (count >= 10) return 92;
-  if (count >= 6) return 78;
-  return 55;
-});
-
-const avgDividendYield = computed(() => 3.15);
+const diversificationScore = ref(55);
+const avgDividendYield = ref(0.0);
+const sharpeRatio = ref(1.64);
+const betaCac40 = ref(0.88);
 
 const annualDividendEstimate = computed(() => {
   return totalVal.value * (avgDividendYield.value / 100);
 });
+
+import { getApiBase } from '../config';
+
+const fetchAnalyticsData = async () => {
+  try {
+    const uid = localStorage.getItem('pea_user_id');
+    if (!uid) return;
+    const res = await fetch(`${getApiBase()}/api/analytics/metrics?user_id=${uid}`);
+    if (res.ok) {
+      const data = await res.json();
+      diversificationScore.value = data.diversification_score || 55;
+      avgDividendYield.value = data.avg_dividend_yield || 0;
+      sharpeRatio.value = data.sharpe_ratio || 1.64;
+      betaCac40.value = data.beta_cac40 || 0.88;
+    }
+  } catch (e) {
+    console.error("Failed to fetch analytics metrics", e);
+  }
+};
+
+import { onMounted } from 'vue';
+onMounted(fetchAnalyticsData);
 
 const topWeightedPositions = computed(() => {
   const tVal = totalVal.value || 1;
