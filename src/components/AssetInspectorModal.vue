@@ -1,7 +1,7 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
     <!-- Backdrop -->
-    <div class="absolute inset-0 bg-black/80 backdrop-blur-md" @click="$emit('close')"></div>
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" @click="$emit('close')"></div>
     
     <!-- Modal Content -->
     <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto glass-card border border-white/[0.08] rounded-36 shadow-2xl bg-[#111419] p-8 flex flex-col text-white">
@@ -16,7 +16,7 @@
           <h2 class="text-3xl font-black text-white tracking-tight">{{ asset?.name }}</h2>
           <p class="text-white/50 text-xs mt-0.5 font-medium">{{ asset?.sector }}</p>
         </div>
-        <button @click="$emit('close')" class="text-white/40 hover:text-white transition-colors bg-white/[0.04] hover:bg-white/[0.08] p-2.5 rounded-full">
+        <button @click="$emit('close')" class="text-white/40 hover:text-white transition-colors bg-white/[0.04] hover:bg-white/[0.08] p-2.5 rounded-full cursor-pointer">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -27,7 +27,7 @@
           <div class="absolute inset-0 border-4 border-white/10 rounded-full"></div>
           <div class="absolute inset-0 border-4 border-neonLime rounded-full border-t-transparent animate-spin"></div>
         </div>
-        <p class="text-white/50 animate-pulse font-medium text-sm">Groq AI compile les fondamentaux et ratios en temps réel...</p>
+        <p class="text-white/50 animate-pulse font-medium text-sm">Analyse instantanée des fondamentaux et ratios en direct...</p>
       </div>
       
       <!-- Error State -->
@@ -70,23 +70,21 @@
                 <p class="text-xl font-bold text-lavender font-mono">{{ analysis.metrics?.div_yield?.toFixed(2) }} %</p>
              </div>
              <div class="bg-[#16191E] rounded-24 p-4 border border-white/[0.06]">
-                <p class="text-white/40 text-[10px] font-semibold mb-1 uppercase tracking-wider font-mono">PER</p>
-                <p class="text-xl font-bold text-white font-mono">{{ analysis.metrics?.per?.toFixed(1) }}x</p>
+                <p class="text-white/40 text-[10px] font-semibold mb-1 uppercase tracking-wider font-mono">Recommandation</p>
+                <p class="text-base font-bold text-neonLime font-mono">{{ analysis.metrics?.recommendation || 'ACHAT' }}</p>
              </div>
           </div>
         </div>
 
-        <!-- Summary -->
-        <div class="bg-neonPurple/10 rounded-28 p-6 border border-neonPurple/20 relative overflow-hidden">
-          <div class="absolute -right-10 -top-10 w-32 h-32 bg-neonPurple/10 rounded-full blur-3xl"></div>
-          <h3 class="text-xs font-bold text-lavender uppercase tracking-widest mb-2 flex items-center gap-2 font-mono">
-            <span>✦</span>
-            Synthèse Fondamentale
-          </h3>
-          <p class="text-white/90 leading-relaxed font-medium text-sm">{{ analysis.summary }}</p>
+        <!-- Synthesis Box -->
+        <div class="bg-[#16191E] rounded-28 p-6 border border-white/[0.06]">
+          <h4 class="text-white/40 font-bold text-xs uppercase tracking-widest mb-2 font-mono">Synthèse Fondamentale & Activité</h4>
+          <p class="text-white/90 leading-relaxed font-medium text-sm">
+            {{ analysis.summary }}
+          </p>
         </div>
 
-        <!-- Pros & Cons -->
+        <!-- Pros and Cons -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-neonLime/10 border border-neonLime/20 rounded-28 p-5">
             <h4 class="text-neonLime font-bold mb-3 flex items-center gap-2 text-sm">
@@ -126,18 +124,27 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { getApiBase } from '../config';
 
 const props = defineProps({
   isOpen: Boolean,
   asset: Object
 });
-defineEmits(['close']);
+const emit = defineEmits(['close']);
 
 const isLoading = ref(false);
 const error = ref(null);
 const analysis = ref(null);
+
+const handleKeydown = (e) => {
+  if (e.key === 'Escape' && props.isOpen) {
+    emit('close');
+  }
+};
+
+onMounted(() => window.addEventListener('keydown', handleKeydown));
+onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 
 watch(() => props.isOpen, async (newVal) => {
   if (newVal && props.asset) {
@@ -147,7 +154,9 @@ watch(() => props.isOpen, async (newVal) => {
     try {
       const apiBase = getApiBase();
       const qName = encodeURIComponent(props.asset.name);
-      const res = await fetch(`${apiBase}/api/stock/analyze/${props.asset.ticker}?name=${qName}`, { headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') } });
+      const res = await fetch(`${apiBase}/api/stock/analyze/${props.asset.ticker || props.asset.name}?name=${qName}`, { 
+        headers: { Authorization: 'Bearer ' + (localStorage.getItem('pea_access_token') || '') } 
+      });
       if (!res.ok) throw new Error("Erreur de récupération de l'analyse");
       analysis.value = await res.json();
     } catch (err) {
