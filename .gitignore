@@ -1,4 +1,6 @@
-# Python
+# ===================================
+# Python & Bytecode
+# ===================================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -8,14 +10,19 @@ dist/
 *.egg-info/
 .installed.cfg
 *.egg
+.pytest_cache/
 
+# ===================================
 # Virtual Environments
+# ===================================
 venv/
 .venv/
 env/
 ENV/
 
-# Node.js & Vite
+# ===================================
+# Node.js & Frontend Builds
+# ===================================
 node_modules/
 dist/
 dist-ssr/
@@ -25,27 +32,37 @@ yarn-debug.log*
 yarn-error.log*
 .npm/
 
-# Environment variables & Secrets (NEVER COMMIT SECRETS)
+# ===================================
+# Environment Variables & Secrets
+# ===================================
 .env
 .env.*
 .streamlit/secrets.toml
 secrets.toml
 
-# Local databases & exports with personal data
-portfolio.db
+# ===================================
+# Local Databases, Exports & Data Files
+# ===================================
 *.db
 *.sqlite3
 *.csv
-portefeuille_demo.csv
+*.xlsx
+*.tsv
+*.jsonl
 
-# OS generated
+# ===================================
+# Agent Customizations & Dev Tools
+# (Skills are saved globally in ~/.gemini/config/skills)
+# ===================================
+.agents/
+.agent/
+_agents/
+.devcontainer/
+*.log
+
+# ===================================
+# OS Generated Files
+# ===================================
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# Old Scripts & Temporary files
-app.py
-database.py
-lancer_dashboard.bat
-test.py
-patch_api.py
