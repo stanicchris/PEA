@@ -1,15 +1,15 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <!-- Backdrop -->
-    <div class="absolute inset-0 bg-black/80 backdrop-blur-md" @click="$emit('close')"></div>
+    <!-- Backdrop with blur -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-xl cursor-pointer" @click="$emit('close')"></div>
     
-    <!-- Modal Content -->
-    <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto glass-card border border-white/[0.08] rounded-36 shadow-2xl bg-[#111419] p-8 flex flex-col text-white">
+    <!-- Modal Content (Liquid Glass) -->
+    <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto liquid-glass-chassis rounded-36 shadow-2xl p-8 flex flex-col text-white specular-highlight border border-white/15">
       
       <!-- Header -->
       <div class="flex justify-between items-start mb-6">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-neonPurple/15 border border-neonPurple/30 flex items-center justify-center text-lavender font-bold">
+          <div class="w-10 h-10 rounded-2xl bg-neonPurple/15 border border-neonPurple/30 flex items-center justify-center text-lavender font-bold shadow-[0_0_15px_rgba(139,92,246,0.3)]">
             ✦
           </div>
           <div>
@@ -18,7 +18,7 @@
           </div>
         </div>
 
-        <button @click="$emit('close')" class="text-white/40 hover:text-white transition-colors bg-white/[0.04] hover:bg-white/[0.08] p-2.5 rounded-full">
+        <button @click="$emit('close')" class="text-white/40 hover:text-white transition-colors liquid-glass-subtle hover:border-white/20 p-2.5 rounded-full cursor-pointer active:scale-95">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -35,7 +35,7 @@
       <!-- Content -->
       <div v-else-if="diagnostic" class="space-y-6">
         <!-- Global Diagnostic Summary -->
-        <div class="bg-gradient-to-br from-neonPurple/10 to-transparent rounded-28 p-6 border border-neonPurple/20">
+        <div class="liquid-glass-card rounded-28 p-6 border border-neonPurple/30 shadow-[0_0_25px_rgba(139,92,246,0.12)] specular-highlight">
           <h3 class="text-xs font-bold text-lavender uppercase tracking-widest mb-3 font-mono">Synthèse Stratégique Globale</h3>
           <p class="text-white/90 leading-relaxed font-medium text-sm sm:text-[15px]">
             {{ diagnostic.diagnostic_global }}
@@ -43,10 +43,10 @@
         </div>
 
         <!-- Recommendations Grid -->
-        <div v-if="diagnostic.recommandations_pea?.length" class="bg-[#16191E] rounded-28 p-6 border border-white/[0.06]">
+        <div v-if="diagnostic.recommandations_pea?.length" class="liquid-glass-card rounded-28 p-6 specular-highlight">
           <h4 class="text-white/40 font-bold text-xs uppercase tracking-widest mb-4 font-mono">Plan d'Action Recommandé</h4>
           <div class="space-y-3">
-            <div v-for="(rec, idx) in diagnostic.recommandations_pea" :key="idx" class="flex gap-3 items-start bg-white/[0.03] rounded-2xl p-4 border border-white/[0.04] hover:bg-white/[0.06] transition-all">
+            <div v-for="(rec, idx) in diagnostic.recommandations_pea" :key="idx" class="flex gap-3 items-start liquid-glass-subtle rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all">
               <div class="text-neonLime mt-0.5 text-base">💡</div>
               <p class="text-white/80 text-xs sm:text-sm leading-relaxed font-medium">{{ rec }}</p>
             </div>
@@ -55,25 +55,25 @@
 
         <!-- Pros & Weaknesses -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-neonLime/10 border border-neonLime/20 rounded-28 p-5">
+          <div class="bg-neonLime/10 border border-neonLime/20 rounded-28 p-5 shadow-[0_0_20px_rgba(163,230,53,0.08)]">
             <h4 class="text-neonLime font-bold mb-3 flex items-center gap-2 text-xs uppercase tracking-wider font-mono">
               <span>↗</span>
               Forces du Portefeuille
             </h4>
             <div class="text-white/80 text-xs leading-relaxed space-y-2">
-              <p v-for="(pro, idx) in (diagnostic.points_forts || [])" :key="idx" class="flex items-start gap-2">
+              <p v-for="(pro, idx) in (diagnostic.points_forts || [])" :key="'p'+idx" class="flex items-start gap-2">
                 <span class="text-neonLime mt-0.5">&bull;</span> {{ pro }}
               </p>
             </div>
           </div>
 
-          <div class="bg-roseAcc/10 border border-roseAcc/20 rounded-28 p-5">
+          <div class="bg-roseAcc/10 border border-roseAcc/20 rounded-28 p-5 shadow-[0_0_20px_rgba(244,63,94,0.08)]">
             <h4 class="text-roseAcc font-bold mb-3 flex items-center gap-2 text-xs uppercase tracking-wider font-mono">
               <span>↘</span>
               Risques & Vigilances
             </h4>
             <div class="text-white/80 text-xs leading-relaxed space-y-2">
-              <p v-for="(weak, idx) in (diagnostic.points_faibles || [])" :key="idx" class="flex items-start gap-2">
+              <p v-for="(weak, idx) in (diagnostic.points_faibles || [])" :key="'w'+idx" class="flex items-start gap-2">
                 <span class="text-roseAcc mt-0.5">&bull;</span> {{ weak }}
               </p>
             </div>

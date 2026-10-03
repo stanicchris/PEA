@@ -2,21 +2,21 @@
   <div class="space-y-6">
     <!-- Top KPI Banner -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="glass-card rounded-28 p-5 border border-white/[0.08] flex items-center justify-between">
+      <div class="liquid-glass-card rounded-28 p-5 flex items-center justify-between specular-highlight group">
         <div>
           <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Score Diversification</p>
           <div class="flex items-baseline gap-2 mt-1">
             <span class="text-3xl font-black text-neonLime font-mono">{{ diversificationScore }}/100</span>
-            <span class="text-xs text-white/50">Optimal</span>
+            <span class="text-xs text-white/60">Optimal</span>
           </div>
           <p class="text-white/40 text-[10px] mt-1">{{ positions.length }} lignes actives sur {{ topSectorSummary.length }} secteurs</p>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-neonLime/10 border border-neonLime/20 flex items-center justify-center text-neonLime text-xl">
+        <div class="w-12 h-12 rounded-2xl bg-neonLime/15 border border-neonLime/30 flex items-center justify-center text-neonLime text-xl shadow-[0_0_15px_rgba(163,230,53,0.2)]">
           🎯
         </div>
       </div>
 
-      <div class="glass-card rounded-28 p-5 border border-white/[0.08] flex items-center justify-between">
+      <div class="liquid-glass-card rounded-28 p-5 flex items-center justify-between specular-highlight group">
         <div>
           <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Rendement Dividendes</p>
           <div class="flex items-baseline gap-2 mt-1">
@@ -25,12 +25,12 @@
           </div>
           <p class="text-white/40 text-[10px] mt-1">Revenus passifs réinvestis sans impôt</p>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-lavender/10 border border-lavender/20 flex items-center justify-center text-lavender text-xl">
+        <div class="w-12 h-12 rounded-2xl bg-lavender/15 border border-lavender/30 flex items-center justify-center text-lavender text-xl shadow-[0_0_15px_rgba(167,139,250,0.2)]">
           💰
         </div>
       </div>
 
-      <div class="glass-card rounded-28 p-5 border border-white/[0.08] flex items-center justify-between">
+      <div class="liquid-glass-card rounded-28 p-5 flex items-center justify-between specular-highlight group">
         <div>
           <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Ratio de Sharpe (Est.)</p>
           <div class="flex items-baseline gap-2 mt-1">
@@ -39,21 +39,21 @@
           </div>
           <p class="text-white/40 text-[10px] mt-1">Surperformance nette du taux sans risque</p>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/70 text-xl">
+        <div class="w-12 h-12 rounded-2xl liquid-glass-subtle border border-white/10 flex items-center justify-center text-white/80 text-xl shadow-inner">
           ⚡
         </div>
       </div>
 
-      <div class="glass-card rounded-28 p-5 border border-white/[0.08] flex items-center justify-between">
+      <div class="liquid-glass-card rounded-28 p-5 flex items-center justify-between specular-highlight group">
         <div>
           <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Beta vs CAC 40</p>
           <div class="flex items-baseline gap-2 mt-1">
             <span class="text-3xl font-black text-white font-mono">0.88</span>
-            <span class="text-xs text-white/50">Défensif</span>
+            <span class="text-xs text-white/60">Défensif</span>
           </div>
           <p class="text-white/40 text-[10px] mt-1">Volatilité 12% inférieure à l'indice</p>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/70 text-xl">
+        <div class="w-12 h-12 rounded-2xl liquid-glass-subtle border border-white/10 flex items-center justify-center text-white/80 text-xl shadow-inner">
           🛡️
         </div>
       </div>
@@ -62,20 +62,20 @@
     <!-- Middle Section : 2 Major Deep Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Chart 1 : Benchmark Comparison (Portfolio vs CAC 40 vs MSCI World) -->
-      <div class="lg:col-span-7 glass-card rounded-32 p-7 border border-white/[0.08] flex flex-col justify-between">
+      <div class="lg:col-span-7 liquid-glass-card rounded-32 p-7 flex flex-col justify-between specular-highlight">
         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
           <div>
             <h3 class="text-white font-bold text-lg tracking-tight">Comparatif de Performance vs Indices</h3>
             <p class="text-white/40 text-xs">Évolution normalisée en base 100 basée sur votre performance réelle</p>
           </div>
           
-          <div class="flex items-center gap-1.5 bg-white/[0.04] p-1 rounded-full border border-white/[0.06] text-xs">
+          <div class="flex items-center gap-1.5 liquid-glass-subtle p-1 rounded-full border border-white/10 text-xs shadow-inner">
             <button 
               v-for="timeframe in ['6M', '1A', '3A', 'ALL']" 
               :key="timeframe"
               @click="selectedBenchmarkPeriod = timeframe"
-              :class="selectedBenchmarkPeriod === timeframe ? 'bg-white/[0.15] text-white font-bold' : 'text-white/40 hover:text-white'"
-              class="px-3 py-1 rounded-full transition-all cursor-pointer"
+              :class="selectedBenchmarkPeriod === timeframe ? 'bg-white/[0.18] text-white font-bold shadow-sm border border-white/20' : 'text-white/40 hover:text-white border border-transparent'"
+              class="px-3 py-1 rounded-full transition-all cursor-pointer active:scale-95"
             >
               {{ timeframe }}
             </button>
@@ -86,42 +86,42 @@
           <v-chart class="w-full h-full" :option="benchmarkChartOption" autoresize />
         </div>
 
-        <div class="pt-4 border-t border-white/[0.06] flex items-center justify-around text-xs font-mono">
+        <div class="pt-4 border-t border-white/[0.08] flex items-center justify-around text-xs font-mono">
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-neonLime"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-neonLime shadow-[0_0_8px_rgba(163,230,53,0.6)]"></span>
             <span class="text-white font-bold">Mon PEA : +{{ (summary?.global_performance_pct || 26.7).toFixed(1) }}%</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-lavender"></span>
-            <span class="text-white/70">MSCI World : +14.2%</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-lavender shadow-[0_0_8px_rgba(167,139,250,0.6)]"></span>
+            <span class="text-white/80">MSCI World : +14.2%</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-white/30"></span>
-            <span class="text-white/50">CAC 40 GR : +8.7%</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-white/40"></span>
+            <span class="text-white/60">CAC 40 GR : +8.7%</span>
           </div>
         </div>
       </div>
 
       <!-- Chart 2 : Sector & Geography Breakdown Donut -->
-      <div class="lg:col-span-5 glass-card rounded-32 p-7 border border-white/[0.08] flex flex-col justify-between">
+      <div class="lg:col-span-5 liquid-glass-card rounded-32 p-7 flex flex-col justify-between specular-highlight">
         <div class="flex justify-between items-center mb-4">
           <div>
             <h3 class="text-white font-bold text-lg tracking-tight">Répartition Réelle du Portefeuille</h3>
             <p class="text-white/40 text-xs">Calculé sur la valeur actuelle exacte de vos {{ positions.length }} titres</p>
           </div>
 
-          <div class="flex items-center gap-1 bg-white/[0.04] p-1 rounded-full border border-white/[0.06] text-xs">
+          <div class="flex items-center gap-1 liquid-glass-subtle p-1 rounded-full border border-white/10 text-xs shadow-inner">
             <button 
               @click="breakdownMode = 'sector'"
-              :class="breakdownMode === 'sector' ? 'bg-white/[0.15] text-white font-bold' : 'text-white/40 hover:text-white'"
-              class="px-2.5 py-1 rounded-full transition-all cursor-pointer"
+              :class="breakdownMode === 'sector' ? 'bg-white/[0.18] text-white font-bold shadow-sm border border-white/20' : 'text-white/40 hover:text-white border border-transparent'"
+              class="px-2.5 py-1 rounded-full transition-all cursor-pointer active:scale-95"
             >
               Secteurs
             </button>
             <button 
               @click="breakdownMode = 'holdings'"
-              :class="breakdownMode === 'holdings' ? 'bg-white/[0.15] text-white font-bold' : 'text-white/40 hover:text-white'"
-              class="px-2.5 py-1 rounded-full transition-all cursor-pointer"
+              :class="breakdownMode === 'holdings' ? 'bg-white/[0.18] text-white font-bold shadow-sm border border-white/20' : 'text-white/40 hover:text-white border border-transparent'"
+              class="px-2.5 py-1 rounded-full transition-all cursor-pointer active:scale-95"
             >
               Titres
             </button>
@@ -132,10 +132,10 @@
           <v-chart class="w-full h-full" :option="sectorChartOption" autoresize />
         </div>
 
-        <div class="space-y-1.5 pt-3 border-t border-white/[0.06]">
+        <div class="space-y-1.5 pt-3 border-t border-white/[0.08]">
           <div v-for="(item, idx) in topSectorSummary.slice(0, 4)" :key="idx" class="flex justify-between items-center text-xs">
             <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: item.color }"></span>
+              <span class="w-2 h-2 rounded-full shadow-sm" :style="{ backgroundColor: item.color }"></span>
               <span class="text-white/80 font-medium">{{ item.name }}</span>
             </div>
             <span class="font-mono font-bold text-white">{{ item.percent.toFixed(1) }} %</span>
@@ -147,13 +147,13 @@
     <!-- Bottom Section : Calendrier Dividendes & Matrice Risque -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Calendrier Mensuel des Dividendes -->
-      <div class="lg:col-span-7 glass-card rounded-32 p-7 border border-white/[0.08]">
+      <div class="lg:col-span-7 liquid-glass-card rounded-32 p-7 specular-highlight">
         <div class="flex justify-between items-center mb-4">
           <div>
             <h3 class="text-white font-bold text-lg tracking-tight">Calendrier Prévisionnel des Dividendes (12 Mois)</h3>
             <p class="text-white/40 text-xs">Estimation des versements de coupons basée sur votre portefeuille</p>
           </div>
-          <span class="px-3 py-1 rounded-full bg-lavender/15 border border-lavender/30 text-lavender font-mono text-xs font-bold">
+          <span class="px-3 py-1 rounded-full bg-lavender/15 border border-lavender/30 text-lavender font-mono text-xs font-bold shadow-[0_0_10px_rgba(167,139,250,0.2)]">
             Total : {{ annualDividendEstimate.toFixed(2) }} €
           </span>
         </div>
@@ -164,14 +164,14 @@
       </div>
 
       <!-- Top Pondérations & Risque de Concentration -->
-      <div class="lg:col-span-5 glass-card rounded-32 p-7 border border-white/[0.08] flex flex-col justify-between">
+      <div class="lg:col-span-5 liquid-glass-card rounded-32 p-7 flex flex-col justify-between specular-highlight">
         <div>
           <h3 class="text-white font-bold text-lg tracking-tight mb-1">Top Pondérations Réelles</h3>
           <p class="text-white/40 text-xs mb-4">Poids exact de chaque actif sur votre capital total de {{ totalVal.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) }} €</p>
         </div>
 
         <div class="space-y-3">
-          <div v-for="pos in topWeightedPositions" :key="pos.ticker || pos.name" class="bg-white/[0.02] p-3 rounded-20 border border-white/[0.04]">
+          <div v-for="pos in topWeightedPositions" :key="pos.ticker || pos.name" class="liquid-glass-subtle p-3 rounded-20 border border-white/10">
             <div class="flex justify-between items-center text-xs mb-1.5">
               <div class="flex items-center gap-2">
                 <span class="font-bold text-white">{{ pos.name }}</span>
@@ -180,12 +180,12 @@
               <span class="font-mono font-bold text-neonLime">{{ pos.weight.toFixed(1) }} % ({{ pos.val.toFixed(2) }} €)</span>
             </div>
             <div class="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-              <div class="h-full rounded-full bg-gradient-to-r from-neonPurple to-neonLime" :style="{ width: Math.min(100, pos.weight * 2.5) + '%' }"></div>
+              <div class="h-full rounded-full bg-gradient-to-r from-neonPurple to-neonLime shadow-sm" :style="{ width: Math.min(100, pos.weight * 2.5) + '%' }"></div>
             </div>
           </div>
         </div>
 
-        <div class="pt-3 border-t border-white/[0.06] flex items-center gap-2 text-white/40 text-xs mt-3">
+        <div class="pt-3 border-t border-white/[0.08] flex items-center gap-2 text-white/40 text-xs mt-3">
           <span class="text-neonLime text-base">ℹ️</span>
           <span>Règle des 15% : Concentration équilibrée sur les premières lignes.</span>
         </div>

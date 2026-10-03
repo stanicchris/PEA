@@ -1,15 +1,15 @@
 <template>
-  <div class="glass-card rounded-32 p-7 flex flex-col justify-between h-full relative overflow-hidden">
+  <div class="liquid-glass-card rounded-32 p-7 flex flex-col justify-between h-full relative overflow-hidden group specular-highlight">
     <!-- Top Header -->
     <div class="flex justify-between items-center mb-2">
       <div class="flex items-center gap-2">
         <h3 class="text-white font-bold text-lg tracking-tight">Allocation</h3>
-        <span class="text-[10px] font-mono font-bold text-white/40 bg-white/[0.04] px-2 py-0.5 rounded-full">3 Niveaux</span>
+        <span class="text-[10px] font-mono font-bold text-neonLime/90 bg-neonLime/10 border border-neonLime/20 px-2 py-0.5 rounded-full">3 Niveaux</span>
       </div>
       
       <button 
         @click="cycleView" 
-        class="w-8 h-8 rounded-full bg-white/[0.03] hover:bg-white/[0.08] text-white/40 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+        class="w-8 h-8 rounded-full liquid-glass-subtle hover:bg-white/10 text-white/50 hover:text-white flex items-center justify-center transition-all cursor-pointer hover:border-white/20 active:scale-95"
         title="Changer de vue d'allocation"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -24,19 +24,19 @@
       <v-chart v-else class="w-full h-full" :option="ringOption" autoresize />
       
       <div v-if="!isLoading" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-        <div class="text-2xl font-black text-white tracking-tight leading-none">{{ allocationPercent }}%</div>
-        <div class="text-[11px] text-white/40 font-medium mt-1 uppercase tracking-wider">Investi</div>
+        <div class="text-2xl font-black text-white tracking-tight leading-none drop-shadow-sm">{{ allocationPercent }}%</div>
+        <div class="text-[11px] text-white/40 font-semibold mt-1 uppercase tracking-wider">Investi</div>
       </div>
     </div>
 
     <!-- Bottom Categories Legend with Values -->
-    <div class="space-y-2.5 pt-2 border-t border-white/[0.06]">
+    <div class="space-y-2.5 pt-3 border-t border-white/[0.08]">
       <div v-for="(cat, idx) in categories" :key="idx" class="flex items-center justify-between text-xs">
         <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: cat.color }"></span>
-          <span class="text-white/70 font-medium">{{ cat.name }}</span>
+          <span class="w-2.5 h-2.5 rounded-full shadow-sm" :style="{ backgroundColor: cat.color }"></span>
+          <span class="text-white/80 font-medium">{{ cat.name }}</span>
         </div>
-        <div class="font-mono text-white/90 font-semibold tabular-numbers">
+        <div class="font-mono text-white font-semibold tabular-numbers">
           {{ cat.value.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) }} €
         </div>
       </div>

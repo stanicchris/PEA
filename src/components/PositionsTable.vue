@@ -1,11 +1,11 @@
 <template>
-  <div class="glass-card rounded-32 p-7 relative overflow-hidden mt-6">
+  <div class="liquid-glass-card rounded-32 p-7 relative overflow-hidden mt-6 specular-highlight">
     <!-- Header with Search & Quick Filter Badges -->
     <div class="flex flex-col lg:flex-row justify-between lg:items-center gap-4 mb-6">
       <div>
         <div class="flex items-center gap-3">
           <h3 class="text-white font-bold text-xl tracking-tight">Tableau Détaillé des Positions</h3>
-          <span class="px-2.5 py-0.5 rounded-full bg-white/[0.06] text-white/60 text-xs font-mono font-bold">
+          <span class="px-2.5 py-0.5 rounded-full bg-white/[0.08] text-white/80 text-xs font-mono font-bold border border-white/10 shadow-inner">
             {{ filteredAndSortedPositions.length }} / {{ positions.length }} actifs
           </span>
         </div>
@@ -15,7 +15,7 @@
       <!-- Filters & Search -->
       <div class="flex items-center gap-3 flex-wrap">
         <!-- Quick category filter pills -->
-        <div class="flex items-center gap-1.5 bg-white/[0.04] p-1 rounded-full border border-white/[0.06] text-xs">
+        <div class="flex items-center gap-1.5 liquid-glass-subtle p-1 rounded-full border border-white/10 text-xs shadow-inner">
           <button 
             v-for="f in [
               { key: 'all', label: 'Tous' },
@@ -25,8 +25,8 @@
             ]" 
             :key="f.key"
             @click="categoryFilter = f.key"
-            :class="categoryFilter === f.key ? 'bg-white/[0.15] text-white font-bold' : 'text-white/40 hover:text-white'"
-            class="px-3 py-1 rounded-full transition-all cursor-pointer"
+            :class="categoryFilter === f.key ? 'bg-white/[0.18] text-white font-bold shadow-sm border border-white/20' : 'text-white/40 hover:text-white border border-transparent'"
+            class="px-3 py-1 rounded-full transition-all cursor-pointer active:scale-95"
           >
             {{ f.label }}
           </button>
@@ -38,7 +38,7 @@
             type="text" 
             v-model="searchFilter" 
             placeholder="Filtrer (ex: LVMH, AI)..." 
-            class="w-full bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-2 pl-9 text-xs text-white placeholder-white/30 focus:outline-none focus:border-neonLime transition-all"
+            class="w-full liquid-glass-subtle rounded-full px-4 py-2 pl-9 text-xs text-white placeholder-white/40 focus:outline-none focus:border-neonLime/60 focus:ring-1 focus:ring-neonLime/30 transition-all shadow-inner"
           />
           <svg class="w-3.5 h-3.5 text-white/40 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>

@@ -1,54 +1,54 @@
 <template>
-  <div class="glass-card rounded-32 p-7 flex flex-col justify-between h-full relative overflow-hidden">
+  <div class="liquid-glass-card rounded-32 p-7 flex flex-col justify-between h-full relative overflow-hidden group specular-highlight">
     <!-- Top Row: Title + Legend Pills + View Mode Toggle -->
     <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
       <div>
-        <div class="flex items-center gap-2 mb-1">
+        <div class="flex items-center gap-2 mb-1.5">
           <h3 class="text-white font-bold text-lg tracking-tight">Analytics Performance</h3>
-          <span class="text-[10px] font-mono text-neonLime bg-neonLime/10 px-2 py-0.5 rounded-full font-bold">
+          <span class="text-[10px] font-mono text-neonLime bg-neonLime/10 border border-neonLime/20 px-2 py-0.5 rounded-full font-bold shadow-[0_0_8px_rgba(163,230,53,0.15)]">
             {{ activePeriod }}
           </span>
         </div>
         
         <!-- Clickable category filters -->
-        <div class="flex items-center gap-2 text-xs">
+        <div class="flex items-center gap-2 text-xs flex-wrap">
           <button 
             @click="toggleLayer('stocks')"
-            :class="visibleLayers.stocks ? 'bg-neonPurple/20 border-neonPurple/40 text-lavender' : 'bg-white/[0.04] text-white/30 border-white/[0.04]'"
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all cursor-pointer"
+            :class="visibleLayers.stocks ? 'bg-neonPurple/20 border-neonPurple/40 text-lavender' : 'liquid-glass-subtle text-white/30 border-white/[0.04]'"
+            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all cursor-pointer active:scale-95"
           >
-            <span class="w-2 h-2 rounded-full" :class="visibleLayers.stocks ? 'bg-neonPurple' : 'bg-white/20'"></span>
+            <span class="w-2 h-2 rounded-full shadow-sm" :class="visibleLayers.stocks ? 'bg-neonPurple' : 'bg-white/20'"></span>
             <span>Actions ({{ (stocksVal / (totalVal || 1) * 100).toFixed(0) }}%)</span>
           </button>
 
           <button 
             @click="toggleLayer('etfs')"
-            :class="visibleLayers.etfs ? 'bg-lavender/20 border-lavender/40 text-lavenderLight' : 'bg-white/[0.04] text-white/30 border-white/[0.04]'"
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all cursor-pointer"
+            :class="visibleLayers.etfs ? 'bg-cyanAcc/20 border-cyanAcc/40 text-cyan-200' : 'liquid-glass-subtle text-white/30 border-white/[0.04]'"
+            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all cursor-pointer active:scale-95"
           >
-            <span class="w-2 h-2 rounded-full" :class="visibleLayers.etfs ? 'bg-lavenderLight' : 'bg-white/20'"></span>
+            <span class="w-2 h-2 rounded-full shadow-sm" :class="visibleLayers.etfs ? 'bg-cyanAcc' : 'bg-white/20'"></span>
             <span>ETFs ({{ (etfsVal / (totalVal || 1) * 100).toFixed(0) }}%)</span>
           </button>
 
           <button 
             @click="toggleLayer('cash')"
-            :class="visibleLayers.cash ? 'bg-neonLime/20 border-neonLime/40 text-neonLime' : 'bg-white/[0.04] text-white/30 border-white/[0.04]'"
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all cursor-pointer"
+            :class="visibleLayers.cash ? 'bg-neonLime/20 border-neonLime/40 text-neonLime' : 'liquid-glass-subtle text-white/30 border-white/[0.04]'"
+            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all cursor-pointer active:scale-95"
           >
-            <span class="w-2 h-2 rounded-full" :class="visibleLayers.cash ? 'bg-neonLime' : 'bg-white/20'"></span>
+            <span class="w-2 h-2 rounded-full shadow-sm" :class="visibleLayers.cash ? 'bg-neonLime' : 'bg-white/20'"></span>
             <span>Cash</span>
           </button>
         </div>
       </div>
 
       <!-- Timeframe selector -->
-      <div class="flex items-center gap-1 bg-white/[0.04] p-1 rounded-full border border-white/[0.06] text-xs self-end sm:self-auto">
+      <div class="flex items-center gap-1 liquid-glass-subtle p-1 rounded-full border border-white/10 text-xs self-end sm:self-auto shadow-inner">
         <button 
           v-for="p in ['1M', '6M', '1A', 'ALL']" 
           :key="p"
           @click="activePeriod = p"
-          :class="activePeriod === p ? 'bg-white/[0.15] text-white font-bold' : 'text-white/40 hover:text-white'"
-          class="px-2.5 py-1 rounded-full transition-all cursor-pointer"
+          :class="activePeriod === p ? 'bg-white/[0.18] text-white font-bold shadow-sm border border-white/20' : 'text-white/40 hover:text-white border border-transparent'"
+          class="px-2.5 py-1 rounded-full transition-all cursor-pointer active:scale-95"
         >
           {{ p }}
         </button>

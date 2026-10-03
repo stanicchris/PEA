@@ -1,5 +1,5 @@
 <template>
-  <div class="glass-card rounded-32 p-7 flex flex-col justify-between h-full relative overflow-hidden">
+  <div class="liquid-glass-card rounded-32 p-7 flex flex-col justify-between h-full relative overflow-hidden group specular-highlight">
     <!-- Top Row: Title + Dropdown Mode Switcher -->
     <div class="flex justify-between items-center mb-2">
       <h3 class="text-white font-bold text-lg tracking-tight">Top Mouvements</h3>
@@ -7,7 +7,7 @@
       <div class="relative">
         <button 
           @click="isDropdownOpen = !isDropdownOpen" 
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-white/80 text-xs font-medium cursor-pointer hover:bg-white/[0.08] transition-colors"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full liquid-glass-subtle border border-white/10 text-white/90 text-xs font-medium cursor-pointer hover:border-white/20 transition-all active:scale-95"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-neonLime" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -18,25 +18,25 @@
           </svg>
         </button>
 
-        <!-- Dropdown Menu -->
-        <div v-if="isDropdownOpen" class="absolute right-0 top-full mt-2 w-44 bg-[#16191E] border border-white/[0.08] rounded-2xl shadow-xl py-1.5 z-50 text-xs">
+        <!-- Dropdown Menu (Liquid Glass) -->
+        <div v-if="isDropdownOpen" class="absolute right-0 top-full mt-2 w-44 liquid-glass rounded-2xl shadow-2xl py-1.5 z-50 text-xs border border-white/15 specular-highlight">
           <button 
             @click="selectFilter('gainers')" 
-            class="w-full text-left px-3.5 py-2 hover:bg-white/[0.05] text-neonLime flex items-center justify-between"
+            class="w-full text-left px-3.5 py-2 hover:bg-white/[0.08] text-neonLime flex items-center justify-between transition-colors cursor-pointer"
           >
             <span>↗ Top Gainers</span>
             <span v-if="filterMode === 'gainers'">✓</span>
           </button>
           <button 
             @click="selectFilter('losers')" 
-            class="w-full text-left px-3.5 py-2 hover:bg-white/[0.05] text-roseAcc flex items-center justify-between"
+            class="w-full text-left px-3.5 py-2 hover:bg-white/[0.08] text-roseAcc flex items-center justify-between transition-colors cursor-pointer"
           >
             <span>↘ Top Losers</span>
             <span v-if="filterMode === 'losers'">✓</span>
           </button>
           <button 
             @click="selectFilter('weight')" 
-            class="w-full text-left px-3.5 py-2 hover:bg-white/[0.05] text-lavender flex items-center justify-between"
+            class="w-full text-left px-3.5 py-2 hover:bg-white/[0.08] text-lavender flex items-center justify-between transition-colors cursor-pointer"
           >
             <span>⚖️ Plus Gros Poids</span>
             <span v-if="filterMode === 'weight'">✓</span>

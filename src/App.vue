@@ -1,38 +1,49 @@
 <template>
-  <div class="min-h-screen bg-[#080A0E] text-[#F8FAFC] font-sans p-3 sm:p-6 lg:p-8 selection:bg-neonLime selection:text-black">
-    <!-- LOGIN SCREEN -->
-    <LoginWidget v-if="!userId" @login-success="onLoginSuccess" />
+  <div class="min-h-screen bg-[#05070A] text-[#F8FAFC] font-sans p-3 sm:p-6 lg:p-8 selection:bg-neonLime selection:text-black relative overflow-x-hidden">
+    <!-- Ambient Liquid Glass Caustics Mesh -->
+    <div class="ambient-glow-mesh">
+      <div class="ambient-glow-1"></div>
+      <div class="ambient-glow-2"></div>
+      <div class="ambient-glow-3"></div>
+    </div>
 
-    <!-- MAIN CHASSIS (Rounded 48px Master Container) -->
-    <div v-else class="max-w-[1680px] mx-auto bg-[#0C0E12] border border-white/[0.06] rounded-48 p-4 sm:p-6 lg:p-8 shadow-2xl relative overflow-hidden flex flex-col min-h-[92vh]">
+    <!-- LOGIN SCREEN -->
+    <LoginWidget v-if="!userId" @login-success="onLoginSuccess" class="relative z-10" />
+
+    <!-- MAIN CHASSIS (Rounded 48px Master Container with Liquid Glass) -->
+    <div v-else class="max-w-[1680px] mx-auto liquid-glass-chassis rounded-48 p-4 sm:p-6 lg:p-8 relative z-10 overflow-hidden flex flex-col min-h-[92vh] specular-highlight">
       
-      <!-- TOP NAVIGATION BAR (Pill Style from interface.png) -->
+      <!-- TOP NAVIGATION BAR (Liquid Glass Pill Style) -->
       <header class="flex items-center justify-between mb-8 gap-4 flex-wrap">
         <!-- Left: Menu + Brand Logo -->
         <div class="flex items-center gap-3">
           <button 
             @click="isMobileMenuOpen = !isMobileMenuOpen"
-            class="w-10 h-10 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] flex items-center justify-center text-white/70 hover:text-white transition-all cursor-pointer"
+            class="w-10 h-10 rounded-2xl liquid-glass-pill flex items-center justify-center text-white/70 hover:text-white transition-all cursor-pointer hover:border-white/20 active:scale-95"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
           
-          <div class="flex items-center gap-2.5 cursor-pointer" @click="activeTab = 'dashboard'">
-            <div class="w-9 h-9 rounded-xl bg-neonLime flex items-center justify-center font-black text-black text-lg shadow-[0_0_20px_rgba(163,230,53,0.35)]">
+          <div class="flex items-center gap-2.5 cursor-pointer group" @click="activeTab = 'dashboard'">
+            <div class="w-9 h-9 rounded-xl bg-neonLime flex items-center justify-center font-black text-black text-lg shadow-[0_0_25px_rgba(163,230,53,0.4)] group-hover:scale-105 transition-transform">
               R
             </div>
-            <span class="font-extrabold text-xl tracking-tight text-white">Rivlo / PEA</span>
+            <div class="flex flex-col">
+              <span class="font-extrabold text-xl tracking-tight text-white flex items-center gap-1.5">
+                Rivlo <span class="text-neonLime font-light">/</span> <span class="text-white/80 font-semibold text-base">PEA</span>
+              </span>
+            </div>
           </div>
         </div>
 
-        <!-- Center: Floating Pill Navigation Tabs -->
-        <nav class="hidden md:flex items-center bg-[#16191E] border border-white/[0.08] rounded-full p-1.5 shadow-lg">
+        <!-- Center: Floating Pill Navigation Tabs (Liquid Glass) -->
+        <nav class="hidden md:flex items-center liquid-glass-pill rounded-full p-1.5 shadow-2xl">
           <button 
             @click="activeTab = 'dashboard'"
-            :class="activeTab === 'dashboard' ? 'bg-white/[0.12] text-white shadow-sm font-bold' : 'text-white/50 hover:text-white font-medium'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer"
+            :class="activeTab === 'dashboard' ? 'bg-white/[0.14] text-white shadow-inner font-bold border border-white/20' : 'text-white/55 hover:text-white font-medium border border-transparent'"
+            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <span class="text-sm">⊞</span>
             <span>Dashboard</span>
@@ -40,8 +51,8 @@
 
           <button 
             @click="activeTab = 'analytics'"
-            :class="activeTab === 'analytics' ? 'bg-white/[0.12] text-white shadow-sm font-bold' : 'text-white/50 hover:text-white font-medium'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer"
+            :class="activeTab === 'analytics' ? 'bg-white/[0.14] text-white shadow-inner font-bold border border-white/20' : 'text-white/55 hover:text-white font-medium border border-transparent'"
+            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <span class="text-sm">📊</span>
             <span>Analytics</span>
@@ -49,8 +60,8 @@
 
           <button 
             @click="activeTab = 'reports'"
-            :class="activeTab === 'reports' ? 'bg-white/[0.12] text-white shadow-sm font-bold' : 'text-white/50 hover:text-white font-medium'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer"
+            :class="activeTab === 'reports' ? 'bg-white/[0.14] text-white shadow-inner font-bold border border-white/20' : 'text-white/55 hover:text-white font-medium border border-transparent'"
+            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <span class="text-sm">📁</span>
             <span>Reports</span>
@@ -58,7 +69,7 @@
 
           <button 
             @click="isSettingsOpen = true"
-            class="px-5 py-2 rounded-full text-xs text-white/50 hover:text-white transition-all flex items-center gap-2 font-medium cursor-pointer"
+            class="px-5 py-2 rounded-full text-xs text-white/55 hover:text-white transition-all flex items-center gap-2 font-medium cursor-pointer border border-transparent hover:border-white/10 active:scale-95"
           >
             <span class="text-sm">⚙️</span>
             <span>Settings</span>
@@ -71,7 +82,7 @@
           <button 
             @click="refreshData" 
             :disabled="isRefreshing" 
-            class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-neonLime/15 border border-neonLime/30 hover:bg-neonLime hover:text-black text-neonLime text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+            class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-neonLime/15 border border-neonLime/30 hover:bg-neonLime hover:text-black text-neonLime text-xs font-bold transition-all shadow-[0_0_20px_rgba(163,230,53,0.15)] active:scale-95 disabled:opacity-50 cursor-pointer"
             title="Actualise les cours boursiers en direct et sauvegarde le snapshot dans Supabase"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" :class="isRefreshing ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -87,7 +98,7 @@
               v-model="searchQuery" 
               @keyup.enter="handleHeaderSearch"
               placeholder="Analyser une action (ex: AAPL, LVMH)..."
-              class="w-36 sm:w-56 lg:w-64 bg-white/[0.04] border border-white/[0.08] rounded-full pl-9 pr-8 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-neonLime transition-all"
+              class="w-36 sm:w-56 lg:w-64 liquid-glass-subtle rounded-full pl-9 pr-8 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-neonLime/60 focus:ring-1 focus:ring-neonLime/30 transition-all shadow-inner"
             />
             <button 
               @click="handleHeaderSearch" 
@@ -101,7 +112,7 @@
             <button 
               v-if="searchQuery.trim()" 
               @click="handleHeaderSearch"
-              class="absolute right-2 text-[10px] font-mono font-bold px-1.5 py-0.5 bg-neonLime text-black rounded-md hover:bg-neonLimeHover transition-all cursor-pointer"
+              class="absolute right-2 text-[10px] font-mono font-bold px-1.5 py-0.5 bg-neonLime text-black rounded-md hover:bg-neonLimeHover transition-all cursor-pointer shadow-sm"
               title="Analyser"
             >
               ↵
@@ -112,32 +123,32 @@
           <div class="relative">
             <button 
               @click="isNotifOpen = !isNotifOpen"
-              class="w-10 h-10 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] flex items-center justify-center text-white/70 hover:text-white transition-all relative cursor-pointer"
+              class="w-10 h-10 rounded-2xl liquid-glass-pill flex items-center justify-center text-white/70 hover:text-white transition-all relative cursor-pointer hover:border-white/20 active:scale-95"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
-              <span class="w-2 h-2 rounded-full bg-neonLime absolute top-2.5 right-2.5"></span>
+              <span class="w-2 h-2 rounded-full bg-neonLime absolute top-2.5 right-2.5 shadow-[0_0_8px_rgba(163,230,53,0.8)]"></span>
             </button>
 
-            <!-- Notifications Dropdown -->
-            <div v-if="isNotifOpen" class="absolute right-0 top-full mt-2 w-80 bg-[#16191E] border border-white/[0.08] rounded-24 shadow-2xl p-4 z-50 text-xs">
+            <!-- Notifications Dropdown (Liquid Glass) -->
+            <div v-if="isNotifOpen" class="absolute right-0 top-full mt-2 w-80 liquid-glass rounded-24 shadow-2xl p-4 z-50 text-xs specular-highlight border border-white/15">
               <div class="flex justify-between items-center mb-3">
-                <span class="font-bold text-white uppercase font-mono text-[10px]">Notifications Portefeuille</span>
-                <span class="text-[10px] text-neonLime">3 nouvelles</span>
+                <span class="font-bold text-white uppercase font-mono text-[10px] tracking-wider">Notifications Portefeuille</span>
+                <span class="text-[10px] text-neonLime font-semibold">3 nouvelles</span>
               </div>
               <div class="space-y-2">
-                <div class="bg-white/[0.03] p-2.5 rounded-xl border border-white/[0.04]">
-                  <p class="font-semibold text-white">⚡ Bourse de Paris Ouverte</p>
-                  <p class="text-white/40 text-[11px]">Euronext Paris en direct, cours actualisés.</p>
+                <div class="liquid-glass-subtle p-2.5 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+                  <p class="font-semibold text-white flex items-center gap-1.5"><span>⚡</span> Euronext Paris Ouverte</p>
+                  <p class="text-white/50 text-[11px] mt-0.5">Marché en direct, flux temps réel actif.</p>
                 </div>
-                <div class="bg-white/[0.03] p-2.5 rounded-xl border border-white/[0.04]">
-                  <p class="font-semibold text-white">💰 Dividende TotalEnergies</p>
-                  <p class="text-white/40 text-[11px]">Acompte sur dividende trimestriel programmé.</p>
+                <div class="liquid-glass-subtle p-2.5 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+                  <p class="font-semibold text-white flex items-center gap-1.5"><span>💰</span> Dividende TotalEnergies</p>
+                  <p class="text-white/50 text-[11px] mt-0.5">Acompte sur dividende trimestriel programmé.</p>
                 </div>
-                <div class="bg-white/[0.03] p-2.5 rounded-xl border border-white/[0.04]">
-                  <p class="font-semibold text-neonLime">⚖️ Maturité Fiscale Atteinte</p>
-                  <p class="text-white/40 text-[11px]">PEA de +5 ans : Exonération IR 0% active.</p>
+                <div class="liquid-glass-subtle p-2.5 rounded-xl border border-neonLime/20 bg-neonLime/5 transition-all">
+                  <p class="font-semibold text-neonLime flex items-center gap-1.5"><span>⚖️</span> Maturité Fiscale Atteinte</p>
+                  <p class="text-white/50 text-[11px] mt-0.5">PEA +5 ans : Exonération IR 0% active.</p>
                 </div>
               </div>
             </div>
@@ -147,15 +158,15 @@
           <div class="relative">
             <div 
               @click="isProfileMenuOpen = !isProfileMenuOpen" 
-              class="w-10 h-10 rounded-full border-2 border-neonLime/40 bg-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md cursor-pointer hover:opacity-80 transition-opacity select-none"
+              class="w-10 h-10 rounded-full border-2 border-neonLime/50 bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-[0_0_15px_rgba(139,92,246,0.4)] cursor-pointer hover:scale-105 active:scale-95 transition-all select-none"
             >
               {{ username.substring(0, 2).toUpperCase() || 'CH' }}
             </div>
 
-            <!-- Profile Dropdown -->
-            <div v-if="isProfileMenuOpen" class="absolute right-0 top-full mt-2 w-64 bg-[#16191E] border border-white/[0.08] rounded-24 shadow-2xl p-4 z-50 text-xs">
-              <div class="flex items-center gap-3 pb-3 border-b border-white/[0.06] mb-3">
-                <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-sm">
+            <!-- Profile Dropdown (Liquid Glass) -->
+            <div v-if="isProfileMenuOpen" class="absolute right-0 top-full mt-2 w-64 liquid-glass rounded-24 shadow-2xl p-4 z-50 text-xs specular-highlight border border-white/15">
+              <div class="flex items-center gap-3 pb-3 border-b border-white/[0.08] mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
                   {{ username.substring(0, 2).toUpperCase() || 'CH' }}
                 </div>
                 <div>

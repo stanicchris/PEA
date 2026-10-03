@@ -1,15 +1,15 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <!-- Backdrop -->
-    <div class="absolute inset-0 bg-black/80 backdrop-blur-md" @click="$emit('close')"></div>
+    <!-- Backdrop with blur -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-xl cursor-pointer" @click="$emit('close')"></div>
     
-    <!-- Modal Content -->
-    <div class="relative w-full max-w-lg glass-card border border-white/[0.08] rounded-36 shadow-2xl bg-[#111419] p-7 flex flex-col text-white">
+    <!-- Modal Content (Liquid Glass) -->
+    <div class="relative w-full max-w-lg liquid-glass-chassis rounded-36 shadow-2xl p-7 flex flex-col text-white specular-highlight border border-white/15">
       
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-neonLime/15 border border-neonLime/30 flex items-center justify-center text-neonLime">
+          <div class="w-10 h-10 rounded-2xl bg-neonLime/15 border border-neonLime/30 flex items-center justify-center text-neonLime shadow-[0_0_12px_rgba(163,230,53,0.2)]">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -21,13 +21,13 @@
           </div>
         </div>
 
-        <button @click="$emit('close')" class="text-white/40 hover:text-white transition-colors bg-white/[0.04] hover:bg-white/[0.08] p-2 rounded-full cursor-pointer">
+        <button @click="$emit('close')" class="text-white/40 hover:text-white transition-colors liquid-glass-subtle hover:border-white/20 p-2 rounded-full cursor-pointer active:scale-95">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
       <!-- Section 1 : Liquidités (Cash) -->
-      <div class="bg-[#16191E] rounded-28 p-5 border border-white/[0.06] mb-5">
+      <div class="liquid-glass-card rounded-28 p-5 mb-5 specular-highlight">
         <label class="text-xs font-mono font-bold text-white/50 uppercase tracking-wider block mb-3">
           Liquidités Disponibles (Cash)
         </label>
@@ -40,14 +40,14 @@
               step="0.01" 
               v-model="cash" 
               placeholder="0.00" 
-              class="w-full bg-[#111419] border border-white/[0.08] focus:border-neonLime rounded-2xl pl-8 pr-4 py-3 text-sm font-mono font-bold text-white outline-none transition-all"
+              class="w-full liquid-glass-subtle border border-white/10 focus:border-neonLime/70 focus:ring-1 focus:ring-neonLime/30 rounded-2xl pl-8 pr-4 py-3 text-sm font-mono font-bold text-white outline-none transition-all shadow-inner"
             />
           </div>
           
           <button 
             @click="saveCash" 
             :disabled="isSavingCash"
-            class="bg-neonLime hover:bg-neonLimeHover text-[#0C0E12] px-6 py-3 rounded-full font-black text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 shrink-0 cursor-pointer"
+            class="bg-neonLime hover:bg-neonLimeHover text-[#0C0E12] px-6 py-3 rounded-full font-black text-xs transition-all shadow-[0_2px_15px_rgba(163,230,53,0.3)] active:scale-95 disabled:opacity-50 shrink-0 cursor-pointer"
           >
             {{ isSavingCash ? 'Sauvegarde...' : 'Sauver' }}
           </button>
@@ -59,12 +59,12 @@
       </div>
 
       <!-- Section 2 : Import CSV (Boursorama / Courtier) -->
-      <div class="bg-[#16191E] rounded-28 p-5 border border-white/[0.06] mb-5">
+      <div class="liquid-glass-card rounded-28 p-5 mb-5 specular-highlight">
         <label class="text-xs font-mono font-bold text-white/50 uppercase tracking-wider block mb-3">
           Importer un Portfolio CSV (Boursorama)
         </label>
 
-        <div class="border-2 border-dashed border-white/[0.1] hover:border-neonLime/50 transition-colors rounded-24 p-6 text-center cursor-pointer relative bg-[#111419]/50">
+        <div class="border-2 border-dashed border-white/15 hover:border-neonLime/50 transition-colors rounded-24 p-6 text-center cursor-pointer relative liquid-glass-subtle">
           <input 
             type="file" 
             accept=".csv" 
@@ -72,10 +72,10 @@
             class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
           />
           <div class="flex flex-col items-center">
-            <svg class="w-8 h-8 text-white/30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-8 h-8 text-white/40 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
             </svg>
-            <p v-if="!selectedFile" class="text-xs text-white/60 font-medium">Cliquez ou glissez votre fichier CSV ici</p>
+            <p v-if="!selectedFile" class="text-xs text-white/70 font-medium">Cliquez ou glissez votre fichier CSV ici</p>
             <p v-else class="text-xs text-neonLime font-bold">{{ selectedFile.name }}</p>
           </div>
         </div>
@@ -84,7 +84,7 @@
           v-if="selectedFile" 
           @click="uploadFile" 
           :disabled="isUploading"
-          class="w-full mt-3 bg-neonLime hover:bg-neonLimeHover text-[#0C0E12] py-3 rounded-full font-black text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
+          class="w-full mt-3 bg-neonLime hover:bg-neonLimeHover text-[#0C0E12] py-3 rounded-full font-black text-xs transition-all shadow-[0_4px_20px_rgba(163,230,53,0.3)] active:scale-95 disabled:opacity-50 cursor-pointer"
         >
           {{ isUploading ? 'Importation en cours...' : 'Envoyer le fichier CSV' }}
         </button>
@@ -95,7 +95,7 @@
       </div>
 
       <!-- Section 3 : Backend URL Override (Optional) -->
-      <div class="bg-[#16191E] rounded-28 p-5 border border-white/[0.06]">
+      <div class="liquid-glass-card rounded-28 p-5 specular-highlight">
         <label class="text-xs font-mono font-bold text-white/50 uppercase tracking-wider block mb-2">
           URL Backend Render
         </label>
@@ -104,11 +104,11 @@
             type="text" 
             v-model="backendUrl" 
             placeholder="https://pea-tpxq.onrender.com" 
-            class="flex-1 bg-[#111419] border border-white/[0.08] focus:border-neonLime rounded-2xl px-4 py-3 text-xs font-mono text-white/90 outline-none transition-all"
+            class="flex-1 liquid-glass-subtle border border-white/10 focus:border-neonLime/70 focus:ring-1 focus:ring-neonLime/30 rounded-2xl px-4 py-3 text-xs font-mono text-white/90 outline-none transition-all shadow-inner"
           />
           <button 
             @click="saveBackendUrl" 
-            class="bg-white/[0.08] hover:bg-white/[0.15] text-white px-5 py-3 rounded-full font-bold text-xs transition-all active:scale-95 shrink-0 cursor-pointer"
+            class="liquid-glass-pill hover:bg-white/10 text-white px-5 py-3 rounded-full font-bold text-xs transition-all active:scale-95 shrink-0 cursor-pointer border border-white/15"
           >
             Sauver URL
           </button>

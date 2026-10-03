@@ -1,17 +1,18 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-[#080A0E] p-4 font-sans relative overflow-hidden">
+  <div class="min-h-screen flex items-center justify-center p-4 font-sans relative overflow-hidden">
     <!-- Subtle Background Glows -->
-    <div class="absolute inset-0 z-0 pointer-events-none opacity-20">
-      <div class="absolute top-[20%] left-[20%] w-96 h-96 bg-neonPurple rounded-full mix-blend-screen filter blur-[140px]"></div>
-      <div class="absolute bottom-[20%] right-[20%] w-96 h-96 bg-neonLime rounded-full mix-blend-screen filter blur-[140px]"></div>
+    <div class="ambient-glow-mesh">
+      <div class="ambient-glow-1"></div>
+      <div class="ambient-glow-2"></div>
+      <div class="ambient-glow-3"></div>
     </div>
 
-    <div class="glass-card relative z-10 w-full max-w-md p-8 sm:p-10 rounded-36 border border-white/[0.08] shadow-2xl bg-[#111419]">
+    <div class="liquid-glass-chassis relative z-10 w-full max-w-md p-8 sm:p-10 rounded-36 border border-white/15 shadow-2xl specular-highlight">
       <div class="text-center mb-8">
-        <div class="mx-auto w-14 h-14 bg-neonLime rounded-2xl flex items-center justify-center font-black text-black text-2xl mb-4 shadow-[0_0_30px_rgba(163,230,53,0.3)]">
-          P
+        <div class="mx-auto w-14 h-14 bg-neonLime rounded-2xl flex items-center justify-center font-black text-black text-2xl mb-4 shadow-[0_0_35px_rgba(163,230,53,0.4)]">
+          R
         </div>
-        <h1 class="text-2xl font-black text-white tracking-tight">PEA Tracker SaaS</h1>
+        <h1 class="text-2xl font-black text-white tracking-tight">Rivlo / PEA Tracker</h1>
         <p class="text-white/40 text-xs mt-1.5 font-medium">Terminal financier privé & Copilote IA</p>
       </div>
 
@@ -21,8 +22,8 @@
           <input 
             v-model="username" 
             type="text" 
-            placeholder="Ex: chris"
-            class="w-full bg-[#0C0E12] border border-white/[0.08] rounded-full px-5 py-3 text-white placeholder-white/20 focus:outline-none focus:border-neonLime transition-all text-sm font-medium"
+            placeholder="Ex: christo"
+            class="w-full liquid-glass-subtle border border-white/10 rounded-full px-5 py-3 text-white placeholder-white/30 focus:outline-none focus:border-neonLime/70 focus:ring-1 focus:ring-neonLime/30 transition-all text-sm font-medium shadow-inner"
             required
           />
         </div>
@@ -33,7 +34,7 @@
             v-model="password" 
             type="password" 
             placeholder="••••••••"
-            class="w-full bg-[#0C0E12] border border-white/[0.08] rounded-full px-5 py-3 text-white placeholder-white/20 focus:outline-none focus:border-neonLime transition-all text-sm font-medium"
+            class="w-full liquid-glass-subtle border border-white/10 rounded-full px-5 py-3 text-white placeholder-white/30 focus:outline-none focus:border-neonLime/70 focus:ring-1 focus:ring-neonLime/30 transition-all text-sm font-medium shadow-inner"
             required
           />
         </div>
@@ -47,7 +48,7 @@
             type="submit" 
             @click="isRegistering = false"
             :disabled="isLoading"
-            class="w-full py-3 rounded-full bg-neonLime hover:bg-neonLimeHover text-black font-extrabold text-xs transition-all shadow-[0_4px_20px_rgba(163,230,53,0.25)] disabled:opacity-50 active:scale-95"
+            class="w-full py-3 rounded-full bg-neonLime hover:bg-neonLimeHover text-black font-black text-xs transition-all shadow-[0_4px_20px_rgba(163,230,53,0.3)] disabled:opacity-50 active:scale-95 cursor-pointer"
           >
             {{ isLoading && !isRegistering ? '...' : 'Se connecter' }}
           </button>
@@ -56,18 +57,18 @@
             type="submit"
             @click="isRegistering = true"
             :disabled="isLoading"
-            class="w-full py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white font-bold text-xs transition-all disabled:opacity-50 active:scale-95"
+            class="w-full py-3 rounded-full liquid-glass-pill hover:bg-white/10 border border-white/15 text-white font-bold text-xs transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
           >
-            {{ isLoading && isRegistering ? '...' : 'Créer un compte' }}
+            {{ isLoading && isRegistering ? '...' : 'Créer compte' }}
           </button>
         </div>
 
         <!-- Optional Backend URL toggle -->
-        <div class="pt-4 border-t border-white/[0.06] text-center">
+        <div class="pt-4 border-t border-white/[0.08] text-center">
           <button 
             type="button" 
             @click="showServerConfig = !showServerConfig" 
-            class="text-[11px] text-white/40 hover:text-white transition-colors underline font-mono"
+            class="text-[11px] text-white/40 hover:text-white transition-colors underline font-mono cursor-pointer"
           >
             {{ showServerConfig ? 'Masquer URL Serveur' : '⚙️ Configurer URL Backend Render' }}
           </button>
