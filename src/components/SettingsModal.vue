@@ -67,13 +67,33 @@
         <p v-if="uploadMsg" class="text-xs text-center mt-3 font-medium" :class="uploadError ? 'text-roseAcc' : 'text-neonLime'">{{ uploadMsg }}</p>
       </div>
 
+      <!-- Backend URL Configuration -->
+      <div class="mb-7 bg-[#16191E] p-5 rounded-28 border border-white/[0.06]">
+        <label class="block text-xs font-semibold text-white/70 uppercase tracking-wider mb-2 font-mono">URL Backend Render</label>
+        <div class="flex gap-2">
+          <input 
+            v-model="backendUrl" 
+            type="url" 
+            placeholder="https://pea-tracker-backend.onrender.com" 
+            class="w-full bg-[#0C0E12] border border-white/[0.08] rounded-full px-4 py-3 text-white focus:outline-none focus:border-neonLime font-mono text-xs" 
+          />
+          <button 
+            @click="saveBackendUrl" 
+            class="bg-white/[0.08] hover:bg-white/[0.15] text-white px-5 py-3 rounded-full font-bold text-xs transition-all active:scale-95 shrink-0"
+          >
+            Sauver URL
+          </button>
+        </div>
+        <p v-if="urlMsg" class="text-xs text-neonLime mt-2 font-medium">{{ urlMsg }}</p>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 import { ref, watch } from 'vue';
+import { getApiBase } from '../config';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -87,10 +107,22 @@ const cash = ref(0);
 const cashMsg = ref('');
 const isSavingCash = ref(false);
 
+const backendUrl = ref(localStorage.getItem('pea_api_url') || import.meta.env.VITE_API_BASE_URL || '');
+const urlMsg = ref('');
+
 const selectedFile = ref(null);
 const isUploading = ref(false);
 const uploadMsg = ref('');
 const uploadError = ref(false);
+
+const saveBackendUrl = () => {
+  if (backendUrl.value.trim()) {
+    localStorage.setItem('pea_api_url', backendUrl.value.trim().replace(/\/+$/, ''));
+    urlMsg.value = 'URL du serveur mise à jour !';
+    emit('refresh');
+    setTimeout(() => { urlMsg.value = ''; }, 3000);
+  }
+};
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {

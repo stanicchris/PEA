@@ -208,8 +208,8 @@
 </template>
 
 <script setup>
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 import { ref, computed, onMounted } from 'vue';
+import { getApiBase } from './config';
 
 import LoginWidget from './components/LoginWidget.vue';
 import HeroSection from './components/HeroSection.vue';
@@ -277,16 +277,18 @@ const logout = () => {
 
 const fetchData = async () => {
   if (!userId.value) return;
+  const apiBase = getApiBase();
+  if (!apiBase) return;
   isLoading.value = true;
   try {
     const token = localStorage.getItem('pea_access_token');
     const authHeaders = token ? { Authorization: 'Bearer ' + token } : {};
 
     const [summaryRes, positionsRes, historyRes, weatherRes] = await Promise.all([
-      fetch(`${API_BASE}/api/portfolio/summary?user_id=${userId.value}`, { headers: authHeaders }),
-      fetch(`${API_BASE}/api/portfolio/positions?user_id=${userId.value}`, { headers: authHeaders }),
-      fetch(`${API_BASE}/api/portfolio/history?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null),
-      fetch(`${API_BASE}/api/portfolio/weather?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null)
+      fetch(`${apiBase}/api/portfolio/summary?user_id=${userId.value}`, { headers: authHeaders }),
+      fetch(`${apiBase}/api/portfolio/positions?user_id=${userId.value}`, { headers: authHeaders }),
+      fetch(`${apiBase}/api/portfolio/history?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null),
+      fetch(`${apiBase}/api/portfolio/weather?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null)
     ]);
 
     if (summaryRes.ok) summary.value = await summaryRes.json();
@@ -310,10 +312,12 @@ const fetchData = async () => {
 
 const refreshData = async () => {
   if (!userId.value) return;
+  const apiBase = getApiBase();
+  if (!apiBase) return;
   isRefreshing.value = true;
   try {
     const token = localStorage.getItem('pea_access_token');
-    await fetch(`${API_BASE}/api/portfolio/refresh?user_id=${userId.value}`, {
+    await fetch(`${apiBase}/api/portfolio/refresh?user_id=${userId.value}`, {
       method: 'POST',
       headers: token ? { Authorization: 'Bearer ' + token } : {}
     });

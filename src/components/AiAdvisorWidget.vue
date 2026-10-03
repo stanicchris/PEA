@@ -87,8 +87,8 @@
 </template>
 
 <script setup>
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 import { ref, watch } from 'vue';
+import { getApiBase } from '../config';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -104,7 +104,8 @@ watch(() => props.isOpen, async (newVal) => {
   if (newVal && props.userId) {
     isLoading.value = true;
     try {
-      const res = await fetch(`${API_BASE}/api/portfolio/ai-diagnostic`, {
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/portfolio/ai-diagnostic`, {
         headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') }
       });
       if (res.ok) {

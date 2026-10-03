@@ -126,8 +126,8 @@
 </template>
 
 <script setup>
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 import { ref, watch } from 'vue';
+import { getApiBase } from '../config';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -145,8 +145,9 @@ watch(() => props.isOpen, async (newVal) => {
     error.value = null;
     analysis.value = null;
     try {
+      const apiBase = getApiBase();
       const qName = encodeURIComponent(props.asset.name);
-      const res = await fetch(`${API_BASE}/api/stock/analyze/${props.asset.ticker}?name=${qName}`, { headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') } });
+      const res = await fetch(`${apiBase}/api/stock/analyze/${props.asset.ticker}?name=${qName}`, { headers: { Authorization: 'Bearer ' + localStorage.getItem('pea_access_token') } });
       if (!res.ok) throw new Error("Erreur de récupération de l'analyse");
       analysis.value = await res.json();
     } catch (err) {
