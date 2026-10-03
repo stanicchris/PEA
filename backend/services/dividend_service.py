@@ -75,6 +75,16 @@ def _fetch_and_cache_dividend_data(ticker_symbol: str):
                 
             for date, amt in last_year.items():
                 projected[str(date.month)] = float(amt)
+        else:
+            # Fallback if historical chart data is empty or blocked by Yahoo,
+            # but we still got the annual amount and ex_date from the basic info.
+            if amount and ex_date:
+                try:
+                    # Place the entire annual dividend in the ex-date month as a fallback
+                    month_str = str(datetime.strptime(ex_date, '%Y-%m-%d').month)
+                    projected[month_str] = float(amount)
+                except Exception:
+                    pass
 
         data_to_save = {
             "ticker_symbol": ticker_symbol,
