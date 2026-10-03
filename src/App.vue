@@ -78,6 +78,24 @@
                 </button>
 
                 <button 
+                  @click="activeTab = 'optimization'; isMobileMenuOpen = false"
+                  :class="activeTab === 'optimization' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
+                  class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
+                >
+                  <span class="text-base">🧠</span>
+                  <span>Optimisation & IA</span>
+                </button>
+
+                <button 
+                  @click="activeTab = 'goals'; isMobileMenuOpen = false"
+                  :class="activeTab === 'goals' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
+                  class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
+                >
+                  <span class="text-base">🎯</span>
+                  <span>Objectifs & Rente</span>
+                </button>
+
+                <button 
                   @click="activeTab = 'analytics'; isMobileMenuOpen = false"
                   :class="activeTab === 'analytics' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
                   class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
@@ -147,6 +165,24 @@
           >
             <span class="text-sm">⊞</span>
             <span>Dashboard</span>
+          </button>
+
+          <button 
+            @click="activeTab = 'optimization'"
+            :class="activeTab === 'optimization' ? 'bg-white/[0.14] text-white shadow-inner font-bold border border-white/20' : 'text-white/55 hover:text-white font-medium border border-transparent'"
+            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+          >
+            <span class="text-sm">🧠</span>
+            <span>Optimisation</span>
+          </button>
+
+          <button 
+            @click="activeTab = 'goals'"
+            :class="activeTab === 'goals' ? 'bg-white/[0.14] text-white shadow-inner font-bold border border-white/20' : 'text-white/55 hover:text-white font-medium border border-transparent'"
+            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+          >
+            <span class="text-sm">🎯</span>
+            <span>Objectifs</span>
           </button>
 
           <button 
@@ -395,6 +431,16 @@
         />
       </div>
 
+      <!-- TAB 4 : OPTIMIZATION & IA -->
+      <div v-else-if="activeTab === 'optimization'" class="space-y-6">
+        <OptimizationView />
+      </div>
+
+      <!-- TAB 5 : GOALS & FIRE -->
+      <div v-else-if="activeTab === 'goals'" class="space-y-6">
+        <GoalsView />
+      </div>
+
       <!-- MODALES -->
       <SettingsModal 
         :isOpen="isSettingsOpen" 
@@ -446,6 +492,8 @@ import PeaFiscalModal from './components/PeaFiscalModal.vue';
 import AnalyticsView from './components/AnalyticsView.vue';
 import ReportsView from './components/ReportsView.vue';
 import DividendCalendar from './components/DividendCalendar.vue';
+import OptimizationView from './views/OptimizationView.vue';
+import GoalsView from './views/GoalsView.vue';
 
 const userId = ref(localStorage.getItem('pea_user_id') || null);
 const username = ref(localStorage.getItem('pea_username') || '');
