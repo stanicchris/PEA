@@ -235,10 +235,14 @@ async def upload_csv(user_id: str, file: UploadFile = File(...)):
         raise HTTPException(400, "Invalid CSV format")
         
     mapping = {
-        'nom': 'name', 'valeur': 'name', 'code isin': 'isin', 'quantité': 'quantity', 
+        'nom': 'name', 'valeur': 'name', 'libelle': 'name', 'libellé': 'name', 
+        'code isin': 'isin', 'isin': 'isin',
+        'quantité': 'quantity', 'quantite': 'quantity',
         'prix de revient': 'buying_price', 'pru': 'buying_price', 
-        'dernier cours': 'last_price', 'montant': 'amount', 
-        '+/- value': 'amount_variation', '+/- value (%)': 'variation'
+        'dernier cours': 'last_price', 
+        'montant': 'amount', 'valorisation': 'amount',
+        '+/- value': 'amount_variation', 'plus/moins value': 'amount_variation',
+        '+/- value (%)': 'variation', 'perf (%)': 'variation', 'performance': 'variation'
     }
     
     cleaned_cols = {}
