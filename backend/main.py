@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 import pandas as pd
 from dotenv import load_dotenv
@@ -356,20 +356,47 @@ async def upload_csv(user_id: str, file: UploadFile = File(...)):
     return {"status": "ok", "snapshot_id": snap_id}
 
 @app.get("/api/portfolio/history")
-async def get_portfolio_history(user_id: str = Depends(get_current_user)):
+async def get_portfolio_history(user_id: Optional[str] = None, credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))):
     if not supabase: return {"history": []}
-    res = supabase.table("snapshots").select("snapshot_date, total_valeur, cout_investi, plus_value").eq("user_id", user_id).order("snapshot_date", desc=False).execute()
-    history = []
-    if res.data:
-        for row in res.data:
-            date_str = row.get("snapshot_date", "")
-            history.append({
-                "date": date_str.split(" ")[0] if date_str else "",
-                "total_valeur": float(row.get("total_valeur") or 0.0),
-                "cout_investi": float(row.get("cout_investi") or 0.0),
-                "plus_value": float(row.get("plus_value") or 0.0)
-            })
-    return {"history": history}
+    
+    target_user_id = user_id
+    if not target_user_id and credentials:
+        try:
+            res = supabase.auth.get_user(credentials.credentials)
+            if res and res.user:
+                target_user_id = res.user.id
+        except:
+            pass
+            
+    if not target_user_id:
+        return {"history": []}
+
+    try:
+        res = supabase.table("snapshots").select("id, snapshot_date, total_valeur, valeur_titres, cash, cout_investi, plus_value").eq("user_id", target_user_id).order("snapshot_date", desc=False).execute()
+        history = []
+        if res.data:
+            for row in res.data:
+                date_str = str(row.get("snapshot_date", "") or "")
+                total_val = float(row.get("total_valeur") or 0.0)
+                val_titres = float(row.get("valeur_titres") or 0.0)
+                cash = float(row.get("cash") or 0.0)
+                cout_investi = float(row.get("cout_investi") or 0.0)
+                plus_value = float(row.get("plus_value") or (total_val - cout_investi if cout_investi > 0 else 0.0))
+                
+                history.append({
+                    "id": row.get("id"),
+                    "snapshot_date": date_str,
+                    "date": date_str.split(" ")[0] if " " in date_str else date_str.split("T")[0] if "T" in date_str else date_str,
+                    "total_valeur": round(total_val, 2),
+                    "valeur_titres": round(val_titres, 2),
+                    "cash": round(cash, 2),
+                    "cout_investi": round(cout_investi, 2),
+                    "plus_value": round(plus_value, 2)
+                })
+        return {"history": history}
+    except Exception as e:
+        print(f"Error fetching history: {e}")
+        return {"history": []}
 
 @app.get("/api/portfolio/ai-diagnostic")
 async def get_ai_diagnostic(user_id: str = Depends(get_current_user)):

@@ -49,6 +49,7 @@ secrets.toml
 *.xlsx
 *.tsv
 *.jsonl
+*.png
 
 # ===================================
 # Agent Customizations & Dev Tools
