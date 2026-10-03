@@ -298,7 +298,7 @@ const fetchData = async () => {
     const token = localStorage.getItem('pea_access_token');
     const authHeaders = token ? { Authorization: 'Bearer ' + token } : {};
 
-    // 1. Fetch core financial data immediately (fast)
+    // Fetch ONLY financial data from Supabase (fast, pure stock data)
     const [summaryRes, positionsRes, historyRes] = await Promise.all([
       fetch(`${apiBase}/api/portfolio/summary?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null),
       fetch(`${apiBase}/api/portfolio/positions?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null),
@@ -319,18 +319,6 @@ const fetchData = async () => {
   } finally {
     isLoading.value = false;
   }
-
-  // 2. Fetch market weather asynchronously in background without blocking UI
-  try {
-    const token = localStorage.getItem('pea_access_token');
-    const authHeaders = token ? { Authorization: 'Bearer ' + token } : {};
-    fetch(`${apiBase}/api/portfolio/weather?user_id=${userId.value}`, { headers: authHeaders })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data) weather.value = data; })
-      .catch(() => null);
-  } catch (e) {
-    // Ignore weather error
-  }
 };
 
 const refreshData = async () => {
@@ -340,13 +328,15 @@ const refreshData = async () => {
   isRefreshing.value = true;
   try {
     const token = localStorage.getItem('pea_access_token');
+    // Actualisation 100% financière (Yahoo Finance -> Supabase)
     await fetch(`${apiBase}/api/portfolio/refresh?user_id=${userId.value}`, {
       method: 'POST',
       headers: token ? { Authorization: 'Bearer ' + token } : {}
     });
+    // Récupération des cours et graphiques actualisés
     await fetchData();
   } catch (error) {
-    console.error("Erreur lors du rafraîchissement des cours en direct :", error);
+    console.error("Erreur lors du rafraîchissement des cours :", error);
   } finally {
     isRefreshing.value = false;
   }
