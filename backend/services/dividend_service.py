@@ -38,6 +38,10 @@ def _fetch_and_cache_dividend_data(ticker_symbol: str):
 
     # Not in DB or too old, fetch from yfinance
     try:
+        import time
+        # Anti rate-limit sleep for Render servers
+        time.sleep(1.5)
+        
         ticker = yf.Ticker(ticker_symbol, session=_yf_session)
         info = ticker.info
         
