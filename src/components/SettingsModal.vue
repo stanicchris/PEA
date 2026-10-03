@@ -1,13 +1,13 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
     <!-- Backdrop with blur -->
     <div class="absolute inset-0 bg-black/80 backdrop-blur-xl cursor-pointer" @click="$emit('close')"></div>
     
     <!-- Modal Content (Liquid Glass) -->
-    <div class="relative w-full max-w-lg liquid-glass-chassis rounded-36 shadow-2xl p-7 flex flex-col text-white specular-highlight border border-white/15">
+    <div class="relative w-full max-w-lg max-h-[90dvh] overflow-y-auto liquid-glass-chassis rounded-36 shadow-2xl p-5 sm:p-7 flex flex-col text-white specular-highlight border border-white/15">
       
       <!-- Header -->
-      <div class="flex justify-between items-center mb-6">
+      <div class="flex justify-between items-center mb-6 pb-2 border-b border-white/[0.06] sticky top-0 bg-[#0A0D14]/80 backdrop-blur-md -mx-2 px-2 z-10">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-2xl bg-neonLime/15 border border-neonLime/30 flex items-center justify-center text-neonLime shadow-[0_0_12px_rgba(163,230,53,0.2)]">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -16,18 +16,23 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-xl font-bold text-white tracking-tight">Paramètres du PEA</h2>
-            <p class="text-white/40 text-xs">Gestion du Cash et Importation de Relevés</p>
+            <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight">Paramètres du PEA</h2>
+            <p class="text-white/40 text-xs">Gestion du Cash et Importation</p>
           </div>
         </div>
 
-        <button @click="$emit('close')" class="text-white/40 hover:text-white transition-colors liquid-glass-subtle hover:border-white/20 p-2 rounded-full cursor-pointer active:scale-95">
+        <button 
+          @click="$emit('close')" 
+          class="text-white/40 hover:text-white transition-colors liquid-glass-subtle hover:border-white/20 p-2.5 rounded-full cursor-pointer active:scale-95"
+          title="Fermer la fenêtre"
+          aria-label="Fermer"
+        >
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
       <!-- Section 1 : Liquidités (Cash) -->
-      <div class="liquid-glass-card rounded-28 p-5 mb-5 specular-highlight">
+      <div class="liquid-glass-card rounded-28 p-4 sm:p-5 mb-5 specular-highlight">
         <label class="text-xs font-mono font-bold text-white/50 uppercase tracking-wider block mb-3">
           Liquidités Disponibles (Cash)
         </label>
@@ -47,7 +52,7 @@
           <button 
             @click="saveCash" 
             :disabled="isSavingCash"
-            class="bg-neonLime hover:bg-neonLimeHover text-[#0C0E12] px-6 py-3 rounded-full font-black text-xs transition-all shadow-[0_2px_15px_rgba(163,230,53,0.3)] active:scale-95 disabled:opacity-50 shrink-0 cursor-pointer"
+            class="bg-neonLime hover:bg-neonLimeHover text-[#0C0E12] px-5 sm:px-6 py-3 rounded-full font-black text-xs transition-all shadow-[0_2px_15px_rgba(163,230,53,0.3)] active:scale-95 disabled:opacity-50 shrink-0 cursor-pointer"
           >
             {{ isSavingCash ? 'Sauvegarde...' : 'Sauver' }}
           </button>
@@ -59,12 +64,12 @@
       </div>
 
       <!-- Section 2 : Import CSV (Boursorama / Courtier) -->
-      <div class="liquid-glass-card rounded-28 p-5 mb-5 specular-highlight">
+      <div class="liquid-glass-card rounded-28 p-4 sm:p-5 mb-5 specular-highlight">
         <label class="text-xs font-mono font-bold text-white/50 uppercase tracking-wider block mb-3">
           Importer un Portfolio CSV (Boursorama)
         </label>
 
-        <div class="border-2 border-dashed border-white/15 hover:border-neonLime/50 transition-colors rounded-24 p-6 text-center cursor-pointer relative liquid-glass-subtle">
+        <div class="border-2 border-dashed border-white/15 hover:border-neonLime/50 transition-colors rounded-24 p-5 sm:p-6 text-center cursor-pointer relative liquid-glass-subtle">
           <input 
             type="file" 
             accept=".csv" 
@@ -94,12 +99,22 @@
         </p>
       </div>
 
+      <!-- Bottom Actions -->
+      <div class="pt-3 border-t border-white/[0.08] flex items-center justify-end">
+        <button 
+          @click="$emit('close')"
+          class="w-full sm:w-auto px-6 py-2.5 rounded-full liquid-glass-subtle hover:bg-white/10 text-white font-bold text-xs border border-white/15 hover:border-white/30 transition-all cursor-pointer active:scale-95"
+        >
+          Fermer les paramètres
+        </button>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { getApiBase } from '../config';
 
 const props = defineProps({
@@ -118,6 +133,15 @@ const selectedFile = ref(null);
 const isUploading = ref(false);
 const uploadMsg = ref('');
 const uploadError = ref(false);
+
+const handleKeydown = (e) => {
+  if (e.key === 'Escape' && props.isOpen) {
+    emit('close');
+  }
+};
+
+onMounted(() => window.addEventListener('keydown', handleKeydown));
+onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {

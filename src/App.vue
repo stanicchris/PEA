@@ -20,6 +20,8 @@
           <button 
             @click="isMobileMenuOpen = !isMobileMenuOpen"
             class="w-10 h-10 rounded-2xl liquid-glass-pill flex items-center justify-center text-white/70 hover:text-white transition-all cursor-pointer hover:border-white/20 active:scale-95"
+            title="Menu de navigation mobile"
+            aria-label="Menu"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -34,6 +36,104 @@
               <span class="font-extrabold text-xl tracking-tight text-white flex items-center gap-1.5">
                 Rivlo <span class="text-neonLime font-light">/</span> <span class="text-white/80 font-semibold text-base">PEA</span>
               </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOBILE SLIDE-OVER DRAWER -->
+        <div v-if="isMobileMenuOpen" class="fixed inset-0 z-[120] flex md:hidden">
+          <!-- Backdrop -->
+          <div class="fixed inset-0 bg-black/80 backdrop-blur-xl transition-opacity" @click="isMobileMenuOpen = false"></div>
+
+          <!-- Drawer Content -->
+          <div class="relative w-4/5 max-w-xs bg-[#0C1017] border-r border-white/15 h-full p-6 flex flex-col justify-between shadow-2xl z-10 text-white">
+            <div>
+              <!-- Drawer Header -->
+              <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-neonLime flex items-center justify-center font-black text-black text-base shadow-[0_0_15px_rgba(163,230,53,0.4)]">
+                    R
+                  </div>
+                  <span class="font-extrabold text-lg text-white">Rivlo / <span class="text-neonLime font-bold">PEA</span></span>
+                </div>
+                <button 
+                  @click="isMobileMenuOpen = false" 
+                  class="text-white/50 hover:text-white p-2 rounded-full liquid-glass-subtle active:scale-95"
+                  title="Fermer le menu"
+                  aria-label="Fermer"
+                >
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+
+              <!-- Navigation Links -->
+              <div class="space-y-2">
+                <button 
+                  @click="activeTab = 'dashboard'; isMobileMenuOpen = false"
+                  :class="activeTab === 'dashboard' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
+                  class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
+                >
+                  <span class="text-base">⊞</span>
+                  <span>Dashboard</span>
+                </button>
+
+                <button 
+                  @click="activeTab = 'analytics'; isMobileMenuOpen = false"
+                  :class="activeTab === 'analytics' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
+                  class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
+                >
+                  <span class="text-base">📊</span>
+                  <span>Analytics & Graphiques</span>
+                </button>
+
+                <button 
+                  @click="activeTab = 'reports'; isMobileMenuOpen = false"
+                  :class="activeTab === 'reports' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
+                  class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
+                >
+                  <span class="text-base">📁</span>
+                  <span>Reports & Diagnostics</span>
+                </button>
+              </div>
+
+              <!-- Fast Quick Actions -->
+              <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+                <p class="text-[10px] font-mono uppercase text-white/40 font-bold tracking-wider px-2 mb-2">Outils & Modales</p>
+                <button 
+                  @click="isFiscalModalOpen = true; isMobileMenuOpen = false" 
+                  class="w-full text-left px-4 py-2.5 rounded-xl hover:bg-white/[0.06] text-white/80 hover:text-white flex items-center gap-3 text-xs"
+                >
+                  <span>⚖️</span>
+                  <span>Simulateur Fiscal PEA</span>
+                </button>
+                <button 
+                  @click="isAiAdvisorOpen = true; isMobileMenuOpen = false" 
+                  class="w-full text-left px-4 py-2.5 rounded-xl hover:bg-white/[0.06] text-white/80 hover:text-white flex items-center gap-3 text-xs"
+                >
+                  <span>✦</span>
+                  <span>AI Advisor Groq</span>
+                </button>
+                <button 
+                  @click="isSettingsOpen = true; isMobileMenuOpen = false" 
+                  class="w-full text-left px-4 py-2.5 rounded-xl hover:bg-white/[0.06] text-white/80 hover:text-white flex items-center gap-3 text-xs"
+                >
+                  <span>⚙️</span>
+                  <span>Paramètres du Compte</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Drawer Footer -->
+            <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+                  {{ username.substring(0, 2).toUpperCase() || 'CH' }}
+                </div>
+                <span class="text-xs font-bold text-white truncate max-w-[120px]">{{ username }}</span>
+              </div>
+              <button @click="logout" class="text-xs text-roseAcc hover:underline font-bold" title="Déconnexion">
+                Quitter
+              </button>
             </div>
           </div>
         </div>
