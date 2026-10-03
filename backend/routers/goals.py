@@ -25,7 +25,7 @@ async def get_projections(user_id: str):
         if quantity <= 0:
             continue
             
-        ticker_symbol = resolve_yf_symbol(isin)
+        ticker_symbol = resolve_yf_symbol(isin, name)
         if not ticker_symbol:
             continue
             

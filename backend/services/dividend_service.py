@@ -63,8 +63,21 @@ def get_dividend_history(ticker_symbol: str):
         
         projected = {}
         if not hist_div.empty:
-            # We assume the last 12 months repeat the same pattern for the next 12 months
-            last_year = hist_div.tail(12)
+            import datetime
+            # Some tz-aware handling based on pandas index
+            try:
+                now = datetime.datetime.now(datetime.timezone.utc)
+                one_year_ago = now - datetime.timedelta(days=365)
+                
+                # Make sure the index tz-awareness matches
+                if hist_div.index.tz is None:
+                    one_year_ago = one_year_ago.replace(tzinfo=None)
+                    
+                last_year = hist_div[hist_div.index >= one_year_ago]
+            except Exception:
+                # Fallback if datetime fails
+                last_year = hist_div.tail(4) # Assume quarterly max
+                
             for date, amount in last_year.items():
                 month = date.month
                 projected[str(month)] = amount
