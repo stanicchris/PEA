@@ -370,6 +370,9 @@
           </div>
         </div>
 
+        <!-- CALENDRIER DES DIVIDENDES -->
+        <DividendCalendar :userId="userId" />
+
         <!-- SECTION BASSE : TABLEAU PRO DES POSITIONS -->
         <PositionsTable :positions="positions" />
 
@@ -442,6 +445,7 @@ import AiAdvisorWidget from './components/AiAdvisorWidget.vue';
 import PeaFiscalModal from './components/PeaFiscalModal.vue';
 import AnalyticsView from './components/AnalyticsView.vue';
 import ReportsView from './components/ReportsView.vue';
+import DividendCalendar from './components/DividendCalendar.vue';
 
 const userId = ref(localStorage.getItem('pea_user_id') || null);
 const username = ref(localStorage.getItem('pea_username') || '');
