@@ -66,6 +66,19 @@ def resolve_yf_symbol(isin, name):
     if isin_clean == 'US0378331005': return 'AAPL'
     if isin_clean == 'US5949181045': return 'MSFT'
     if isin_clean == 'LU1681043599': return 'CW8.PA'
+    if isin_clean == 'FR0000075954': return 'ALRIB.PA'
+    if isin_clean == 'FR0000131104': return 'BNP.PA'
+    if isin_clean == 'FR0011726835': return 'GTT.PA'
+    if isin_clean == 'FR0000121972': return 'SU.PA'
+    if isin_clean == 'FR0014007ND6': return 'ALHAF.PA'
+    if isin_clean == 'FR0013341781': return 'AL2SI.PA'
+    if isin_clean == 'FR0011550193': return 'ETZ.PA'
+    if isin_clean == 'FR0000133308': return 'ORA.PA'
+    if isin_clean == 'FR0000073272': return 'SAF.PA'
+    if isin_clean == 'FR0014018PW8': return 'ALDAT.PA'
+    if isin_clean == 'FR0011049824': return 'ALMDT.PA'
+    if isin_clean == 'FR0011341205': return 'NANO.PA'
+
     
     if isin_clean and len(isin_clean) >= 9:
         online = search_yf_symbol_online(isin_clean)

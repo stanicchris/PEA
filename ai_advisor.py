@@ -66,26 +66,6 @@ def fetch_ticker_news(ticker_symbol=None, company_name=None, max_news=3):
     except Exception as e:
         print(f"Notice Google News RSS ({query_name}): {e}")
 
-    # 2. Repli vers yfinance si flux RSS indisponible
-    if not cleaned_news and ticker_symbol:
-        try:
-            ticker = yf.Ticker(ticker_symbol)
-            news_list = ticker.news or []
-            for item in news_list[:max_news]:
-                content = item.get("content", item)
-                title = content.get("title", "Actualité Boursière")
-                summary = content.get("summary", content.get("description", "Pas de résumé disponible."))
-                provider = content.get("provider", {}).get("displayName", "Actualités Marché")
-                link = content.get("canonicalUrl", {}).get("url", "") or item.get("link", "")
-                cleaned_news.append({
-                    "title": title,
-                    "summary": summary,
-                    "provider": provider,
-                    "link": link
-                })
-        except Exception as e:
-            print(f"Notice yfinance news ({ticker_symbol}): {e}")
-
     return cleaned_news
 
 _LAST_GROQ_CALL_TIME = 0.0
