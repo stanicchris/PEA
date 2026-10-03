@@ -12,6 +12,10 @@ from datetime import datetime
 import pandas as pd
 from dotenv import load_dotenv
 
+from backend.database import supabase
+from backend.utils import resolve_sector, resolve_yf_symbol, search_yf_symbol_online, to_synthetic_email
+from backend.schemas import AuthRequest
+
 load_dotenv()
 
 try:
