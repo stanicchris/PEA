@@ -61,22 +61,23 @@
       <button 
         @click="$emit('refresh')" 
         :disabled="isRefreshing" 
-        class="bg-neonLime hover:bg-neonLimeHover text-[#0C0E12] font-extrabold text-sm py-3 px-4 rounded-full transition-all shadow-[0_4px_20px_rgba(163,230,53,0.25)] hover:shadow-[0_6px_25px_rgba(163,230,53,0.4)] flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+        class="bg-neonLime hover:bg-neonLimeHover text-[#0C0E12] font-extrabold text-xs sm:text-sm py-3 px-3 rounded-full transition-all shadow-[0_4px_20px_rgba(163,230,53,0.25)] hover:shadow-[0_6px_25px_rgba(163,230,53,0.4)] flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+        title="Interroge Yahoo Finance pour actualiser les cours et enregistrer l'historique dans Supabase"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" :class="isRefreshing ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
-        <span>{{ isRefreshing ? 'Sync...' : 'Transfer' }}</span>
+        <span>{{ isRefreshing ? 'Sync en cours...' : '⚡ Actualiser Cours' }}</span>
       </button>
 
       <button 
         @click="$emit('open-settings')" 
-        class="bg-white/[0.04] hover:bg-white/[0.08] text-white font-bold text-sm py-3 px-4 rounded-full border border-white/[0.08] transition-all flex items-center justify-center gap-2 active:scale-95"
+        class="bg-white/[0.04] hover:bg-white/[0.08] text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-full border border-white/[0.08] transition-all flex items-center justify-center gap-2 active:scale-95"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
         </svg>
-        <span>Request</span>
+        <span>📁 Importer CSV</span>
       </button>
     </div>
   </div>

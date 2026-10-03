@@ -64,6 +64,19 @@
 
         <!-- Right: Actions & User Avatar -->
         <div class="flex items-center gap-3">
+          <!-- Quick Refresh Live Button -->
+          <button 
+            @click="refreshData" 
+            :disabled="isRefreshing" 
+            class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-neonLime/15 border border-neonLime/30 hover:bg-neonLime hover:text-black text-neonLime text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            title="Interroge Yahoo Finance pour actualiser les cours et enregistrer l'historique dans Supabase"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" :class="isRefreshing ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span class="hidden sm:inline">{{ isRefreshing ? 'Sync en cours...' : '⚡ Actualiser Cours' }}</span>
+          </button>
+
           <!-- Search Button -->
           <div class="relative hidden sm:block">
             <input 
@@ -71,7 +84,7 @@
               v-model="searchQuery" 
               @keyup.enter="handleSearch"
               placeholder="Rechercher (ex: LVMH, AAPL)..."
-              class="w-48 lg:w-60 bg-white/[0.04] border border-white/[0.08] rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-neonLime transition-all"
+              class="w-40 lg:w-56 bg-white/[0.04] border border-white/[0.08] rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-neonLime transition-all"
             />
             <svg class="w-3.5 h-3.5 text-white/40 absolute left-3.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -138,6 +151,7 @@
             :summary="summary" 
             :weather="weather" 
             :isLoading="isLoading" 
+            @open-ai="isAiAdvisorOpen = true"
           />
 
           <!-- Carte 4 : Stack Fiscale & Plafond PEA 150k€ -->

@@ -374,6 +374,7 @@ async def refresh_portfolio(user_id: str = Depends(get_current_user)):
     latest_snap = res_snap.data[0]
     snap_id = latest_snap['id']
     cash = float(latest_snap.get('cash', 0.0))
+    cout_investi = float(latest_snap.get('cout_investi', 0.0))
     
     # Récupérer les positions
     res_pos = supabase.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
@@ -381,6 +382,13 @@ async def refresh_portfolio(user_id: str = Depends(get_current_user)):
     
     valeur_titres = 0.0
     plus_value_totale = 0.0
+    
+    now = datetime.now()
+    now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+    today_date = now.strftime("%Y-%m-%d")
+    
+    latest_snap_date_str = str(latest_snap.get('snapshot_date', ''))
+    is_same_day = today_date in latest_snap_date_str
     
     positions_to_insert = []
     
@@ -420,25 +428,54 @@ async def refresh_portfolio(user_id: str = Depends(get_current_user)):
         pos['variation'] = round(variation, 2)
         pos['amount_variation'] = round(amount_var, 2)
         
-        # Supprimer les champs générés automatiquement par la DB pour la réinsertion
+        # Supprimer les champs auto de la DB
         if 'id' in pos: del pos['id']
         if 'created_at' in pos: del pos['created_at']
         
         positions_to_insert.append(pos)
 
-    # Mise à jour Supabase : Supprimer les anciennes lignes et insérer les nouvelles actualisées
-    if positions_to_insert:
-        supabase.table("snapshot_positions").delete().eq("snapshot_id", snap_id).execute()
+    # Gestion de l'archivage temporel dans Supabase
+    if not is_same_day:
+        # Nouveau jour : créer un nouveau snapshot pour tracer l'historique sur la durée
+        snap_data = {
+            "user_id": user_id,
+            "snapshot_date": now_str,
+            "total_valeur": round(valeur_titres + cash, 2),
+            "valeur_titres": round(valeur_titres, 2),
+            "cash": cash,
+            "cout_investi": cout_investi,
+            "plus_value": round(plus_value_totale, 2),
+            "source_filename": "Live Refresh Yahoo Finance"
+        }
+        res_new = supabase.table("snapshots").insert(snap_data).execute()
+        target_snap_id = res_new.data[0]['id'] if res_new.data else snap_id
+    else:
+        # Même jour : mettre à jour le snapshot du jour
+        target_snap_id = snap_id
+        supabase.table("snapshots").update({
+            "valeur_titres": round(valeur_titres, 2),
+            "total_valeur": round(valeur_titres + cash, 2),
+            "plus_value": round(plus_value_totale, 2),
+            "snapshot_date": now_str
+        }).eq("id", target_snap_id).execute()
+
+    for p in positions_to_insert:
+        p['snapshot_id'] = target_snap_id
+        p['user_id'] = user_id
+        p['snapshot_date'] = now_str
+        
+    if not is_same_day:
+        supabase.table("snapshot_positions").insert(positions_to_insert).execute()
+    else:
+        supabase.table("snapshot_positions").delete().eq("snapshot_id", target_snap_id).execute()
         supabase.table("snapshot_positions").insert(positions_to_insert).execute()
     
-    # Mise à jour des totaux du snapshot
-    supabase.table("snapshots").update({
-        "valeur_titres": round(valeur_titres, 2),
+    return {
+        "status": "ok", 
+        "message": "Cours en direct et historique mis à jour dans Supabase",
         "total_valeur": round(valeur_titres + cash, 2),
-        "plus_value": round(plus_value_totale, 2)
-    }).eq("id", snap_id).execute()
-    
-    return {"status": "ok", "message": "Cours en direct mis à jour dans Supabase"}
+        "is_new_day_snapshot": not is_same_day
+    }
 
 try:
     from bourse_ai import analyze_stock_with_ai

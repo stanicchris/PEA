@@ -12,9 +12,14 @@
 
     <!-- Status Badge & Metric -->
     <div class="space-y-1.5 mb-2">
-      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neonPurple/15 border border-neonPurple/30 text-lavender text-xs font-semibold">
+      <div 
+        @click="$emit('open-ai')" 
+        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neonPurple/15 border border-neonPurple/30 text-lavender text-xs font-semibold cursor-pointer hover:bg-neonPurple/25 transition-all"
+        title="Cliquez pour lancer le diagnostic IA complet"
+      >
         <span>{{ weather?.text || 'On track' }}</span>
         <span class="text-xs">{{ weather?.emoji || '⚡' }}</span>
+        <span class="text-[10px] text-white/40 ml-1 font-normal">✦ IA</span>
       </div>
 
       <div class="flex items-baseline gap-2 pt-1">
