@@ -138,9 +138,16 @@ const chartOption = computed(() => {
   let cData = [];
 
   if (props.history && props.history.length >= 2) {
-    const sorted = [...props.history].sort((a, b) => new Date(a.snapshot_date) - new Date(b.snapshot_date));
+    const parseSnapDate = (dStr) => {
+      if (!dStr) return new Date();
+      const s = String(dStr).replace(' ', 'T');
+      const d = new Date(s);
+      return isNaN(d.getTime()) ? new Date() : d;
+    };
+
+    const sorted = [...props.history].sort((a, b) => parseSnapDate(a.snapshot_date) - parseSnapDate(b.snapshot_date));
     categories = sorted.map(h => {
-      const d = new Date(h.snapshot_date);
+      const d = parseSnapDate(h.snapshot_date);
       return d.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
     });
     sData = sorted.map(h => visibleLayers.value.stocks ? Math.round((h.valeur_titres || h.total_valeur || 0) * (stocksVal.value / (totalVal.value || 1))) : 0);

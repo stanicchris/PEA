@@ -260,7 +260,7 @@
         </div>
 
         <!-- SECTION BASSE : TABLEAU PRO DES POSITIONS -->
-        <PositionsTable :positions="positions" :globalSearch="searchQuery" />
+        <PositionsTable :positions="positions" />
 
       </div>
 
