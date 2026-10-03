@@ -238,10 +238,10 @@ async def upload_csv(user_id: str, file: UploadFile = File(...)):
         'nom': 'name', 'valeur': 'name', 'libelle': 'name', 'libellé': 'name', 
         'code isin': 'isin', 'isin': 'isin',
         'quantité': 'quantity', 'quantite': 'quantity',
-        'prix de revient': 'buying_price', 'pru': 'buying_price', 
-        'dernier cours': 'last_price', 
+        'prix de revient': 'buying_price', 'pru': 'buying_price', 'buyingprice': 'buying_price',
+        'dernier cours': 'last_price', 'lastprice': 'last_price',
         'montant': 'amount', 'valorisation': 'amount',
-        '+/- value': 'amount_variation', 'plus/moins value': 'amount_variation',
+        '+/- value': 'amount_variation', 'plus/moins value': 'amount_variation', 'amountvariation': 'amount_variation',
         '+/- value (%)': 'variation', 'perf (%)': 'variation', 'performance': 'variation'
     }
     
@@ -256,7 +256,8 @@ async def upload_csv(user_id: str, file: UploadFile = File(...)):
     
     for col in ['quantity', 'buying_price', 'last_price', 'amount', 'amount_variation', 'variation']:
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col].astype(str).str.replace(' ', '').str.replace('€', '').str.replace('%', '').str.replace(',', '.'), errors='coerce').fillna(0.0)
+            df[col] = df[col].astype(str).str.replace(r'\s+', '', regex=True).str.replace('€', '').str.replace('%', '').str.replace(',', '.')
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
 
     if 'amount' not in df.columns and 'quantity' in df.columns and 'last_price' in df.columns:
         df['amount'] = df['quantity'] * df['last_price']
