@@ -78,28 +78,26 @@ const titresVal = computed(() => {
 });
 
 const cashVal = computed(() => {
-  const diff = totalVal.value - titresVal.value;
-  return diff > 0 ? diff : 0;
+  return Number(props.summary?.cash || 0);
 });
 
 const actionsVal = computed(() => Math.max(0, titresVal.value - etfVal.value));
 
 const allocationPercent = computed(() => {
-  if (!totalVal.value) return 96;
-  const pct = Math.round((titresVal.value) / totalVal.value * 100);
-  return pct > 0 ? pct : 96;
+  if (!totalVal.value) return 0;
+  return Math.min(100, Math.round((titresVal.value / totalVal.value) * 100));
 });
 
 const categories = computed(() => [
-  { name: 'Actions Vives PEA', value: actionsVal.value || 28450.00, color: '#8B5CF6' },
-  { name: 'ETFs & Trackers', value: etfVal.value || 6450.00, color: '#C4B5FD' },
-  { name: 'Liquidités / Espèces', value: cashVal.value || 1200.01, color: '#A3E635' }
+  { name: 'Actions Vives PEA', value: actionsVal.value, color: '#8B5CF6' },
+  { name: 'ETFs & Trackers', value: etfVal.value, color: '#C4B5FD' },
+  { name: 'Liquidités / Espèces', value: cashVal.value, color: '#A3E635' }
 ]);
 
 const ringOption = computed(() => {
-  const actVal = actionsVal.value || 60;
-  const etfV = etfVal.value || 20;
-  const cashV = cashVal.value || 10;
+  const actVal = actionsVal.value;
+  const etfV = etfVal.value;
+  const cashV = cashVal.value;
   const total = Math.max(1, actVal + etfV + cashV);
 
   return {

@@ -103,17 +103,12 @@ const formattedTotal = computed(() => {
 });
 
 const cashValue = computed(() => {
-  const total = props.summary?.total_value || 0;
-  const invested = props.summary?.total_invested || 0;
-  const perf = props.summary?.global_performance_value || 0;
-  const titres = (props.positions || []).reduce((acc, p) => acc + (p.quantity * p.current_price), 0);
-  const diff = total - titres;
-  return diff > 0 ? diff : 0;
+  return Number(props.summary?.cash || 0);
 });
 
 const etfValue = computed(() => {
   return (props.positions || [])
-    .filter(p => p.sector === 'ETF & Indice' || p.name?.toUpperCase().includes('ETF') || p.name?.toUpperCase().includes('CW8'))
+    .filter(p => p.sector === 'ETF & Indice' || p.name?.toUpperCase().includes('ETF') || p.name?.toUpperCase().includes('CW8') || p.asset_type === 'ETF')
     .reduce((acc, p) => acc + (p.quantity * p.current_price), 0);
 });
 
@@ -123,6 +118,6 @@ const actionsValue = computed(() => {
 });
 
 const formatCurrency = (val) => {
-  return (val || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €';
+  return (val || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 };
 </script>

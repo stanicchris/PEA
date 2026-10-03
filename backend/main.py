@@ -162,22 +162,44 @@ async def register(req: AuthRequest):
 def fetch_user_data(user_id: str):
     if not supabase: return pd.DataFrame(), 0.0
     res_snap = supabase.table("snapshots").select("*").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
-    if not res_snap.data:
-        return pd.DataFrame(), 0.0
     
-    latest_snap = res_snap.data[0]
+    cash = 0.0
+    latest_snap = res_snap.data[0] if (res_snap and res_snap.data) else None
+    
+    if latest_snap and latest_snap.get('cash') is not None:
+        try:
+            cash = float(latest_snap.get('cash', 0.0) or 0.0)
+        except Exception:
+            cash = 0.0
+    else:
+        # Fallback to user_settings if snapshot has no cash defined
+        try:
+            res_settings = supabase.table("user_settings").select("cash").eq("user_id", user_id).limit(1).execute()
+            if res_settings.data and res_settings.data[0].get('cash') is not None:
+                cash = float(res_settings.data[0]['cash'] or 0.0)
+        except Exception as e:
+            pass
+
+    if not latest_snap:
+        return pd.DataFrame(), cash
+    
     snap_id = latest_snap['id']
-    cash = float(latest_snap.get('cash', 0.0))
-    
     res_pos = supabase.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
-    df = pd.DataFrame(res_pos.data) if res_pos.data else pd.DataFrame()
+    df = pd.DataFrame(res_pos.data) if (res_pos and res_pos.data) else pd.DataFrame()
     return df, cash
 
 @app.get("/api/portfolio/summary")
 async def get_summary(user_id: str):
     df, cash = fetch_user_data(user_id)
     if df.empty:
-        return {"total_value": cash, "total_invested": 0, "global_performance_pct": 0, "global_performance_value": 0, "last_updated": datetime.now().isoformat()}
+        return {
+            "total_value": round(cash, 2), 
+            "total_invested": 0, 
+            "global_performance_pct": 0, 
+            "global_performance_value": 0, 
+            "cash": round(cash, 2),
+            "last_updated": datetime.now().isoformat()
+        }
     
     val_titres = float(df['amount'].sum())
     total_value = val_titres + cash
@@ -190,6 +212,7 @@ async def get_summary(user_id: str):
         "total_invested": round(total_invested, 2),
         "global_performance_pct": round(global_performance_pct, 2),
         "global_performance_value": round(global_performance_value, 2),
+        "cash": round(cash, 2),
         "last_updated": datetime.now().isoformat()
     }
 
@@ -231,14 +254,27 @@ class CashUpdateRequest(BaseModel):
 @app.post("/api/portfolio/cash")
 async def update_cash(req: CashUpdateRequest, user_id: str):
     if not supabase: raise HTTPException(500, "DB not configured")
+    
+    # 1. Update in snapshots table (latest snapshot)
     res_snap = supabase.table("snapshots").select("id, valeur_titres").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
     if res_snap.data:
         snap_id = res_snap.data[0]['id']
         val_titres = float(res_snap.data[0].get("valeur_titres") or 0.0)
         supabase.table("snapshots").update({
             "cash": req.cash, 
-            "total_valeur": val_titres + req.cash
+            "total_valeur": round(val_titres + req.cash, 2)
         }).eq("id", snap_id).execute()
+        
+    # 2. Update/upsert in user_settings table
+    try:
+        supabase.table("user_settings").upsert({
+            "user_id": user_id,
+            "cash": req.cash,
+            "updated_at": datetime.now().isoformat()
+        }).execute()
+    except Exception as err:
+        print(f"user_settings update note: {err}")
+        
     return {"status": "ok", "cash": req.cash}
 
 @app.post("/api/portfolio/upload")
