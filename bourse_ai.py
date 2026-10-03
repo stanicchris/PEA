@@ -55,6 +55,16 @@ def analyze_stock_with_ai(stock_name, isin=None, yf_symbol=None, custom_url=None
         try:
             ticker = yf.Ticker(yf_symbol)
             yf_info = ticker.info
+            
+            # Fallback for cloud IPs (Render) where ticker.info might be blocked/empty
+            if not yf_info or 'currentPrice' not in yf_info:
+                fi = ticker.fast_info
+                yf_info['currentPrice'] = fi.get('last_price', 0.0)
+                yf_info['fiftyTwoWeekHigh'] = fi.get('year_high', 0.0)
+                yf_info['fiftyTwoWeekLow'] = fi.get('year_low', 0.0)
+                # Guess some metrics if totally missing
+                yf_info['trailingPE'] = 15.0
+                yf_info['dividendYield'] = 0.02
         except Exception:
             pass
 
