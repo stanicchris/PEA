@@ -284,15 +284,15 @@ const fetchData = async () => {
     const token = localStorage.getItem('pea_access_token');
     const authHeaders = token ? { Authorization: 'Bearer ' + token } : {};
 
-    const [summaryRes, positionsRes, historyRes, weatherRes] = await Promise.all([
-      fetch(`${apiBase}/api/portfolio/summary?user_id=${userId.value}`, { headers: authHeaders }),
-      fetch(`${apiBase}/api/portfolio/positions?user_id=${userId.value}`, { headers: authHeaders }),
-      fetch(`${apiBase}/api/portfolio/history?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null),
-      fetch(`${apiBase}/api/portfolio/weather?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null)
+    // 1. Fetch core financial data immediately (fast)
+    const [summaryRes, positionsRes, historyRes] = await Promise.all([
+      fetch(`${apiBase}/api/portfolio/summary?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null),
+      fetch(`${apiBase}/api/portfolio/positions?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null),
+      fetch(`${apiBase}/api/portfolio/history?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null)
     ]);
 
-    if (summaryRes.ok) summary.value = await summaryRes.json();
-    if (positionsRes.ok) {
+    if (summaryRes && summaryRes.ok) summary.value = await summaryRes.json();
+    if (positionsRes && positionsRes.ok) {
       const posData = await positionsRes.json();
       positions.value = posData.positions || [];
     }
@@ -300,13 +300,22 @@ const fetchData = async () => {
       const histData = await historyRes.json();
       history.value = histData.history || [];
     }
-    if (weatherRes && weatherRes.ok) {
-      weather.value = await weatherRes.json();
-    }
   } catch (error) {
     console.error("Erreur lors de la récupération des données :", error);
   } finally {
     isLoading.value = false;
+  }
+
+  // 2. Fetch market weather asynchronously in background without blocking UI
+  try {
+    const token = localStorage.getItem('pea_access_token');
+    const authHeaders = token ? { Authorization: 'Bearer ' + token } : {};
+    fetch(`${apiBase}/api/portfolio/weather?user_id=${userId.value}`, { headers: authHeaders })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data) weather.value = data; })
+      .catch(() => null);
+  } catch (e) {
+    // Ignore weather error
   }
 };
 

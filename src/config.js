@@ -11,5 +11,6 @@ export const getApiBase = () => {
       return 'http://127.0.0.1:8000';
     }
   }
-  return '';
+  // Production default Render backend
+  return 'https://pea-tpxq.onrender.com';
 };
