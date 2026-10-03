@@ -45,6 +45,12 @@ def _fetch_and_cache_dividend_data(ticker_symbol: str):
         ticker = yf.Ticker(ticker_symbol, session=_yf_session)
         info = ticker.info
         
+        # If info is completely empty or missing basic fields, Yahoo Finance is blocking us
+        # Do not cache this response so we can try again later
+        if not info or ("symbol" not in info and "shortName" not in info and "regularMarketPrice" not in info):
+            print(f"Warning: yfinance returned empty info for {ticker_symbol}. Rate limited?")
+            return {"payout_ratio": None, "monthly_history": {}}
+            
         ex_date_timestamp = info.get("exDividendDate")
         amount = info.get("dividendRate")
         payout_ratio = info.get("payoutRatio")
