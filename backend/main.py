@@ -485,24 +485,22 @@ except ImportError as e:
 
 @app.get("/api/stock/analyze/{ticker}")
 async def analyze_stock(ticker: str, name: str = ""):
-    resolved_ticker = ticker
+    resolved_ticker = ticker.strip()
+    resolved_name = (name or ticker).strip()
     
-    # Si le ticker n'a pas de point (ex: LVMH, AAPL), on essaie de le résoudre pour être sûr
-    if "." not in ticker:
-        found = search_yf_symbol_online(ticker)
-        if found: resolved_ticker = found
-            
-    resolved_name = name or ticker
-    if resolved_ticker:
-        try:
-            info = yf.Ticker(resolved_ticker).fast_info
-            # We don't have shortName in fast_info, so let's stick to the query name or fetch info
-            # Just keeping it simple to avoid slow Yahoo queries
-        except Exception:
-            pass
+    # 1. Try resolving symbol from known list
+    direct_sym = resolve_yf_symbol("", resolved_ticker) or resolve_yf_symbol("", resolved_name)
+    if direct_sym:
+        resolved_ticker = direct_sym
+    else:
+        # 2. Search Yahoo Finance online for the ticker/name
+        found_sym = search_yf_symbol_online(resolved_ticker) or search_yf_symbol_online(resolved_name)
+        if found_sym:
+            resolved_ticker = found_sym
             
     analysis = analyze_stock_with_ai(stock_name=resolved_name, yf_symbol=resolved_ticker)
     return analysis
+
 
 import io
 import openpyxl

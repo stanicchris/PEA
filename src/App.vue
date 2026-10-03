@@ -80,18 +80,32 @@
             <span class="hidden sm:inline">{{ isRefreshing ? 'Sync en cours...' : '⚡ Actualiser Cours' }}</span>
           </button>
 
-          <!-- Search Input with Auto-trigger -->
-          <div class="relative hidden sm:block">
+          <!-- Search Input with Auto-trigger & Click button -->
+          <div class="relative flex items-center">
             <input 
               type="text" 
               v-model="searchQuery" 
               @keyup.enter="handleHeaderSearch"
-              placeholder="Rechercher (ex: LVMH, AAPL)..."
-              class="w-40 lg:w-56 bg-white/[0.04] border border-white/[0.08] rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-neonLime transition-all"
+              placeholder="Analyser une action (ex: AAPL, LVMH)..."
+              class="w-36 sm:w-56 lg:w-64 bg-white/[0.04] border border-white/[0.08] rounded-full pl-9 pr-8 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-neonLime transition-all"
             />
-            <svg class="w-3.5 h-3.5 text-white/40 absolute left-3.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
+            <button 
+              @click="handleHeaderSearch" 
+              class="w-4 h-4 text-white/40 hover:text-neonLime absolute left-3 top-2.5 transition-colors cursor-pointer"
+              title="Lancer l'analyse du titre"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </button>
+            <button 
+              v-if="searchQuery.trim()" 
+              @click="handleHeaderSearch"
+              class="absolute right-2 text-[10px] font-mono font-bold px-1.5 py-0.5 bg-neonLime text-black rounded-md hover:bg-neonLimeHover transition-all cursor-pointer"
+              title="Analyser"
+            >
+              ↵
+            </button>
           </div>
 
           <!-- Notification Bell with Dropdown -->
@@ -371,15 +385,28 @@ const openStockInspector = (stock) => {
 
 const handleHeaderSearch = () => {
   if (!searchQuery.value.trim()) return;
-  const q = searchQuery.value.toLowerCase().trim();
+  const q = searchQuery.value.trim();
+  const qLower = q.toLowerCase();
+  
+  // 1. Chercher d'abord dans les positions du portefeuille
   const match = positions.value.find(p => 
-    p.name.toLowerCase().includes(q) || 
-    (p.ticker && p.ticker.toLowerCase().includes(q))
+    (p.name && p.name.toLowerCase().includes(qLower)) || 
+    (p.ticker && p.ticker.toLowerCase().includes(qLower)) ||
+    (p.isin && p.isin.toLowerCase().includes(qLower))
   );
+  
   if (match) {
     openStockInspector(match);
+  } else {
+    // 2. Action hors portefeuille : interrogation directe de l'API pour n'importe quelle action (ex: AAPL, NVDA, LVMH, TSLA)
+    openStockInspector({
+      name: q.toUpperCase(),
+      ticker: q.toUpperCase(),
+      sector: 'Marché Mondial / Recherche Directe'
+    });
   }
 };
+
 
 const fetchData = async () => {
   if (!userId.value) return;
