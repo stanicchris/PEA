@@ -376,7 +376,15 @@ async def refresh_portfolio(user_id: str = Depends(get_current_user)):
                 if info.last_price: 
                     current_price = info.last_price
         except Exception:
-            pass
+            try:
+                import requests
+                url = f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=1d"
+                res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+                if res.status_code == 200:
+                    data = res.json()
+                    current_price = data['chart']['result'][0]['meta'].get('regularMarketPrice', current_price)
+            except:
+                pass
             
         qty = float(pos.get('quantity', 0.0))
         pru = float(pos.get('buying_price', 0.0))
