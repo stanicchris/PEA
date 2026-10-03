@@ -48,3 +48,31 @@ def get_upcoming_dividends(ticker_symbol: str):
         # Cache failure for 1 hour to prevent spamming
         _dividend_cache[ticker_symbol] = (None, now - CACHE_TTL + 3600)
         return None
+
+def get_dividend_history(ticker_symbol: str):
+    """
+    Fetches the historical dividends over the last year to project 12 months of payments.
+    """
+    try:
+        ticker = yf.Ticker(ticker_symbol, session=_yf_session)
+        info = ticker.info
+        payout_ratio = info.get("payoutRatio", None)
+        
+        # Get last 1 year of dividends
+        hist_div = ticker.dividends
+        
+        projected = {}
+        if not hist_div.empty:
+            # We assume the last 12 months repeat the same pattern for the next 12 months
+            last_year = hist_div.tail(12)
+            for date, amount in last_year.items():
+                month = date.month
+                projected[str(month)] = amount
+                
+        return {
+            "payout_ratio": payout_ratio,
+            "monthly_history": projected
+        }
+    except Exception as e:
+        print(f"Error fetching dividend history for {ticker_symbol}: {e}")
+        return {"payout_ratio": None, "monthly_history": {}}

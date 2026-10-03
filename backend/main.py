@@ -60,13 +60,14 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Non autorisé: {str(e)}")
 
-from backend.routers import auth, portfolio, market, ai, optimization
+from backend.routers import auth, portfolio, market, ai, optimization, goals
 
 app.include_router(auth.router)
 app.include_router(portfolio.router)
 app.include_router(market.router)
 app.include_router(ai.router)
 app.include_router(optimization.router)
+app.include_router(goals.router)
 
 def fetch_user_data(user_id: str):
     if not supabase: return pd.DataFrame(), 0.0
