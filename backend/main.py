@@ -503,3 +503,116 @@ async def analyze_stock(ticker: str, name: str = ""):
             
     analysis = analyze_stock_with_ai(stock_name=resolved_name, yf_symbol=resolved_ticker)
     return analysis
+
+import io
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+from fastapi.responses import Response
+
+@app.get("/api/portfolio/export/excel")
+async def export_portfolio_excel(user_id: str = Depends(get_current_user)):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Supabase not configured")
+    
+    res_snap = supabase.table("snapshots").select("*").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+    snap = res_snap.data[0] if res_snap.data else {}
+    snap_id = snap.get('id')
+    
+    positions = []
+    if snap_id:
+        res_pos = supabase.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
+        positions = res_pos.data or []
+        
+    wb = openpyxl.Workbook()
+    ws_pos = wb.active
+    ws_pos.title = "Positions & Valorisation"
+    ws_pos.views.sheetView[0].showGridLines = True
+    
+    header_fill = PatternFill(start_color="16191E", end_color="16191E", fill_type="solid")
+    header_font = Font(name="Arial", size=11, bold=True, color="A3E635")
+    align_center = Alignment(horizontal="center", vertical="center")
+    
+    headers = ["Titre", "ISIN / Ticker", "Secteur", "Quantité", "PRU (€)", "Cours Actuel (€)", "Montant Investi (€)", "Valeur Actuelle (€)", "+/- Value (€)", "Performance (%)"]
+    ws_pos.append(headers)
+    
+    for col_num in range(1, len(headers) + 1):
+        cell = ws_pos.cell(row=1, column=col_num)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = align_center
+        
+    for i, p in enumerate(positions, start=2):
+        name = p.get('name', '')
+        isin = p.get('ticker') or p.get('isin', '')
+        sector = p.get('sector', 'Actions')
+        qty = float(p.get('quantity', 0))
+        pru = float(p.get('buying_price') or p.get('pru', 0))
+        price = float(p.get('last_price') or p.get('current_price', 0))
+        
+        invested_formula = f"=D{i}*E{i}"
+        val_formula = f"=D{i}*F{i}"
+        gain_formula = f"=H{i}-G{i}"
+        perf_formula = f"=IF(E{i}>0, (F{i}-E{i})/E{i}, 0)"
+        
+        ws_pos.append([name, isin, sector, qty, pru, price, invested_formula, val_formula, gain_formula, perf_formula])
+        
+        ws_pos.cell(row=i, column=4).number_format = '#,##0'
+        ws_pos.cell(row=i, column=5).number_format = '#,##0.00 €'
+        ws_pos.cell(row=i, column=6).number_format = '#,##0.00 €'
+        ws_pos.cell(row=i, column=7).number_format = '#,##0.00 €'
+        ws_pos.cell(row=i, column=8).number_format = '#,##0.00 €'
+        ws_pos.cell(row=i, column=9).number_format = '+#,##0.00 €;-#,##0.00 €;0.00 €'
+        ws_pos.cell(row=i, column=10).number_format = '+0.00%;-0.00%;0.00%'
+        
+    total_row = len(positions) + 2
+    if len(positions) > 0:
+        ws_pos.cell(row=total_row, column=1, value="TOTAL PORTEFEUILLE").font = Font(name="Arial", size=11, bold=True)
+        ws_pos.cell(row=total_row, column=7, value=f"=SUM(G2:G{total_row-1})").font = Font(name="Arial", size=11, bold=True)
+        ws_pos.cell(row=total_row, column=7).number_format = '#,##0.00 €'
+        ws_pos.cell(row=total_row, column=8, value=f"=SUM(H2:H{total_row-1})").font = Font(name="Arial", size=11, bold=True)
+        ws_pos.cell(row=total_row, column=8).number_format = '#,##0.00 €'
+        ws_pos.cell(row=total_row, column=9, value=f"=H{total_row}-G{total_row}").font = Font(name="Arial", size=11, bold=True)
+        ws_pos.cell(row=total_row, column=9).number_format = '+#,##0.00 €;-#,##0.00 €;0.00 €'
+        ws_pos.cell(row=total_row, column=10, value=f"=IF(G{total_row}>0, I{total_row}/G{total_row}, 0)").font = Font(name="Arial", size=11, bold=True)
+        ws_pos.cell(row=total_row, column=10).number_format = '+0.00%;-0.00%;0.00%'
+    
+    for col in ws_pos.columns:
+        max_len = max(len(str(cell.value or '')) for cell in col)
+        col_letter = get_column_letter(col[0].column)
+        ws_pos.column_dimensions[col_letter].width = max(max_len + 4, 14)
+        
+    ws_fisc = wb.create_sheet(title="Synthèse Fiscale PEA")
+    ws_fisc.views.sheetView[0].showGridLines = True
+    ws_fisc.append(["Métrique Fiscale", "Valeur", "Commentaires"])
+    for col_num in range(1, 4):
+        ws_fisc.cell(row=1, column=col_num).fill = header_fill
+        ws_fisc.cell(row=1, column=col_num).font = header_font
+        
+    cash = float(snap.get('cash', 0.0))
+    ws_fisc.append(["Liquidités Disponibles (Espèces)", cash, "Disponibles pour arbitrage"])
+    ws_fisc.cell(row=2, column=2).number_format = '#,##0.00 €'
+    ws_fisc.append(["Plafond Légal de Versement", 150000.0, "Article L221-30 du CMF"])
+    ws_fisc.cell(row=3, column=2).number_format = '#,##0.00 €'
+    ws_fisc.append(["Total Versements Effectués", float(snap.get('cout_investi', 0.0)), "Total des apports en numéraire"])
+    ws_fisc.cell(row=4, column=2).number_format = '#,##0.00 €'
+    ws_fisc.append(["Capacité de Versement Restante", "=B3-B4", "Plafond restant à utiliser"])
+    ws_fisc.cell(row=5, column=2).number_format = '#,##0.00 €'
+    ws_fisc.append(["Régime Fiscal (Ancienneté > 5 ans)", "0,00 % IR", "Exonération totale d'impôt sur les plus-values"])
+    ws_fisc.append(["Prélèvements Sociaux (CSG/CRDS)", "17,20 %", "Applicables uniquement lors des rachats"])
+    
+    for col in ws_fisc.columns:
+        max_len = max(len(str(cell.value or '')) for cell in col)
+        col_letter = get_column_letter(col[0].column)
+        ws_fisc.column_dimensions[col_letter].width = max(max_len + 5, 20)
+        
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=Export_PEA_Complet.xlsx"}
+    )
+

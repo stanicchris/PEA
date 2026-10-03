@@ -5,24 +5,35 @@
       <div>
         <div class="flex items-center gap-2 mb-1">
           <span class="px-2.5 py-0.5 rounded-full bg-neonLime/15 text-neonLime text-xs font-mono font-bold">Rapports & Conformité</span>
-          <span class="text-white/40 text-xs font-mono">Export PEA 2026</span>
+          <span class="text-white/40 text-xs font-mono">Export PEA Pro 2026</span>
         </div>
         <h2 class="text-2xl font-black text-white tracking-tight">Rapports Financiers & Déclarations</h2>
-        <p class="text-white/40 text-xs mt-1">Générez et exportez vos états de portefeuille, relevés de plus-values et attestations fiscales.</p>
+        <p class="text-white/40 text-xs mt-1">Générez et exportez vos états de portefeuille, relevés de plus-values et attestations fiscales en formats Excel, CSV ou JSON.</p>
       </div>
 
       <div class="flex items-center gap-3 flex-wrap">
+        <!-- Excel Pro Export (.XLSX) -->
+        <button 
+          @click="exportExcel" 
+          :disabled="isExporting"
+          class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-neonLime hover:bg-neonLimeHover text-black font-extrabold text-xs transition-all shadow-lg active:scale-95 cursor-pointer disabled:opacity-50"
+          title="Génère un classeur Excel complet multi-onglets avec formules dynamiques"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>{{ isExporting ? 'Génération...' : '📊 Exporter Excel (.XLSX)' }}</span>
+        </button>
+
         <button 
           @click="exportCsv" 
-          class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-neonLime hover:bg-neonLimeHover text-black font-extrabold text-xs transition-all shadow-lg active:scale-95 cursor-pointer"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] text-white font-bold text-xs transition-all active:scale-95 cursor-pointer"
         >
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          <span>Exporter CSV</span>
+          <svg class="w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>Export CSV</span>
         </button>
 
         <button 
           @click="exportJson" 
-          class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] text-white font-bold text-xs transition-all active:scale-95 cursor-pointer"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white text-xs font-semibold transition-all cursor-pointer"
         >
           <svg class="w-4 h-4 text-lavender" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           <span>Export JSON</span>
@@ -30,7 +41,7 @@
 
         <button 
           @click="printReport" 
-          class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white text-xs font-semibold transition-all cursor-pointer"
+          class="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white text-xs transition-all cursor-pointer"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
           <span>Imprimer</span>
@@ -143,12 +154,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
+import { getApiBase } from '../config';
 
 const props = defineProps({
   positions: { type: Array, default: () => [] },
   summary: { type: Object, default: () => ({}) }
 });
+
+const isExporting = ref(false);
 
 const totalVal = computed(() => props.summary?.total_value || 36100);
 const investedAmount = computed(() => props.summary?.total_invested || 30000);
@@ -161,6 +175,39 @@ const todayFormatted = computed(() => {
     year: 'numeric'
   });
 });
+
+const exportExcel = async () => {
+  isExporting.value = true;
+  const userId = localStorage.getItem('pea_user_id');
+  const token = localStorage.getItem('pea_access_token');
+  const apiBase = getApiBase();
+
+  try {
+    if (apiBase && userId) {
+      const res = await fetch(`${apiBase}/api/portfolio/export/excel?user_id=${userId}`, {
+        headers: token ? { Authorization: 'Bearer ' + token } : {}
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Rapport_PEA_Complet_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn("Backend excel export fallback to CSV/XML:", err);
+  } finally {
+    isExporting.value = false;
+  }
+
+  // Fallback direct CSV export
+  exportCsv();
+};
 
 const exportCsv = () => {
   if (!props.positions || !props.positions.length) return;

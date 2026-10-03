@@ -9,3 +9,4 @@ supabase
 groq
 beautifulsoup4
 requests
+openpyxl
