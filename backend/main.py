@@ -128,6 +128,7 @@ security = HTTPBearer()
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
+        from backend.database import supabase
         res = supabase.auth.get_user(credentials.credentials)
         if not res or not res.user:
             raise HTTPException(status_code=401, detail="Token invalide")
@@ -135,29 +136,13 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Non autorisé: {str(e)}")
 
-@app.post("/api/auth/login")
-async def login(req: AuthRequest):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Configuration Supabase manquante dans le backend (.env).")
-    try:
-        email = to_synthetic_email(req.username)
-        res = supabase.auth.sign_in_with_password({"email": email, "password": req.password})
-        return {"user_id": res.user.id, "username": req.username, "access_token": res.session.access_token}
-    except Exception as e:
-        raise HTTPException(status_code=401, detail="Identifiants incorrects.")
+from backend.routers import auth, portfolio, market, ai
 
-@app.post("/api/auth/register")
-async def register(req: AuthRequest):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Configuration Supabase manquante.")
-    if len(req.password) < 6:
-        raise HTTPException(status_code=400, detail="Le mot de passe doit faire au moins 6 caractères.")
-    try:
-        email = to_synthetic_email(req.username)
-        res = supabase.auth.sign_up({"email": email, "password": req.password})
-        return {"user_id": res.user.id, "username": req.username, "access_token": res.session.access_token}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+app.include_router(auth.router)
+app.include_router(portfolio.router)
+app.include_router(market.router)
+app.include_router(ai.router)
+
 
 def fetch_user_data(user_id: str):
     if not supabase: return pd.DataFrame(), 0.0
