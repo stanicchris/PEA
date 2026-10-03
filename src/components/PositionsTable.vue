@@ -1,43 +1,110 @@
 <template>
   <div class="glass-card rounded-32 p-7 relative overflow-hidden mt-6">
-    <!-- Header with Search & Count -->
-    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
+    <!-- Header with Search & Quick Filter Badges -->
+    <div class="flex flex-col lg:flex-row justify-between lg:items-center gap-4 mb-6">
       <div>
-        <h3 class="text-white font-bold text-xl tracking-tight">Tableau Détaillé des Positions</h3>
-        <p class="text-white/40 text-xs mt-0.5">Cliquez sur une ligne pour ouvrir l'analyse fondamentale BourseAi</p>
+        <div class="flex items-center gap-3">
+          <h3 class="text-white font-bold text-xl tracking-tight">Tableau Détaillé des Positions</h3>
+          <span class="px-2.5 py-0.5 rounded-full bg-white/[0.06] text-white/60 text-xs font-mono font-bold">
+            {{ filteredAndSortedPositions.length }} / {{ positions.length }} actifs
+          </span>
+        </div>
+        <p class="text-white/40 text-xs mt-0.5">Cliquez sur un titre pour ouvrir la fiche d'analyse fondamentale BourseAi</p>
       </div>
 
-      <div class="relative w-full sm:w-64">
-        <input 
-          type="text" 
-          v-model="searchFilter" 
-          placeholder="Filtrer (ex: LVMH, AAPL)..." 
-          class="w-full bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-2 pl-9 text-xs text-white placeholder-white/30 focus:outline-none focus:border-neonLime transition-all"
-        />
-        <svg class="w-3.5 h-3.5 text-white/40 absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
+      <!-- Filters & Search -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <!-- Quick category filter pills -->
+        <div class="flex items-center gap-1.5 bg-white/[0.04] p-1 rounded-full border border-white/[0.06] text-xs">
+          <button 
+            v-for="f in [
+              { key: 'all', label: 'Tous' },
+              { key: 'gainers', label: 'Plus-values ↗' },
+              { key: 'losers', label: 'Moins-values ↘' },
+              { key: 'etf', label: 'ETFs' }
+            ]" 
+            :key="f.key"
+            @click="categoryFilter = f.key"
+            :class="categoryFilter === f.key ? 'bg-white/[0.15] text-white font-bold' : 'text-white/40 hover:text-white'"
+            class="px-3 py-1 rounded-full transition-all cursor-pointer"
+          >
+            {{ f.label }}
+          </button>
+        </div>
+
+        <!-- Search input -->
+        <div class="relative w-full sm:w-56">
+          <input 
+            type="text" 
+            v-model="searchFilter" 
+            placeholder="Filtrer (ex: LVMH, AI)..." 
+            class="w-full bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-2 pl-9 text-xs text-white placeholder-white/30 focus:outline-none focus:border-neonLime transition-all"
+          />
+          <svg class="w-3.5 h-3.5 text-white/40 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
       </div>
     </div>
 
     <!-- Table Container -->
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs whitespace-nowrap">
-        <thead class="text-white/40 uppercase font-mono tracking-wider border-b border-white/[0.06]">
+        <thead class="text-white/40 uppercase font-mono tracking-wider border-b border-white/[0.06] select-none">
           <tr>
-            <th class="pb-3 px-3 font-semibold">Titre & Secteur</th>
-            <th class="pb-3 px-3 font-semibold text-right">Qté</th>
-            <th class="pb-3 px-3 font-semibold text-right">PRU</th>
-            <th class="pb-3 px-3 font-semibold text-right">Cours Live</th>
-            <th class="pb-3 px-3 font-semibold text-right">Montant Investi</th>
-            <th class="pb-3 px-3 font-semibold text-right">Valeur Actuelle</th>
-            <th class="pb-3 px-3 font-semibold text-right">+/- Value (€)</th>
-            <th class="pb-3 px-3 font-semibold text-right">+/- Value (%)</th>
+            <th @click="sortBy('name')" class="pb-3 px-3 font-semibold cursor-pointer hover:text-white transition-colors">
+              <div class="flex items-center gap-1">
+                <span>Titre & Secteur</span>
+                <span v-if="sortKey === 'name'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
+            <th @click="sortBy('quantity')" class="pb-3 px-3 font-semibold text-right cursor-pointer hover:text-white transition-colors">
+              <div class="flex items-center justify-end gap-1">
+                <span>Qté</span>
+                <span v-if="sortKey === 'quantity'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
+            <th @click="sortBy('pru')" class="pb-3 px-3 font-semibold text-right cursor-pointer hover:text-white transition-colors">
+              <div class="flex items-center justify-end gap-1">
+                <span>PRU</span>
+                <span v-if="sortKey === 'pru'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
+            <th @click="sortBy('current_price')" class="pb-3 px-3 font-semibold text-right cursor-pointer hover:text-white transition-colors">
+              <div class="flex items-center justify-end gap-1">
+                <span>Cours Live</span>
+                <span v-if="sortKey === 'current_price'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
+            <th @click="sortBy('invested')" class="pb-3 px-3 font-semibold text-right cursor-pointer hover:text-white transition-colors">
+              <div class="flex items-center justify-end gap-1">
+                <span>Montant Investi</span>
+                <span v-if="sortKey === 'invested'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
+            <th @click="sortBy('val')" class="pb-3 px-3 font-semibold text-right cursor-pointer hover:text-white transition-colors">
+              <div class="flex items-center justify-end gap-1">
+                <span>Valeur Actuelle</span>
+                <span v-if="sortKey === 'val'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
+            <th @click="sortBy('amount_var')" class="pb-3 px-3 font-semibold text-right cursor-pointer hover:text-white transition-colors">
+              <div class="flex items-center justify-end gap-1">
+                <span>+/- Value (€)</span>
+                <span v-if="sortKey === 'amount_var'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
+            <th @click="sortBy('variation_pct')" class="pb-3 px-3 font-semibold text-right cursor-pointer hover:text-white transition-colors">
+              <div class="flex items-center justify-end gap-1">
+                <span>+/- Value (%)</span>
+                <span v-if="sortKey === 'variation_pct'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-white/[0.04]">
           <tr 
-            v-for="pos in filteredPositions" 
+            v-for="pos in filteredAndSortedPositions" 
             :key="pos.ticker || pos.name" 
             @click="openInspector(pos)" 
             class="hover:bg-white/[0.04] transition-all cursor-pointer group"
@@ -49,8 +116,11 @@
                   {{ (pos.ticker || pos.name || '').substring(0, 2).toUpperCase() }}
                 </div>
                 <div>
-                  <div class="font-bold text-white group-hover:text-neonLime transition-colors text-sm">{{ pos.name }}</div>
-                  <div class="text-white/40 text-[10px] font-mono">{{ pos.ticker }} &bull; {{ pos.sector }}</div>
+                  <div class="font-bold text-white group-hover:text-neonLime transition-colors text-sm flex items-center gap-2">
+                    <span>{{ pos.name }}</span>
+                    <span class="text-[10px] text-neonLime opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
+                  </div>
+                  <div class="text-white/40 text-[10px] font-mono">{{ pos.ticker }} &bull; {{ pos.sector || 'Général' }}</div>
                 </div>
               </div>
             </td>
@@ -86,9 +156,9 @@
             </td>
           </tr>
 
-          <tr v-if="!filteredPositions.length">
+          <tr v-if="!filteredAndSortedPositions.length">
             <td colspan="8" class="text-center py-8 text-white/40 text-xs italic">
-              Aucune position ne correspond à votre filtre.
+              Aucune position ne correspond à vos filtres.
             </td>
           </tr>
         </tbody>
@@ -108,21 +178,91 @@ import { ref, computed } from 'vue';
 import AssetInspectorModal from './AssetInspectorModal.vue';
 
 const props = defineProps({
-  positions: { type: Array, default: () => [] }
+  positions: { type: Array, default: () => [] },
+  globalSearch: { type: String, default: '' }
 });
 
 const searchFilter = ref('');
+const categoryFilter = ref('all');
+const sortKey = ref('val');
+const sortOrder = ref('desc');
+
 const isInspectorOpen = ref(false);
 const selectedAsset = ref(null);
 
-const filteredPositions = computed(() => {
-  if (!searchFilter.value.trim()) return props.positions;
-  const q = searchFilter.value.toLowerCase().trim();
-  return props.positions.filter(p => 
-    (p.name && p.name.toLowerCase().includes(q)) || 
-    (p.ticker && p.ticker.toLowerCase().includes(q)) ||
-    (p.sector && p.sector.toLowerCase().includes(q))
-  );
+const sortBy = (key) => {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 'desc';
+  }
+};
+
+const filteredAndSortedPositions = computed(() => {
+  let list = [...props.positions];
+
+  // Global search or local search
+  const q = (searchFilter.value || props.globalSearch || '').toLowerCase().trim();
+  if (q) {
+    list = list.filter(p => 
+      (p.name && p.name.toLowerCase().includes(q)) || 
+      (p.ticker && p.ticker.toLowerCase().includes(q)) ||
+      (p.sector && p.sector.toLowerCase().includes(q))
+    );
+  }
+
+  // Category Filter
+  if (categoryFilter.value === 'gainers') {
+    list = list.filter(p => p.variation_pct >= 0);
+  } else if (categoryFilter.value === 'losers') {
+    list = list.filter(p => p.variation_pct < 0);
+  } else if (categoryFilter.value === 'etf') {
+    list = list.filter(p => p.sector === 'ETF & Indice' || (p.name && p.name.toUpperCase().includes('ETF')));
+  }
+
+  // Sorting
+  list.sort((a, b) => {
+    let valA = 0;
+    let valB = 0;
+
+    switch (sortKey.value) {
+      case 'name':
+        return sortOrder.value === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+      case 'quantity':
+        valA = a.quantity;
+        valB = b.quantity;
+        break;
+      case 'pru':
+        valA = a.pru;
+        valB = b.pru;
+        break;
+      case 'current_price':
+        valA = a.current_price;
+        valB = b.current_price;
+        break;
+      case 'invested':
+        valA = a.quantity * a.pru;
+        valB = b.quantity * b.pru;
+        break;
+      case 'val':
+        valA = a.quantity * a.current_price;
+        valB = b.quantity * b.current_price;
+        break;
+      case 'amount_var':
+        valA = (a.current_price - a.pru) * a.quantity;
+        valB = (b.current_price - b.pru) * b.quantity;
+        break;
+      case 'variation_pct':
+        valA = a.variation_pct;
+        valB = b.variation_pct;
+        break;
+    }
+
+    return sortOrder.value === 'asc' ? valA - valB : valB - valA;
+  });
+
+  return list;
 });
 
 const openInspector = (asset) => {

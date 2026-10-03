@@ -2,8 +2,16 @@
   <div class="glass-card rounded-32 p-7 flex flex-col justify-between h-full relative overflow-hidden">
     <!-- Top Header -->
     <div class="flex justify-between items-center mb-2">
-      <h3 class="text-white font-bold text-lg tracking-tight">Transfer</h3>
-      <button class="w-8 h-8 rounded-full bg-white/[0.03] hover:bg-white/[0.08] text-white/40 hover:text-white flex items-center justify-center transition-all">
+      <div class="flex items-center gap-2">
+        <h3 class="text-white font-bold text-lg tracking-tight">Allocation</h3>
+        <span class="text-[10px] font-mono font-bold text-white/40 bg-white/[0.04] px-2 py-0.5 rounded-full">3 Niveaux</span>
+      </div>
+      
+      <button 
+        @click="cycleView" 
+        class="w-8 h-8 rounded-full bg-white/[0.03] hover:bg-white/[0.08] text-white/40 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+        title="Changer de vue d'allocation"
+      >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
         </svg>
@@ -17,7 +25,7 @@
       
       <div v-if="!isLoading" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <div class="text-2xl font-black text-white tracking-tight leading-none">{{ allocationPercent }}%</div>
-        <div class="text-[11px] text-white/40 font-medium mt-1 uppercase tracking-wider">Total</div>
+        <div class="text-[11px] text-white/40 font-medium mt-1 uppercase tracking-wider">Investi</div>
       </div>
     </div>
 
@@ -37,7 +45,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { PieChart } from 'echarts/charts';
@@ -51,6 +59,11 @@ const props = defineProps({
   summary: { type: Object, default: () => ({}) },
   isLoading: { type: Boolean, default: false }
 });
+
+const viewIndex = ref(0);
+const cycleView = () => {
+  viewIndex.value = (viewIndex.value + 1) % 2;
+};
 
 const totalVal = computed(() => props.summary?.total_value || 1);
 
@@ -72,28 +85,28 @@ const cashVal = computed(() => {
 const actionsVal = computed(() => Math.max(0, titresVal.value - etfVal.value));
 
 const allocationPercent = computed(() => {
-  if (!totalVal.value) return 43;
-  const pct = Math.round((etfVal.value + cashVal.value) / totalVal.value * 100);
-  return pct > 0 ? pct : 43;
+  if (!totalVal.value) return 96;
+  const pct = Math.round((titresVal.value) / totalVal.value * 100);
+  return pct > 0 ? pct : 96;
 });
 
 const categories = computed(() => [
-  { name: 'Product / Titres Vifs', value: actionsVal.value || 4571.15, color: '#8B5CF6' },
-  { name: 'Restaurants & ETF World', value: etfVal.value || 3450.75, color: '#C4B5FD' },
-  { name: 'Internet / Liquidités', value: cashVal.value || 1240.75, color: '#A3E635' }
+  { name: 'Actions Vives PEA', value: actionsVal.value || 28450.00, color: '#8B5CF6' },
+  { name: 'ETFs & Trackers', value: etfVal.value || 6450.00, color: '#C4B5FD' },
+  { name: 'Liquidités / Espèces', value: cashVal.value || 1200.01, color: '#A3E635' }
 ]);
 
 const ringOption = computed(() => {
   const actVal = actionsVal.value || 60;
-  const etfV = etfVal.value || 40;
-  const cashV = cashVal.value || 20;
-  const total = actVal + etfV + cashV;
+  const etfV = etfVal.value || 20;
+  const cashV = cashVal.value || 10;
+  const total = Math.max(1, actVal + etfV + cashV);
 
   return {
     backgroundColor: 'transparent',
     tooltip: { show: false },
     series: [
-      // Outer ring (Purple)
+      // Outer ring (Purple: Actions)
       {
         type: 'pie',
         radius: ['72%', '84%'],
@@ -103,10 +116,10 @@ const ringOption = computed(() => {
         label: { show: false },
         data: [
           { value: actVal, itemStyle: { color: '#8B5CF6', borderRadius: 8 } },
-          { value: total - actVal, itemStyle: { color: 'rgba(255,255,255,0.03)' } }
+          { value: Math.max(0.1, total - actVal), itemStyle: { color: 'rgba(255,255,255,0.03)' } }
         ]
       },
-      // Middle ring (Lavender)
+      // Middle ring (Lavender: ETFs)
       {
         type: 'pie',
         radius: ['54%', '66%'],
@@ -116,10 +129,10 @@ const ringOption = computed(() => {
         label: { show: false },
         data: [
           { value: etfV, itemStyle: { color: '#C4B5FD', borderRadius: 6 } },
-          { value: total - etfV, itemStyle: { color: 'rgba(255,255,255,0.03)' } }
+          { value: Math.max(0.1, total - etfV), itemStyle: { color: 'rgba(255,255,255,0.03)' } }
         ]
       },
-      // Inner ring (Neon Lime)
+      // Inner ring (Neon Lime: Cash)
       {
         type: 'pie',
         radius: ['36%', '48%'],
@@ -129,7 +142,7 @@ const ringOption = computed(() => {
         label: { show: false },
         data: [
           { value: cashV, itemStyle: { color: '#A3E635', borderRadius: 4 } },
-          { value: total - cashV, itemStyle: { color: 'rgba(255,255,255,0.03)' } }
+          { value: Math.max(0.1, total - cashV), itemStyle: { color: 'rgba(255,255,255,0.03)' } }
         ]
       }
     ]

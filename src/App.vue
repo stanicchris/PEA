@@ -10,13 +10,16 @@
       <header class="flex items-center justify-between mb-8 gap-4 flex-wrap">
         <!-- Left: Menu + Brand Logo -->
         <div class="flex items-center gap-3">
-          <button class="w-10 h-10 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] flex items-center justify-center text-white/70 hover:text-white transition-all">
+          <button 
+            @click="isMobileMenuOpen = !isMobileMenuOpen"
+            class="w-10 h-10 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] flex items-center justify-center text-white/70 hover:text-white transition-all cursor-pointer"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
           
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-2.5 cursor-pointer" @click="activeTab = 'dashboard'">
             <div class="w-9 h-9 rounded-xl bg-neonLime flex items-center justify-center font-black text-black text-lg shadow-[0_0_20px_rgba(163,230,53,0.35)]">
               R
             </div>
@@ -29,7 +32,7 @@
           <button 
             @click="activeTab = 'dashboard'"
             :class="activeTab === 'dashboard' ? 'bg-white/[0.12] text-white shadow-sm font-bold' : 'text-white/50 hover:text-white font-medium'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2"
+            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer"
           >
             <span class="text-sm">⊞</span>
             <span>Dashboard</span>
@@ -38,7 +41,7 @@
           <button 
             @click="activeTab = 'analytics'"
             :class="activeTab === 'analytics' ? 'bg-white/[0.12] text-white shadow-sm font-bold' : 'text-white/50 hover:text-white font-medium'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2"
+            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer"
           >
             <span class="text-sm">📊</span>
             <span>Analytics</span>
@@ -47,7 +50,7 @@
           <button 
             @click="activeTab = 'reports'"
             :class="activeTab === 'reports' ? 'bg-white/[0.12] text-white shadow-sm font-bold' : 'text-white/50 hover:text-white font-medium'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2"
+            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer"
           >
             <span class="text-sm">📁</span>
             <span>Reports</span>
@@ -55,7 +58,7 @@
 
           <button 
             @click="isSettingsOpen = true"
-            class="px-5 py-2 rounded-full text-xs text-white/50 hover:text-white transition-all flex items-center gap-2 font-medium"
+            class="px-5 py-2 rounded-full text-xs text-white/50 hover:text-white transition-all flex items-center gap-2 font-medium cursor-pointer"
           >
             <span class="text-sm">⚙️</span>
             <span>Settings</span>
@@ -64,12 +67,12 @@
 
         <!-- Right: Actions & User Avatar -->
         <div class="flex items-center gap-3">
-          <!-- Quick Refresh Live Button -->
+          <!-- Quick Refresh Live Button (Yahoo Finance Sync only) -->
           <button 
             @click="refreshData" 
             :disabled="isRefreshing" 
-            class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-neonLime/15 border border-neonLime/30 hover:bg-neonLime hover:text-black text-neonLime text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50"
-            title="Interroge Yahoo Finance pour actualiser les cours et enregistrer l'historique dans Supabase"
+            class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-neonLime/15 border border-neonLime/30 hover:bg-neonLime hover:text-black text-neonLime text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+            title="Actualise les cours boursiers en direct et sauvegarde le snapshot dans Supabase"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" :class="isRefreshing ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -77,12 +80,12 @@
             <span class="hidden sm:inline">{{ isRefreshing ? 'Sync en cours...' : '⚡ Actualiser Cours' }}</span>
           </button>
 
-          <!-- Search Button -->
+          <!-- Search Input with Auto-trigger -->
           <div class="relative hidden sm:block">
             <input 
               type="text" 
               v-model="searchQuery" 
-              @keyup.enter="handleSearch"
+              @keyup.enter="handleHeaderSearch"
               placeholder="Rechercher (ex: LVMH, AAPL)..."
               class="w-40 lg:w-56 bg-white/[0.04] border border-white/[0.08] rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-neonLime transition-all"
             />
@@ -91,22 +94,72 @@
             </svg>
           </div>
 
-          <!-- Notification Bell -->
-          <button class="w-10 h-10 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] flex items-center justify-center text-white/70 hover:text-white transition-all relative">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            <span class="w-2 h-2 rounded-full bg-roseAcc absolute top-2.5 right-2.5"></span>
-          </button>
+          <!-- Notification Bell with Dropdown -->
+          <div class="relative">
+            <button 
+              @click="isNotifOpen = !isNotifOpen"
+              class="w-10 h-10 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] flex items-center justify-center text-white/70 hover:text-white transition-all relative cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span class="w-2 h-2 rounded-full bg-neonLime absolute top-2.5 right-2.5"></span>
+            </button>
 
-          <!-- User Avatar & Logout Trigger -->
-          <div class="flex items-center gap-2">
+            <!-- Notifications Dropdown -->
+            <div v-if="isNotifOpen" class="absolute right-0 top-full mt-2 w-80 bg-[#16191E] border border-white/[0.08] rounded-24 shadow-2xl p-4 z-50 text-xs">
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-bold text-white uppercase font-mono text-[10px]">Notifications Portefeuille</span>
+                <span class="text-[10px] text-neonLime">3 nouvelles</span>
+              </div>
+              <div class="space-y-2">
+                <div class="bg-white/[0.03] p-2.5 rounded-xl border border-white/[0.04]">
+                  <p class="font-semibold text-white">⚡ Bourse de Paris Ouverte</p>
+                  <p class="text-white/40 text-[11px]">Euronext Paris en direct, cours actualisés.</p>
+                </div>
+                <div class="bg-white/[0.03] p-2.5 rounded-xl border border-white/[0.04]">
+                  <p class="font-semibold text-white">💰 Dividende TotalEnergies</p>
+                  <p class="text-white/40 text-[11px]">Acompte sur dividende trimestriel programmé.</p>
+                </div>
+                <div class="bg-white/[0.03] p-2.5 rounded-xl border border-white/[0.04]">
+                  <p class="font-semibold text-neonLime">⚖️ Maturité Fiscale Atteinte</p>
+                  <p class="text-white/40 text-[11px]">PEA de +5 ans : Exonération IR 0% active.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Avatar & Profile Dropdown -->
+          <div class="relative">
             <div 
-              @click="logout" 
-              class="w-10 h-10 rounded-full border-2 border-neonLime/40 bg-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md cursor-pointer hover:opacity-80 transition-opacity"
-              :title="'Connecté en tant que ' + username + ' (Cliquez pour déconnecter)'"
+              @click="isProfileMenuOpen = !isProfileMenuOpen" 
+              class="w-10 h-10 rounded-full border-2 border-neonLime/40 bg-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md cursor-pointer hover:opacity-80 transition-opacity select-none"
             >
               {{ username.substring(0, 2).toUpperCase() || 'CH' }}
+            </div>
+
+            <!-- Profile Dropdown -->
+            <div v-if="isProfileMenuOpen" class="absolute right-0 top-full mt-2 w-64 bg-[#16191E] border border-white/[0.08] rounded-24 shadow-2xl p-4 z-50 text-xs">
+              <div class="flex items-center gap-3 pb-3 border-b border-white/[0.06] mb-3">
+                <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                  {{ username.substring(0, 2).toUpperCase() || 'CH' }}
+                </div>
+                <div>
+                  <p class="font-bold text-white">{{ username }}</p>
+                  <p class="text-white/40 text-[10px] font-mono truncate max-w-[140px]">{{ userId }}</p>
+                </div>
+              </div>
+              <div class="space-y-1">
+                <button @click="isFiscalModalOpen = true; isProfileMenuOpen = false" class="w-full text-left p-2 rounded-xl hover:bg-white/[0.05] text-white/80 hover:text-white flex items-center gap-2">
+                  <span>⚖️</span> <span>Simulateur Fiscal PEA</span>
+                </button>
+                <button @click="isSettingsOpen = true; isProfileMenuOpen = false" class="w-full text-left p-2 rounded-xl hover:bg-white/[0.05] text-white/80 hover:text-white flex items-center gap-2">
+                  <span>⚙️</span> <span>Paramètres & Backend</span>
+                </button>
+                <button @click="logout" class="w-full text-left p-2 rounded-xl hover:bg-roseAcc/20 text-roseAcc flex items-center gap-2 font-bold mt-2 border-t border-white/[0.06]">
+                  <span>🚪</span> <span>Déconnexion</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -119,13 +172,13 @@
         </div>
         <h2 class="text-2xl font-bold mb-2">Portefeuille en attente</h2>
         <p class="text-white/40 text-sm max-w-md mx-auto mb-6">Importez votre relevé de compte Boursorama au format CSV pour afficher votre terminal complet.</p>
-        <button @click="isSettingsOpen = true" class="bg-neonLime text-black font-extrabold text-sm px-6 py-3 rounded-full shadow-lg hover:bg-neonLimeHover transition-all">
+        <button @click="isSettingsOpen = true" class="bg-neonLime text-black font-extrabold text-sm px-6 py-3 rounded-full shadow-lg hover:bg-neonLimeHover transition-all cursor-pointer">
           Importer un CSV
         </button>
       </div>
 
-      <!-- MAIN DASHBOARD CONTENT -->
-      <div v-else class="space-y-6">
+      <!-- TAB 1 : MAIN DASHBOARD CONTENT -->
+      <div v-else-if="activeTab === 'dashboard'" class="space-y-6">
         
         <!-- ÉTAGE SUPÉRIEUR (Grid 4 Colonnes - Inspiré d'interface.png) -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -157,7 +210,7 @@
           <!-- Carte 4 : Stack Fiscale & Plafond PEA 150k€ -->
           <FiscalStackCard 
             :summary="summary" 
-            @open-tax-sim="isSettingsOpen = true"
+            @open-tax-sim="isFiscalModalOpen = true"
           />
         </div>
 
@@ -173,12 +226,13 @@
             />
           </div>
 
-          <!-- Carte 6 : Transaction Count / Radar Movers (Barres LED + Avatars) -->
+          <!-- Carte 6 : Top Movers (Barres LED + Avatars) -->
           <div class="lg:col-span-4">
             <TopMovers 
               :positions="positions" 
               :summary="summary" 
               :isLoading="isLoading" 
+              @inspect-stock="openStockInspector"
             />
           </div>
 
@@ -192,8 +246,25 @@
         </div>
 
         <!-- SECTION BASSE : TABLEAU PRO DES POSITIONS -->
-        <PositionsTable :positions="positions" />
+        <PositionsTable :positions="positions" :globalSearch="searchQuery" />
 
+      </div>
+
+      <!-- TAB 2 : ANALYTICS DEEP DIVE -->
+      <div v-else-if="activeTab === 'analytics'" class="space-y-6">
+        <AnalyticsView 
+          :positions="positions" 
+          :summary="summary" 
+          :history="history" 
+        />
+      </div>
+
+      <!-- TAB 3 : REPORTS & TAX CONFORMITY -->
+      <div v-else-if="activeTab === 'reports'" class="space-y-6">
+        <ReportsView 
+          :positions="positions" 
+          :summary="summary" 
+        />
       </div>
 
       <!-- MODALES -->
@@ -207,7 +278,7 @@
 
       <AssetInspectorModal 
         :isOpen="isSearchModalOpen" 
-        :asset="searchAsset" 
+        :asset="inspectedAsset" 
         @close="isSearchModalOpen = false" 
       />
 
@@ -215,6 +286,12 @@
         :isOpen="isAiAdvisorOpen" 
         :userId="userId" 
         @close="isAiAdvisorOpen = false" 
+      />
+
+      <PeaFiscalModal 
+        :isOpen="isFiscalModalOpen" 
+        :summary="summary" 
+        @close="isFiscalModalOpen = false" 
       />
 
     </div>
@@ -237,6 +314,9 @@ import PositionsTable from './components/PositionsTable.vue';
 import AssetInspectorModal from './components/AssetInspectorModal.vue';
 import SettingsModal from './components/SettingsModal.vue';
 import AiAdvisorWidget from './components/AiAdvisorWidget.vue';
+import PeaFiscalModal from './components/PeaFiscalModal.vue';
+import AnalyticsView from './components/AnalyticsView.vue';
+import ReportsView from './components/ReportsView.vue';
 
 const userId = ref(localStorage.getItem('pea_user_id') || null);
 const username = ref(localStorage.getItem('pea_username') || '');
@@ -247,65 +327,79 @@ const isRefreshing = ref(false);
 const isAiLoading = ref(false);
 const isSettingsOpen = ref(false);
 const isAiAdvisorOpen = ref(false);
+const isFiscalModalOpen = ref(false);
+const isSearchModalOpen = ref(false);
+const isNotifOpen = ref(false);
+const isProfileMenuOpen = ref(false);
+const isMobileMenuOpen = ref(false);
 
-const summary = ref(null);
+const searchQuery = ref('');
+const inspectedAsset = ref(null);
+
 const positions = ref([]);
+const summary = ref(null);
 const history = ref([]);
 const weather = ref(null);
 
-// Search Feature
-const searchQuery = ref('');
-const isSearchModalOpen = ref(false);
-const searchAsset = ref(null);
-
 const cashAmount = computed(() => {
-  if (!summary.value) return 0;
-  const titres = positions.value.reduce((acc, p) => acc + (p.quantity * p.current_price), 0);
-  const diff = (summary.value.total_value || 0) - titres;
-  return diff > 0 ? diff : 0;
+  return summary.value?.cash || 0;
 });
 
-const handleSearch = () => {
-  const q = searchQuery.value.trim();
-  if (!q) return;
-  searchAsset.value = { name: q, ticker: q, sector: "Recherche Libre" };
-  isSearchModalOpen.value = true;
-  searchQuery.value = '';
-};
-
-const onLoginSuccess = (userData) => {
-  userId.value = userData.userId;
-  username.value = userData.username;
-  localStorage.setItem('pea_user_id', userData.userId);
-  localStorage.setItem('pea_username', userData.username);
+const onLoginSuccess = (payload) => {
+  userId.value = payload.userId;
+  username.value = payload.username;
   fetchData();
 };
 
 const logout = () => {
-  userId.value = null;
-  username.value = '';
   localStorage.removeItem('pea_user_id');
   localStorage.removeItem('pea_username');
   localStorage.removeItem('pea_access_token');
+  userId.value = null;
+  username.value = '';
+  positions.value = [];
+  summary.value = null;
+  history.value = [];
+  isProfileMenuOpen.value = false;
+};
+
+const openStockInspector = (stock) => {
+  if (!stock) return;
+  inspectedAsset.value = stock;
+  isSearchModalOpen.value = true;
+};
+
+const handleHeaderSearch = () => {
+  if (!searchQuery.value.trim()) return;
+  const q = searchQuery.value.toLowerCase().trim();
+  const match = positions.value.find(p => 
+    p.name.toLowerCase().includes(q) || 
+    (p.ticker && p.ticker.toLowerCase().includes(q))
+  );
+  if (match) {
+    openStockInspector(match);
+  }
 };
 
 const fetchData = async () => {
   if (!userId.value) return;
   const apiBase = getApiBase();
   if (!apiBase) return;
+
   isLoading.value = true;
   try {
     const token = localStorage.getItem('pea_access_token');
-    const authHeaders = token ? { Authorization: 'Bearer ' + token } : {};
+    const headers = token ? { Authorization: 'Bearer ' + token } : {};
 
-    // Fetch ONLY financial data from Supabase (fast, pure stock data)
     const [summaryRes, positionsRes, historyRes] = await Promise.all([
-      fetch(`${apiBase}/api/portfolio/summary?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null),
-      fetch(`${apiBase}/api/portfolio/positions?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null),
-      fetch(`${apiBase}/api/portfolio/history?user_id=${userId.value}`, { headers: authHeaders }).catch(() => null)
+      fetch(`${apiBase}/api/portfolio/summary?user_id=${userId.value}`, { headers }).catch(() => null),
+      fetch(`${apiBase}/api/portfolio/positions?user_id=${userId.value}`, { headers }).catch(() => null),
+      fetch(`${apiBase}/api/portfolio/history?user_id=${userId.value}`, { headers }).catch(() => null)
     ]);
 
-    if (summaryRes && summaryRes.ok) summary.value = await summaryRes.json();
+    if (summaryRes && summaryRes.ok) {
+      summary.value = await summaryRes.json();
+    }
     if (positionsRes && positionsRes.ok) {
       const posData = await positionsRes.json();
       positions.value = posData.positions || [];
