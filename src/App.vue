@@ -375,10 +375,10 @@
           />
         </div>
 
-        <!-- ÉTAGE INFÉRIEUR (Grid 3 Colonnes Asymétrique - Inspiré d'interface.png) -->
+        <!-- ÉTAGE INFÉRIEUR (Grid 2 Colonnes Asymétrique) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Carte 5 : Analytics Performance (Rubans Empilés 2024-2026) -->
-          <div class="lg:col-span-5">
+          <!-- Carte 5 : Analytics Performance -->
+          <div class="lg:col-span-7">
             <AnalyticsCharts 
               :history="history" 
               :summary="summary" 
@@ -387,21 +387,13 @@
             />
           </div>
 
-          <!-- Carte 6 : Top Movers (Barres LED + Avatars) -->
-          <div class="lg:col-span-4">
+          <!-- Carte 6 : Top Movers -->
+          <div class="lg:col-span-5">
             <TopMovers 
               :positions="positions" 
               :summary="summary" 
               :isLoading="isLoading" 
               @inspect-stock="openStockInspector"
-            />
-          </div>
-
-          <!-- Carte 7 : Méga-Carte Groq AI (Vert Néon Intégral) -->
-          <div class="lg:col-span-3">
-            <GroqAiHighlightCard 
-              :isLoading="isAiLoading" 
-              @trigger-ai="isAiAdvisorOpen = true"
             />
           </div>
         </div>
@@ -433,7 +425,11 @@
 
       <!-- TAB 4 : OPTIMIZATION & IA -->
       <div v-else-if="activeTab === 'optimization'" class="space-y-6">
-        <OptimizationView />
+        <OptimizationView 
+          :userId="userId" 
+          :isAiLoading="isAiLoading" 
+          @trigger-ai="isAiAdvisorOpen = true" 
+        />
       </div>
 
       <!-- TAB 5 : GOALS & FIRE -->
@@ -483,7 +479,6 @@ import FinancialHealthCard from './components/FinancialHealthCard.vue';
 import FiscalStackCard from './components/FiscalStackCard.vue';
 import AnalyticsCharts from './components/AnalyticsCharts.vue';
 import TopMovers from './components/TopMovers.vue';
-import GroqAiHighlightCard from './components/GroqAiHighlightCard.vue';
 import PositionsTable from './components/PositionsTable.vue';
 import AssetInspectorModal from './components/AssetInspectorModal.vue';
 import SettingsModal from './components/SettingsModal.vue';
