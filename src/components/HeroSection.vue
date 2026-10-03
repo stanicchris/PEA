@@ -1,42 +1,127 @@
 <template>
-  <div class="glass rounded-3xl p-8 relative overflow-hidden flex flex-col justify-center min-h-[220px] h-full border border-white/5">
-    <div class="absolute top-0 right-0 w-72 h-72 bg-emerald-500/10 blur-3xl rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-
-    <div class="relative z-10 flex justify-between items-start mb-6">
-      <div class="text-white/60 font-medium text-lg tracking-wide">Total Portfolio Value</div>
+  <div class="glass-card rounded-32 p-7 flex flex-col justify-between h-full relative overflow-hidden group">
+    <!-- Top Row: Icon + Expand Arrow -->
+    <div class="flex justify-between items-center mb-4">
+      <div class="w-10 h-10 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/80 shadow-inner">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      </div>
       
-      <div class="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 shadow-sm backdrop-blur-md">
-        <span class="relative flex h-2.5 w-2.5">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+      <button @click="$emit('open-settings')" class="w-8 h-8 rounded-full bg-white/[0.03] hover:bg-white/[0.08] text-white/40 hover:text-white flex items-center justify-center transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Balance & Value -->
+    <div class="mb-5">
+      <div class="text-white/40 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-2">
+        <span>Total Balance</span>
+        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neonLime/10 text-neonLime text-[10px] font-bold">
+          <span class="w-1.5 h-1.5 rounded-full bg-neonLime animate-ping"></span>
+          LIVE
         </span>
-        <span class="text-xs font-semibold text-white/80 uppercase tracking-widest">Live</span>
+      </div>
+
+      <div v-if="isLoading" class="h-12 bg-white/5 rounded-2xl animate-pulse w-3/4 mb-2"></div>
+      <div v-else class="flex items-baseline gap-1 text-3xl sm:text-4xl lg:text-[40px] font-black tracking-tight text-white tabular-numbers">
+        <span>{{ formattedTotal.main }}</span>
+        <span class="text-white/40 text-2xl font-bold">,{{ formattedTotal.decimals }} €</span>
       </div>
     </div>
 
-    <div class="relative z-10 flex flex-col sm:flex-row sm:items-baseline gap-4 mt-auto">
-      <div v-if="isLoading" class="animate-pulse h-16 bg-white/10 rounded-lg w-2/3"></div>
-      <div v-else class="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight tabular-nums">
-        {{ summary?.total_value?.toLocaleString('fr-FR', {minimumFractionDigits: 2}) }} <span class="text-3xl md:text-5xl text-white/40 font-medium ml-1">€</span>
+    <!-- 3 Segmented Pill Bars (Breakdown) -->
+    <div class="space-y-2 mb-6">
+      <div class="grid grid-cols-3 gap-2">
+        <div class="h-2 rounded-full bg-neonLime/90"></div>
+        <div class="h-2 rounded-full bg-neonPurple/90"></div>
+        <div class="h-2 rounded-full bg-white/30"></div>
       </div>
       
-      <div v-if="!isLoading && summary" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm md:text-base border"
-           :class="summary.global_performance_pct >= 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'">
-        <svg v-if="summary.global_performance_pct >= 0" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m0-16l-6 6m6-6l6 6" />
-        </svg>
-        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 20V4m0 16l-6-6m6 6l6-6" />
-        </svg>
-        <span>{{ summary.global_performance_pct >= 0 ? '+' : '' }}{{ summary.global_performance_pct }}%</span>
+      <div class="grid grid-cols-3 text-[11px] font-mono text-white/60 pt-1">
+        <div class="flex flex-col">
+          <span class="text-white font-semibold">{{ formatCurrency(actionsValue) }}</span>
+          <span class="text-white/30 text-[10px]">Actions</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-white font-semibold">{{ formatCurrency(etfValue) }}</span>
+          <span class="text-white/30 text-[10px]">ETFs</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-white font-semibold">{{ formatCurrency(cashValue) }}</span>
+          <span class="text-white/30 text-[10px]">Cash</span>
+        </div>
       </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="grid grid-cols-2 gap-3 mt-auto">
+      <button 
+        @click="$emit('refresh')" 
+        :disabled="isRefreshing" 
+        class="bg-neonLime hover:bg-neonLimeHover text-[#0C0E12] font-extrabold text-sm py-3 px-4 rounded-full transition-all shadow-[0_4px_20px_rgba(163,230,53,0.25)] hover:shadow-[0_6px_25px_rgba(163,230,53,0.4)] flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" :class="isRefreshing ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>{{ isRefreshing ? 'Sync...' : 'Transfer' }}</span>
+      </button>
+
+      <button 
+        @click="$emit('open-settings')" 
+        class="bg-white/[0.04] hover:bg-white/[0.08] text-white font-bold text-sm py-3 px-4 rounded-full border border-white/[0.08] transition-all flex items-center justify-center gap-2 active:scale-95"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+        </svg>
+        <span>Request</span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({
-  summary: Object,
-  isLoading: Boolean
+import { computed } from 'vue';
+
+const props = defineProps({
+  summary: { type: Object, default: () => ({}) },
+  positions: { type: Array, default: () => [] },
+  isLoading: { type: Boolean, default: false },
+  isRefreshing: { type: Boolean, default: false }
 });
+
+defineEmits(['refresh', 'open-settings']);
+
+const formattedTotal = computed(() => {
+  const val = props.summary?.total_value || 0;
+  const parts = val.toFixed(2).split('.');
+  const intPart = parseInt(parts[0], 10).toLocaleString('fr-FR');
+  return { main: intPart, decimals: parts[1] || '00' };
+});
+
+const cashValue = computed(() => {
+  const total = props.summary?.total_value || 0;
+  const invested = props.summary?.total_invested || 0;
+  const perf = props.summary?.global_performance_value || 0;
+  const titres = (props.positions || []).reduce((acc, p) => acc + (p.quantity * p.current_price), 0);
+  const diff = total - titres;
+  return diff > 0 ? diff : 0;
+});
+
+const etfValue = computed(() => {
+  return (props.positions || [])
+    .filter(p => p.sector === 'ETF & Indice' || p.name?.toUpperCase().includes('ETF') || p.name?.toUpperCase().includes('CW8'))
+    .reduce((acc, p) => acc + (p.quantity * p.current_price), 0);
+});
+
+const actionsValue = computed(() => {
+  const titres = (props.positions || []).reduce((acc, p) => acc + (p.quantity * p.current_price), 0);
+  return Math.max(0, titres - etfValue.value);
+});
+
+const formatCurrency = (val) => {
+  return (val || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €';
+};
 </script>

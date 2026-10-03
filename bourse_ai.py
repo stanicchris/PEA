@@ -56,17 +56,26 @@ def analyze_stock_with_ai(stock_name, isin=None, yf_symbol=None, custom_url=None
             ticker = yf.Ticker(yf_symbol)
             yf_info = ticker.info
             
-            # Fallback for cloud IPs (Render) where ticker.info might be blocked/empty
+            # Fallback for cloud IPs (Render) where ticker.info and fast_info are blocked (Crumb 401/429)
             if not yf_info or 'currentPrice' not in yf_info:
-                fi = ticker.fast_info
-                yf_info['currentPrice'] = fi.get('last_price', 0.0)
-                yf_info['fiftyTwoWeekHigh'] = fi.get('year_high', 0.0)
-                yf_info['fiftyTwoWeekLow'] = fi.get('year_low', 0.0)
-                # Guess some metrics if totally missing
+                import requests
+                url = f"https://query2.finance.yahoo.com/v8/finance/chart/{yf_symbol}?interval=1d&range=1y"
+                res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+                if res.status_code == 200:
+                    data = res.json()
+                    meta = data['chart']['result'][0]['meta']
+                    quotes = data['chart']['result'][0]['indicators']['quote'][0]
+                    yf_info['currentPrice'] = meta.get('regularMarketPrice', 0.0)
+                    
+                    highs = [h for h in quotes.get('high', []) if h is not None]
+                    lows = [l for l in quotes.get('low', []) if l is not None]
+                    yf_info['fiftyTwoWeekHigh'] = max(highs) if highs else 0.0
+                    yf_info['fiftyTwoWeekLow'] = min(lows) if lows else 0.0
+                    
                 yf_info['trailingPE'] = 15.0
                 yf_info['dividendYield'] = 0.02
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Fallback V8 failed: {e}")
 
     price = yf_info.get('currentPrice') or yf_info.get('regularMarketPrice') or yf_info.get('previousClose') or 0.0
     per = yf_info.get('trailingPE') or yf_info.get('forwardPE') or 15.0
