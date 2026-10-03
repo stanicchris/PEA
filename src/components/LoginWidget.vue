@@ -62,27 +62,6 @@
             {{ isLoading && isRegistering ? '...' : 'Créer compte' }}
           </button>
         </div>
-
-        <!-- Optional Backend URL toggle -->
-        <div class="pt-4 border-t border-white/[0.08] text-center">
-          <button 
-            type="button" 
-            @click="showServerConfig = !showServerConfig" 
-            class="text-[11px] text-white/40 hover:text-white transition-colors underline font-mono cursor-pointer"
-          >
-            {{ showServerConfig ? 'Masquer URL Serveur' : '⚙️ Configurer URL Backend Render' }}
-          </button>
-          
-          <div v-if="showServerConfig" class="mt-3 text-left">
-            <label class="block text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-1 font-mono">URL Backend (ex: https://votre-backend.onrender.com)</label>
-            <input 
-              v-model="customApiUrl" 
-              type="url" 
-              placeholder="https://votre-app.onrender.com" 
-              class="w-full bg-[#0C0E12] border border-white/[0.08] rounded-full px-4 py-2 text-xs text-white placeholder-white/20 focus:outline-none focus:border-neonLime font-mono"
-            />
-          </div>
-        </div>
       </form>
     </div>
   </div>
@@ -96,8 +75,6 @@ const emit = defineEmits(['login-success']);
 
 const username = ref('');
 const password = ref('');
-const showServerConfig = ref(false);
-const customApiUrl = ref(localStorage.getItem('pea_api_url') || 'https://pea-tpxq.onrender.com');
 const isRegistering = ref(false);
 const isLoading = ref(false);
 const errorMsg = ref('');
@@ -105,16 +82,11 @@ const errorMsg = ref('');
 const handleAuth = async () => {
   isLoading.value = true;
   errorMsg.value = '';
-
-  if (customApiUrl.value.trim()) {
-    localStorage.setItem('pea_api_url', customApiUrl.value.trim().replace(/\/+$/, ''));
-  }
   
   const apiBase = getApiBase();
   if (!apiBase) {
     isLoading.value = false;
-    errorMsg.value = "Veuillez renseigner l'URL de votre Backend Render ci-dessous.";
-    showServerConfig.value = true;
+    errorMsg.value = "URL API non disponible.";
     return;
   }
 
@@ -137,7 +109,7 @@ const handleAuth = async () => {
     emit('login-success', { userId: data.user_id, username: data.username });
     
   } catch (err) {
-    errorMsg.value = err.message || "Impossible de joindre le serveur. Vérifiez l'URL de votre backend.";
+    errorMsg.value = err.message || "Impossible de joindre le serveur. Vérifiez votre connexion.";
   } finally {
     isLoading.value = false;
   }

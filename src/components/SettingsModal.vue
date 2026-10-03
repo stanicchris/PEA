@@ -94,28 +94,6 @@
         </p>
       </div>
 
-      <!-- Section 3 : Backend URL Override (Optional) -->
-      <div class="liquid-glass-card rounded-28 p-5 specular-highlight">
-        <label class="text-xs font-mono font-bold text-white/50 uppercase tracking-wider block mb-2">
-          URL Backend Render
-        </label>
-        <div class="flex items-center gap-2">
-          <input 
-            type="text" 
-            v-model="backendUrl" 
-            placeholder="https://pea-tpxq.onrender.com" 
-            class="flex-1 liquid-glass-subtle border border-white/10 focus:border-neonLime/70 focus:ring-1 focus:ring-neonLime/30 rounded-2xl px-4 py-3 text-xs font-mono text-white/90 outline-none transition-all shadow-inner"
-          />
-          <button 
-            @click="saveBackendUrl" 
-            class="liquid-glass-pill hover:bg-white/10 text-white px-5 py-3 rounded-full font-bold text-xs transition-all active:scale-95 shrink-0 cursor-pointer border border-white/15"
-          >
-            Sauver URL
-          </button>
-        </div>
-        <p v-if="urlMsg" class="text-xs text-neonLime mt-2 font-medium">{{ urlMsg }}</p>
-      </div>
-
     </div>
   </div>
 </template>
@@ -136,22 +114,10 @@ const cash = ref(0);
 const cashMsg = ref('');
 const isSavingCash = ref(false);
 
-const backendUrl = ref(localStorage.getItem('pea_api_url') || import.meta.env.VITE_API_BASE_URL || '');
-const urlMsg = ref('');
-
 const selectedFile = ref(null);
 const isUploading = ref(false);
 const uploadMsg = ref('');
 const uploadError = ref(false);
-
-const saveBackendUrl = () => {
-  if (backendUrl.value.trim()) {
-    localStorage.setItem('pea_api_url', backendUrl.value.trim().replace(/\/+$/, ''));
-    urlMsg.value = 'URL du serveur mise à jour !';
-    emit('refresh');
-    setTimeout(() => { urlMsg.value = ''; }, 3000);
-  }
-};
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
