@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 from datetime import datetime, timedelta, timezone
 
-from backend.database import supabase
+from backend.database import get_supabase_service_client
 
 # Custom session to fix "Invalid Crumb" 401 Unauthorized errors from Yahoo Finance
 _yf_session = requests.Session()
@@ -20,6 +20,7 @@ def _fetch_and_cache_dividend_data(ticker_symbol: str):
     Fetches all dividend-related data (upcoming + history + payout ratio)
     and caches it in Supabase to avoid hitting Yahoo Finance repeatedly.
     """
+    supabase = get_supabase_service_client()
     if supabase:
         try:
             res = supabase.table("dividend_data").select("*").eq("ticker_symbol", ticker_symbol).execute()
