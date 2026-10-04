@@ -37,7 +37,7 @@
           <span class="text-white/80 font-medium">{{ cat.name }}</span>
         </div>
         <div class="font-mono text-white font-semibold tabular-numbers">
-          {{ cat.value.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) }} €
+          {{ store.formatCurrency(cat.value) }}
         </div>
       </div>
     </div>
@@ -51,8 +51,10 @@ import { CanvasRenderer } from 'echarts/renderers';
 import { PieChart } from 'echarts/charts';
 import { TooltipComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
+import { useAppStore } from '../stores/app';
 
 use([CanvasRenderer, PieChart, TooltipComponent]);
+const store = useAppStore();
 
 const props = defineProps({
   positions: { type: Array, default: () => [] },

@@ -129,20 +129,20 @@
             <td class="py-3.5 px-3 text-right font-mono text-white/80 font-medium">{{ pos.quantity }}</td>
 
             <!-- PRU -->
-            <td class="py-3.5 px-3 text-right font-mono text-white/70">{{ pos.pru.toFixed(2) }} €</td>
+            <td class="py-3.5 px-3 text-right font-mono text-white/70">{{ store.formatCurrency(pos.pru) }}</td>
 
             <!-- Current Price -->
-            <td class="py-3.5 px-3 text-right font-mono font-bold text-white">{{ pos.current_price.toFixed(2) }} €</td>
+            <td class="py-3.5 px-3 text-right font-mono font-bold text-white">{{ store.formatCurrency(pos.current_price) }}</td>
 
             <!-- Total Invested -->
-            <td class="py-3.5 px-3 text-right font-mono text-white/60">{{ (pos.quantity * pos.pru).toFixed(2) }} €</td>
+            <td class="py-3.5 px-3 text-right font-mono text-white/60">{{ store.formatCurrency(pos.quantity * pos.pru) }}</td>
 
             <!-- Current Value -->
-            <td class="py-3.5 px-3 text-right font-mono font-bold text-white">{{ (pos.quantity * pos.current_price).toFixed(2) }} €</td>
+            <td class="py-3.5 px-3 text-right font-mono font-bold text-white">{{ store.formatCurrency(pos.quantity * pos.current_price) }}</td>
 
             <!-- Gain (€) -->
             <td class="py-3.5 px-3 text-right font-mono font-bold" :class="pos.variation_pct >= 0 ? 'text-neonLime' : 'text-roseAcc'">
-              {{ pos.variation_pct >= 0 ? '+' : '' }}{{ ((pos.current_price - pos.pru) * pos.quantity).toFixed(2) }} €
+              {{ pos.variation_pct >= 0 ? '+' : '' }}{{ store.formatCurrency((pos.current_price - pos.pru) * pos.quantity) }}
             </td>
 
             <!-- Gain (%) Badge -->
@@ -176,6 +176,9 @@
 <script setup>
 import { ref, computed } from 'vue';
 import AssetInspectorModal from './AssetInspectorModal.vue';
+import { useAppStore } from '../stores/app';
+
+const store = useAppStore();
 
 const props = defineProps({
   positions: { type: Array, default: () => [] },
