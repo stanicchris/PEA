@@ -9,10 +9,12 @@
 
     <div class="liquid-glass-chassis relative z-10 w-full max-w-md p-8 sm:p-10 rounded-36 border border-white/15 shadow-2xl specular-highlight">
       <div class="text-center mb-8">
-        <div class="mx-auto w-14 h-14 bg-neonLime rounded-2xl flex items-center justify-center font-black text-black text-2xl mb-4 shadow-[0_0_35px_rgba(163,230,53,0.4)]">
-          R
-        </div>
-        <h1 class="text-2xl font-black text-white tracking-tight">Rivlo / PEA Tracker</h1>
+        <img 
+          src="/logo.png" 
+          alt="Capfolio" 
+          class="mx-auto w-16 h-16 rounded-2xl object-cover mb-4 shadow-[0_0_35px_rgba(163,230,53,0.35)] border border-white/15"
+        />
+        <h1 class="text-2xl font-black text-white tracking-tight">Capfolio <span class="text-neonLime font-light">/</span> PEA</h1>
         <p class="text-white/40 text-xs mt-1.5 font-medium">Terminal financier privé & Copilote IA</p>
       </div>
 

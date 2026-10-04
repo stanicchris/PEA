@@ -29,12 +29,14 @@
           </button>
           
           <div class="flex items-center gap-2.5 cursor-pointer group" @click="activeTab = 'dashboard'">
-            <div class="w-9 h-9 rounded-xl bg-neonLime flex items-center justify-center font-black text-black text-lg shadow-[0_0_25px_rgba(163,230,53,0.4)] group-hover:scale-105 transition-transform">
-              R
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Capfolio" 
+              class="w-9 h-9 rounded-xl object-cover shadow-[0_0_20px_rgba(163,230,53,0.3)] border border-white/10 group-hover:scale-105 transition-transform"
+            />
             <div class="flex flex-col">
               <span class="font-extrabold text-xl tracking-tight text-white flex items-center gap-1.5">
-                Rivlo <span class="text-neonLime font-light">/</span> <span class="text-white/80 font-semibold text-base">PEA</span>
+                Capfolio <span class="text-neonLime font-light">/</span> <span class="text-white/80 font-semibold text-base">PEA</span>
               </span>
             </div>
           </div>
@@ -51,10 +53,12 @@
               <!-- Drawer Header -->
               <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-xl bg-neonLime flex items-center justify-center font-black text-black text-base shadow-[0_0_15px_rgba(163,230,53,0.4)]">
-                    R
-                  </div>
-                  <span class="font-extrabold text-lg text-white">Rivlo / <span class="text-neonLime font-bold">PEA</span></span>
+                  <img 
+                    src="/logo.png" 
+                    alt="Capfolio" 
+                    class="w-8 h-8 rounded-xl object-cover shadow-[0_0_15px_rgba(163,230,53,0.3)] border border-white/10"
+                  />
+                  <span class="font-extrabold text-lg text-white">Capfolio / <span class="text-neonLime font-bold">PEA</span></span>
                 </div>
                 <button 
                   @click="isMobileMenuOpen = false" 
