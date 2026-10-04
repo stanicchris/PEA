@@ -22,11 +22,11 @@
         <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
         <div class="relative z-10">
           <p class="text-sm text-white/50 font-medium mb-1">Plus-Value Latente</p>
-          <p class="text-3xl font-black font-mono tracking-tight" :class="store.summary.total_amount_var >= 0 ? 'text-neonLime drop-shadow-[0_0_15px_rgba(163,230,53,0.3)]' : 'text-roseAcc drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]'">
-            {{ store.summary.total_amount_var >= 0 ? '+' : '' }}{{ store.formatCurrency(store.summary.total_amount_var) }}
+          <p class="text-3xl font-black font-mono tracking-tight" :class="store.summary.global_performance_value >= 0 ? 'text-neonLime drop-shadow-[0_0_15px_rgba(163,230,53,0.3)]' : 'text-roseAcc drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]'">
+            {{ store.summary.global_performance_value >= 0 ? '+' : '' }}{{ store.formatCurrency(store.summary.global_performance_value) }}
           </p>
-          <p class="text-xs mt-2 font-medium" :class="store.summary.total_pct_var >= 0 ? 'text-neonLime' : 'text-roseAcc'">
-            {{ store.summary.total_pct_var >= 0 ? '+' : '' }}{{ (store.summary.total_pct_var || 0).toFixed(2) }}%
+          <p class="text-xs mt-2 font-medium" :class="store.summary.global_performance_pct >= 0 ? 'text-neonLime' : 'text-roseAcc'">
+            {{ store.summary.global_performance_pct >= 0 ? '+' : '' }}{{ (store.summary.global_performance_pct || 0).toFixed(2) }}%
           </p>
         </div>
       </div>
