@@ -4,10 +4,12 @@ from backend.services.dividend_service import get_dividend_history
 from backend.utils import resolve_yf_symbol
 from datetime import datetime
 
+from typing import Optional
+
 router = APIRouter(prefix="/api/goals", tags=["goals"])
 
 @router.get("/projections")
-async def get_projections(user_id: str):
+async def get_projections(user_id: Optional[str] = None):
     df, cash = fetch_user_data(user_id)
     
     if df.empty:
@@ -35,8 +37,18 @@ async def get_projections(user_id: str):
         
         # Calculate safety
         if payout_ratio is not None and len(monthly_hist) > 0:
-            # Assuming lower payout ratio is safer (usually < 0.6 is good, > 1.0 is bad)
-            safety_score = 100 - min(100, payout_ratio * 100)
+            pr = float(payout_ratio)
+            if pr < 0:
+                safety_score = 0.0
+            elif pr <= 0.6:
+                safety_score = 100.0 - (pr / 0.6) * 30.0
+            elif pr <= 0.85:
+                safety_score = 70.0 - ((pr - 0.6) / 0.25) * 20.0
+            elif pr <= 1.0:
+                safety_score = 50.0 - ((pr - 0.85) / 0.15) * 30.0
+            else:
+                safety_score = max(0.0, 20.0 - (pr - 1.0) * 20.0)
+
             safety_scores.append({
                 "isin": isin,
                 "name": name,

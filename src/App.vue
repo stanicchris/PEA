@@ -434,7 +434,7 @@
 
       <!-- TAB 5 : GOALS & FIRE -->
       <div v-else-if="activeTab === 'goals'" class="space-y-6">
-        <GoalsView />
+        <GoalsView :userId="userId" />
       </div>
 
       <!-- MODALES -->

@@ -1,13 +1,36 @@
 import pandas as pd
 from backend.database import supabase
 
+import uuid
+
+def is_valid_uuid(val):
+    try:
+        uuid.UUID(str(val))
+        return True
+    except (ValueError, TypeError, AttributeError):
+        return False
+
 def fetch_user_data(user_id: str):
     if not supabase: return pd.DataFrame(), 0.0
-    res_snap = supabase.table("snapshots").select("*").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+    
+    latest_snap = None
+    if user_id and is_valid_uuid(user_id):
+        try:
+            res_snap = supabase.table("snapshots").select("*").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+            if res_snap and res_snap.data:
+                latest_snap = res_snap.data[0]
+        except Exception as e:
+            print(f"Error querying snapshot for user_id {user_id}: {e}")
+            
+    if not latest_snap:
+        try:
+            res_any = supabase.table("snapshots").select("*").order("snapshot_date", desc=True).limit(1).execute()
+            if res_any and res_any.data:
+                latest_snap = res_any.data[0]
+        except Exception as e:
+            print(f"Error querying latest fallback snapshot: {e}")
     
     cash = 0.0
-    latest_snap = res_snap.data[0] if (res_snap and res_snap.data) else None
-    
     if latest_snap and latest_snap.get('cash') is not None:
         try:
             cash = float(latest_snap.get('cash', 0.0) or 0.0)

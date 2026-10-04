@@ -45,13 +45,15 @@ const safetyScores = ref([]);
 const currentCapital = ref(0);
 
 const fetchGoalsData = async () => {
-  const uid = props.userId || localStorage.getItem('pea_user_id');
-  if (!uid) return;
+  const uid = props.userId || localStorage.getItem('pea_user_id') || '';
+  const token = localStorage.getItem('pea_access_token');
+  const headers = token ? { Authorization: 'Bearer ' + token } : {};
   
   isLoading.value = true;
   try {
     // Fetch projections
-    const resProj = await fetch(`${getApiBase()}/api/goals/projections?user_id=${uid}`);
+    const projUrl = uid ? `${getApiBase()}/api/goals/projections?user_id=${uid}` : `${getApiBase()}/api/goals/projections`;
+    const resProj = await fetch(projUrl, { headers });
     if (resProj.ok) {
       const data = await resProj.json();
       monthlyProjections.value = data.monthly_projections || {};
@@ -59,7 +61,8 @@ const fetchGoalsData = async () => {
     }
 
     // Fetch current capital from summary
-    const resSum = await fetch(`${getApiBase()}/api/portfolio/summary?user_id=${uid}`);
+    const sumUrl = uid ? `${getApiBase()}/api/portfolio/summary?user_id=${uid}` : `${getApiBase()}/api/portfolio/summary`;
+    const resSum = await fetch(sumUrl, { headers });
     if (resSum.ok) {
       const sumData = await resSum.json();
       currentCapital.value = sumData.total_value || 0;
