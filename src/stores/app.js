@@ -11,6 +11,7 @@ export const useAppStore = defineStore('app', () => {
   const summary = ref(null)
   const history = ref([])
   const weather = ref(null)
+  const dividendMetrics = ref(null)
   
   // UI State
   const isLoading = ref(false)
@@ -65,6 +66,19 @@ export const useAppStore = defineStore('app', () => {
     isSearchModalOpen.value = true
   }
 
+  const fetchDividendMetrics = async () => {
+    try {
+      const res = await fetch(`${getApiBase()}/api/dividends/metrics`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('pea_access_token')}` }
+      })
+      if (res.ok) {
+        dividendMetrics.value = await res.json()
+      }
+    } catch (e) {
+      console.error("Erreur fetch dividend metrics", e)
+    }
+  }
+
   const fetchData = async () => {
     if (!userId.value) return
     const apiBase = getApiBase()
@@ -92,6 +106,8 @@ export const useAppStore = defineStore('app', () => {
         const histData = await historyRes.json()
         history.value = histData.history || []
       }
+      
+      await fetchDividendMetrics()
     } catch (error) {
       console.error("Erreur lors de la récupération des données :", error)
     } finally {
@@ -125,6 +141,7 @@ export const useAppStore = defineStore('app', () => {
     summary,
     history,
     weather,
+    dividendMetrics,
     isLoading,
     isRefreshing,
     isAiLoading,

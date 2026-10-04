@@ -102,6 +102,27 @@ async def get_summary(auth_context: dict = Depends(get_current_user)):
         "tax_status": tax_status
     }
 
+from backend.services.dividend_service import get_dividend_metrics
+
+@app.get("/api/dividends/metrics")
+async def get_dividends_metrics_endpoint(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    user_id = auth_context["user"]["id"]
+    df, cash = fetch_user_data(client)
+    
+    if df.empty:
+        return {
+            "estimated_annual_income": 0.0,
+            "average_yield": 0.0,
+            "yield_on_cost": 0.0,
+            "safety_score": 0,
+            "positions": [],
+            "received_dividends": []
+        }
+        
+    metrics = get_dividend_metrics(df, client, user_id)
+    return metrics
+
 @app.get("/api/portfolio/positions")
 async def get_positions(auth_context: dict = Depends(get_current_user)):
     client = auth_context["client"]

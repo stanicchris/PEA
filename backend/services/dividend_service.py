@@ -1,6 +1,7 @@
 import yfinance as yf
-from datetime import datetime, timedelta, timezone
+import pandas as pd
 import requests
+from datetime import datetime, timedelta, timezone
 
 from backend.database import supabase
 
@@ -128,4 +129,95 @@ def get_dividend_history(ticker_symbol: str):
     return {
         "payout_ratio": data.get("payout_ratio"),
         "monthly_history": data.get("monthly_history", {})
+    }
+
+def get_dividend_metrics(df: pd.DataFrame, client, user_id: str):
+    """
+    Calcule les métriques de dividendes :
+    - Revenu annuel estimé (Estimated Annual Income)
+    - Rendement moyen (Average Yield)
+    - Yield on Cost (YoC) global
+    - Score de sûreté (mock/simple)
+    """
+    if df.empty:
+        return {
+            "estimated_annual_income": 0.0,
+            "average_yield": 0.0,
+            "yield_on_cost": 0.0,
+            "safety_score": 0,
+            "positions": [],
+            "received_dividends": []
+        }
+
+    total_value = float((df['quantity'] * df['current_price']).sum())
+    total_invested = float((df['quantity'] * df['buying_price']).sum())
+
+    total_income = 0.0
+    positions_metrics = []
+    
+    try:
+        res_tx = client.table("transactions").select("amount, isin, date").eq("user_id", user_id).eq("type", "DIVIDEND").execute()
+        received_dividends = res_tx.data if res_tx.data else []
+    except Exception:
+        received_dividends = []
+
+    for idx, row in df.iterrows():
+        ticker = row.get('ticker')
+        quantity = float(row.get('quantity', 0))
+        current_price = float(row.get('current_price', 0))
+        buying_price = float(row.get('buying_price', 0))
+        
+        position_value = quantity * current_price
+        position_cost = quantity * buying_price
+        
+        annual_income = 0.0
+        default_yield = 0.0
+        safety = 50
+        
+        if ticker and str(ticker).strip() != 'None':
+            # Use cached data if available
+            div_data = _fetch_and_cache_dividend_data(ticker)
+            if div_data and div_data.get('amount'):
+                annual_income = quantity * float(div_data['amount'])
+                default_yield = (annual_income / position_value) if position_value > 0 else 0
+                total_income += annual_income
+                
+                payout = div_data.get('payout_ratio')
+                if payout:
+                    safety = max(0, min(100, 100 - (float(payout) * 100)))
+                else:
+                    safety = 70
+        else:
+            # Fallback estimation for missing tickers
+            is_etf = row.get('sector') == 'ETF & Indice' or 'ETF' in str(row.get('name', ''))
+            default_yield = 0.015 if is_etf else 0.0
+            annual_income = position_value * default_yield
+            total_income += annual_income
+        
+        yoc = (annual_income / position_cost) if position_cost > 0 else 0
+        
+        if annual_income > 0:
+            positions_metrics.append({
+                "ticker": ticker,
+                "name": row.get('name'),
+                "quantity": quantity,
+                "annual_income": round(annual_income, 2),
+                "yield": round(default_yield * 100, 2),
+                "yield_on_cost": round(yoc * 100, 2),
+                "safety_score": int(safety)
+            })
+
+    avg_yield = (total_income / total_value) if total_value > 0 else 0
+    yoc_global = (total_income / total_invested) if total_invested > 0 else 0
+    
+    valid_safety = [p["safety_score"] for p in positions_metrics if p["safety_score"] > 0]
+    avg_safety = sum(valid_safety) / len(valid_safety) if valid_safety else 0
+
+    return {
+        "estimated_annual_income": round(total_income, 2),
+        "average_yield": round(avg_yield * 100, 2),
+        "yield_on_cost": round(yoc_global * 100, 2),
+        "safety_score": int(avg_safety),
+        "positions": positions_metrics,
+        "received_dividends": received_dividends
     }
