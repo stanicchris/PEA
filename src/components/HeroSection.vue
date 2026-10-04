@@ -23,6 +23,9 @@
           <span class="w-1.5 h-1.5 rounded-full bg-neonLime animate-ping"></span>
           LIVE
         </span>
+        <span v-if="summary?.performance?.xirr !== undefined" class="inline-flex items-center ml-2 px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-white/90 text-[10px] font-mono shadow-inner">
+          TRI: <span :class="(summary.performance.xirr >= 0 ? 'text-neonLime' : 'text-red-400') + ' ml-1 font-bold'">{{ (summary.performance.xirr * 100).toFixed(2) }}%</span>
+        </span>
       </div>
 
       <div v-if="isLoading" class="h-12 bg-white/5 rounded-2xl animate-pulse w-3/4 mb-2"></div>

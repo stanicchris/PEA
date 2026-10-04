@@ -12,8 +12,11 @@
           <h4 class="text-white font-bold text-sm tracking-tight">Régime Fiscal PEA</h4>
         </div>
         
-        <p class="text-white/50 text-xs leading-relaxed mb-4">
-          Plan mature (+5 ans) : Exonération totale d'impôt sur le revenu (prélèvements sociaux de 17,2 % uniquement).
+        <p v-if="taxStatus?.is_mature" class="text-white/50 text-xs leading-relaxed mb-4">
+          Plan mature (+5 ans) : Exonération totale d'impôt sur le revenu (prélèvements sociaux de {{ taxStatus.social_taxes_pct }}% uniquement). Ouvert le {{ taxStatus.opened_at }}.
+        </p>
+        <p v-else class="text-white/50 text-xs leading-relaxed mb-4">
+          Plan en maturation (encore {{ Math.ceil((taxStatus?.days_to_maturity || 0)/30) }} mois). Exonération d'impôt sur le revenu (IR) après le {{ taxStatus?.maturity_date }}.
         </p>
       </div>
 
@@ -47,10 +50,10 @@
         
         <div class="flex justify-between items-baseline text-xs font-mono">
           <span class="text-white font-bold tabular-numbers">
-            {{ investedAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) }} € <span class="text-white/40 font-sans text-[10px]">versés</span>
+            {{ investedAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) }} € <span class="text-white/40 font-sans text-[10px]">versés nets</span>
           </span>
           <span class="text-white/50 tabular-numbers">
-            150 000.00 € max
+            {{ (taxStatus?.legal_limit || 150000).toLocaleString('fr-FR') }} € max
           </span>
         </div>
       </div>
@@ -67,12 +70,14 @@ const props = defineProps({
 
 defineEmits(['open-tax-sim']);
 
+const taxStatus = computed(() => props.summary?.tax_status);
+
 const investedAmount = computed(() => {
-  return props.summary?.total_invested ?? 0;
+  return taxStatus.value?.net_invested ?? props.summary?.total_invested ?? 0;
 });
 
 const percentInvested = computed(() => {
-  const max = 150000;
+  const max = taxStatus.value?.legal_limit || 150000;
   const val = investedAmount.value;
   return Math.min(100, Math.max(5, (val / max) * 100));
 });

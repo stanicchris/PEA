@@ -62,9 +62,13 @@ app.include_router(analytics.router)
 
 from backend.services.portfolio_service import fetch_user_data
 
+from backend.services.performance_service import get_performance_metrics
+from backend.services.tax_service import get_pea_tax_status
+
 @app.get("/api/portfolio/summary")
 async def get_summary(auth_context: dict = Depends(get_current_user)):
     client = auth_context["client"]
+    user_id = auth_context["user"]["id"]
     df, cash = fetch_user_data(client)
     if df.empty:
         return {
@@ -73,7 +77,9 @@ async def get_summary(auth_context: dict = Depends(get_current_user)):
             "global_performance_pct": 0, 
             "global_performance_value": 0, 
             "cash": round(cash, 2),
-            "last_updated": datetime.now().isoformat()
+            "last_updated": datetime.now().isoformat(),
+            "performance": {"xirr": 0, "net_invested": 0, "total_deposits": 0, "total_withdrawals": 0},
+            "tax_status": get_pea_tax_status(client, user_id)
         }
     
     val_titres = float(df['amount'].sum())
@@ -82,13 +88,18 @@ async def get_summary(auth_context: dict = Depends(get_current_user)):
     global_performance_value = float(df['amount_variation'].sum())
     global_performance_pct = (global_performance_value / total_invested * 100) if total_invested > 0 else 0.0
     
+    perf_metrics = get_performance_metrics(client, user_id, total_value)
+    tax_status = get_pea_tax_status(client, user_id)
+    
     return {
         "total_value": round(total_value, 2),
         "total_invested": round(total_invested, 2),
         "global_performance_pct": round(global_performance_pct, 2),
         "global_performance_value": round(global_performance_value, 2),
         "cash": round(cash, 2),
-        "last_updated": datetime.now().isoformat()
+        "last_updated": datetime.now().isoformat(),
+        "performance": perf_metrics,
+        "tax_status": tax_status
     }
 
 @app.get("/api/portfolio/positions")
