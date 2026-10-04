@@ -75,9 +75,9 @@
                 <router-link to="/plan" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
                   <span class="text-base">🎯</span> Plan & Fiscalité
                 </router-link>
-                <button @click="store.isSettingsOpen = true; isMobileMenuOpen = false" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
+                <router-link to="/settings" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
                   <span class="text-base">⚙️</span> Paramètres
-                </button>
+                </router-link>
               </div>
             </div>
             
@@ -204,9 +204,9 @@
                 <p class="text-xs text-white/50 mt-1 font-mono text-[10px] break-all">{{ store.userId }}</p>
               </div>
               <div class="p-2 space-y-1">
-                <button @click="store.isSettingsOpen = true; isProfileMenuOpen = false" class="w-full text-left px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                <router-link to="/settings" @click="isProfileMenuOpen = false" class="w-full text-left px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
                   <span class="text-base">⚙️</span> Paramètres & Données
-                </button>
+                </router-link>
                 <button class="w-full text-left px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
                   <span class="text-base">🌙</span> Mode Discret (Bientôt)
                 </button>
@@ -232,14 +232,6 @@
       </main>
 
       <!-- MODALS -->
-      <SettingsModal 
-        :isOpen="store.isSettingsOpen" 
-        :userId="store.userId" 
-        :currentCash="store.cashAmount" 
-        @close="store.isSettingsOpen = false"
-        @refresh="store.fetchData"
-      />
-
       <AssetInspectorModal 
         :isOpen="store.isSearchModalOpen" 
         :asset="store.inspectedAsset" 
@@ -272,7 +264,6 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from './stores/app'
 
 import LoginWidget from './components/LoginWidget.vue'
-import SettingsModal from './components/SettingsModal.vue'
 import AssetInspectorModal from './components/AssetInspectorModal.vue'
 import AiAdvisorWidget from './components/AiAdvisorWidget.vue'
 import PeaFiscalModal from './components/PeaFiscalModal.vue'
