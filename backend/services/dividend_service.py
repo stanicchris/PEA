@@ -157,9 +157,9 @@ def get_dividend_metrics(df: pd.DataFrame, client, user_id: str):
 
     for idx, row in df.iterrows():
         ticker = row.get('ticker')
-        quantity = float(row.get('quantity', 0))
-        current_price = float(row.get('current_price', 0))
-        buying_price = float(row.get('buying_price', 0))
+        quantity = float(row.get('quantity') or 0)
+        current_price = float(row.get('current_price') or 0)
+        buying_price = float(row.get('buying_price') or 0)
         
         position_value = quantity * current_price
         position_cost = quantity * buying_price

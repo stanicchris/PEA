@@ -27,16 +27,18 @@ def generate_financial_advice(df: pd.DataFrame, cash: float, user_messages: list
         # Résumer les positions pour l'IA
         summary_positions = []
         for _, row in df.iterrows():
-            # This line safely handles missing columns:
-            pos_val = row.get('quantity', 0) * row.get('current_price', 0) 
+            # Safely handle missing columns or None values
+            qty = float(row.get('quantity') or 0)
+            c_price = float(row.get('current_price') or 0)
+            pos_val = qty * c_price
             
-            # ADD this line to accumulate the total value safely:
+            # Accumulate the total value safely:
             total_val += pos_val 
             
-            pru = row.get('pru', row.get('buying_price', 0))
+            pru = float(row.get('pru') or row.get('buying_price') or 0)
             perf = 0
             if pru > 0:
-                perf = ((row.get('current_price', 0) - pru) / pru) * 100
+                perf = ((c_price - pru) / pru) * 100
                 
             summary_positions.append({
                 "ticker": row.get('ticker'),
@@ -81,7 +83,7 @@ RÈGLES IMPORTANTES:
 
     try:
         response = groq_client.chat.completions.create(
-            model="qwen/qwen3.8-27b",
+            model="llama3-70b-8192",
             messages=messages,
             temperature=0.5,
             max_tokens=1024,
