@@ -207,7 +207,6 @@
             <div v-if="isProfileMenuOpen" class="absolute right-0 mt-3 w-56 bg-[#12161E]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden transform origin-top-right transition-all">
               <div class="p-4 border-b border-white/10 bg-black/20">
                 <p class="text-sm text-white font-bold truncate">{{ store.username }}</p>
-                <p class="text-xs text-white/50 mt-1 font-mono text-[10px] break-all">{{ store.userId }}</p>
               </div>
               <div class="p-2 space-y-1">
                 <router-link to="/settings" @click="isProfileMenuOpen = false" class="w-full text-left px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
