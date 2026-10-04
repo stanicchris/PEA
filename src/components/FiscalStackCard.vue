@@ -50,10 +50,10 @@
         
         <div class="flex justify-between items-baseline text-xs font-mono">
           <span class="text-white font-bold tabular-numbers">
-            {{ investedAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) }} € <span class="text-white/40 font-sans text-[10px]">versés nets</span>
+            {{ store.formatCurrency(investedAmount) }} <span class="text-white/40 font-sans text-[10px]">versés nets</span>
           </span>
           <span class="text-white/50 tabular-numbers">
-            {{ (taxStatus?.legal_limit || 150000).toLocaleString('fr-FR') }} € max
+            {{ store.formatCurrency(taxStatus?.legal_limit || 150000) }} max
           </span>
         </div>
       </div>
@@ -63,6 +63,9 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useAppStore } from '../stores/app';
+
+const store = useAppStore();
 
 const props = defineProps({
   summary: { type: Object, default: () => ({}) }

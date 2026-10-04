@@ -22,7 +22,21 @@ export const useAppStore = defineStore('app', () => {
   const isAiAdvisorOpen = ref(false)
   const isFiscalModalOpen = ref(false)
   const isSearchModalOpen = ref(false)
+  const isCommandPaletteOpen = ref(false)
   const inspectedAsset = ref(null)
+
+  // Discretion Mode
+  const isDiscreteMode = ref(localStorage.getItem('pea_discrete_mode') === 'true')
+
+  const toggleDiscreteMode = () => {
+    isDiscreteMode.value = !isDiscreteMode.value
+    localStorage.setItem('pea_discrete_mode', isDiscreteMode.value)
+  }
+
+  const formatCurrency = (val) => {
+    if (isDiscreteMode.value) return '*** €'
+    return (val || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+  }
 
   const cashAmount = computed(() => {
     return summary.value?.cash || 0
@@ -118,8 +132,12 @@ export const useAppStore = defineStore('app', () => {
     isAiAdvisorOpen,
     isFiscalModalOpen,
     isSearchModalOpen,
+    isCommandPaletteOpen,
     inspectedAsset,
     cashAmount,
+    isDiscreteMode,
+    toggleDiscreteMode,
+    formatCurrency,
     setLoginData,
     logout,
     openStockInspector,

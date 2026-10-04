@@ -258,12 +258,17 @@
         @close="store.isFiscalModalOpen = false" 
       />
 
+      <CommandPalette 
+        :isOpen="store.isCommandPaletteOpen" 
+        @close="store.isCommandPaletteOpen = false" 
+      />
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from './stores/app'
 
 import LoginWidget from './components/LoginWidget.vue'
@@ -271,6 +276,7 @@ import SettingsModal from './components/SettingsModal.vue'
 import AssetInspectorModal from './components/AssetInspectorModal.vue'
 import AiAdvisorWidget from './components/AiAdvisorWidget.vue'
 import PeaFiscalModal from './components/PeaFiscalModal.vue'
+import CommandPalette from './components/CommandPalette.vue'
 
 const store = useAppStore()
 
@@ -301,10 +307,23 @@ const handleHeaderSearch = () => {
   }
 }
 
+
+const handleGlobalKeydown = (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault()
+    store.isCommandPaletteOpen = !store.isCommandPaletteOpen
+  }
+}
+
 onMounted(() => {
   if (store.userId) {
     store.fetchData()
   }
+  window.addEventListener('keydown', handleGlobalKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleGlobalKeydown)
 })
 </script>
 
