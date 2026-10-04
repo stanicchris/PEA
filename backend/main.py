@@ -265,6 +265,23 @@ async def upload_csv(file: UploadFile = File(...), auth_context: dict = Depends(
         
     return {"status": "ok", "snapshot_id": snap_id}
 
+from pydantic import BaseModel
+from backend.services.ai_service import generate_financial_advice
+
+class ChatRequest(BaseModel):
+    messages: list
+
+@app.post("/api/ai/chat")
+async def ai_chat_endpoint(req: ChatRequest, auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    df, cash = fetch_user_data(client)
+    
+    res = generate_financial_advice(df, cash, req.messages)
+    if "error" in res:
+        raise HTTPException(status_code=500, detail=res["error"])
+        
+    return res
+
 @app.get("/api/portfolio/history")
 async def get_portfolio_history(auth_context: dict = Depends(get_current_user)):
     client = auth_context["client"]
