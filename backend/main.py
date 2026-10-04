@@ -267,14 +267,14 @@ async def cron_daily_refresh(request: Request):
                     client.table("snapshot_positions").insert(positions_to_insert).execute()
                     client.table("snapshots").update({
                         "valeur_titres": round(valeur_titres, 2),
-                        "plus_value_totale": round(plus_value_totale, 2),
+                        "plus_value": round(plus_value_totale, 2),
                         "total_valeur": round(total_valeur, 2)
                     }).eq("id", snap_id).execute()
                 else:
                     new_snap = client.table("snapshots").insert({
                         "user_id": uid, "snapshot_date": now.strftime("%Y-%m-%d %H:%M:%S"),
                         "cash": cash, "valeur_titres": round(valeur_titres, 2),
-                        "plus_value_totale": round(plus_value_totale, 2),
+                        "plus_value": round(plus_value_totale, 2),
                         "cout_investi": cout_investi, "total_valeur": round(total_valeur, 2)
                     }).execute()
                     if new_snap.data:
