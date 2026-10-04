@@ -81,7 +81,7 @@ RÈGLES IMPORTANTES:
 
     try:
         response = groq_client.chat.completions.create(
-            model="llama3-70b-8192",
+            model="qwen3.8-27b",
             messages=messages,
             temperature=0.5,
             max_tokens=1024,
