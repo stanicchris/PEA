@@ -155,10 +155,15 @@ def get_dividend_metrics(df: pd.DataFrame, client, user_id: str):
     except Exception:
         received_dividends = []
 
+    from backend.utils import resolve_yf_symbol
+
     for idx, row in df.iterrows():
-        ticker = row.get('ticker')
+        isin = row.get('isin', '')
+        name = row.get('name', '')
+        ticker = resolve_yf_symbol(isin, name)
+        
         quantity = float(row.get('quantity') or 0)
-        current_price = float(row.get('current_price') or 0)
+        current_price = float(row.get('last_price') or 0)
         buying_price = float(row.get('buying_price') or 0)
         
         position_value = quantity * current_price

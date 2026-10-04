@@ -83,10 +83,10 @@ async def get_summary(auth_context: dict = Depends(get_current_user)):
             "tax_status": get_pea_tax_status(client, user_id)
         }
     
-    val_titres = float(df['amount'].sum())
+    val_titres = float((df['last_price'] * df['quantity']).sum())
     total_value = val_titres + cash
-    total_invested = float(df['buying_price'].multiply(df['quantity']).sum())
-    global_performance_value = float(df['amount_variation'].sum())
+    total_invested = float((df['buying_price'] * df['quantity']).sum())
+    global_performance_value = val_titres - total_invested
     global_performance_pct = (global_performance_value / total_invested * 100) if total_invested > 0 else 0.0
     
     perf_metrics = get_performance_metrics(client, user_id, total_value)
