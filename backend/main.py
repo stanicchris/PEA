@@ -253,7 +253,7 @@ async def cron_daily_refresh(request: Request):
                 pru = float(pos.get('buying_price', 0.0))
                 pos_amount = current_price * qty
                 pos_var_amount = pos_amount - (pru * qty)
-                pos_var_pct = (current_price - pru) / pru if pru > 0 else 0.0
+                pos_var_pct = ((current_price - pru) / pru) * 100 if pru > 0 else 0.0
                 
                 positions_to_insert.append({
                     "user_id": uid, "snapshot_date": latest_snap_date_str,
