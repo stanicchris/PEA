@@ -133,13 +133,6 @@ def get_dividend_history(ticker_symbol: str):
     }
 
 def get_dividend_metrics(df: pd.DataFrame, client, user_id: str):
-    """
-    Calcule les métriques de dividendes :
-    - Revenu annuel estimé (Estimated Annual Income)
-    - Rendement moyen (Average Yield)
-    - Yield on Cost (YoC) global
-    - Score de sûreté (mock/simple)
-    """
     if df.empty:
         return {
             "estimated_annual_income": 0.0,
@@ -150,9 +143,9 @@ def get_dividend_metrics(df: pd.DataFrame, client, user_id: str):
             "received_dividends": []
         }
 
-    total_value = float((df['quantity'] * df['current_price']).sum())
-    total_invested = float((df['quantity'] * df['buying_price']).sum())
-
+    # 1. Replace the crashing pandas aggregations with initialized floats
+    total_value = 0.0
+    total_invested = 0.0
     total_income = 0.0
     positions_metrics = []
     
@@ -170,6 +163,10 @@ def get_dividend_metrics(df: pd.DataFrame, client, user_id: str):
         
         position_value = quantity * current_price
         position_cost = quantity * buying_price
+
+        # 2. Accumulate the safe values here instead
+        total_value += position_value
+        total_invested += position_cost
         
         annual_income = 0.0
         default_yield = 0.0
