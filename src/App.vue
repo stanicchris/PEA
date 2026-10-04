@@ -213,8 +213,9 @@
                 <router-link to="/settings" @click="isProfileMenuOpen = false" class="w-full text-left px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
                   <span class="text-base">⚙️</span> Paramètres & Données
                 </router-link>
-                <button class="w-full text-left px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
-                  <span class="text-base">🌙</span> Mode Discret (Bientôt)
+                <button @click="store.toggleDiscreteMode(); isProfileMenuOpen = false" class="w-full text-left px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                  <span class="text-base">{{ store.isDiscreteMode ? '👁️' : '🌙' }}</span> 
+                  {{ store.isDiscreteMode ? 'Désactiver le Mode Discret' : 'Mode Discret' }}
                 </button>
               </div>
               <div class="p-2 border-t border-white/10">
