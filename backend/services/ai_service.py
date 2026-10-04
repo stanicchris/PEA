@@ -21,12 +21,18 @@ def generate_financial_advice(df: pd.DataFrame, cash: float, user_messages: list
     total_val = cash
     
     if not df.empty:
-        total_val += float((df['quantity'] * df['current_price']).sum())
+        # REMOVE this crashing line:
+        # total_val += float((df['quantity'] * df['current_price']).sum())
         
         # Résumer les positions pour l'IA
         summary_positions = []
         for _, row in df.iterrows():
-            pos_val = row.get('quantity', 0) * row.get('current_price', 0)
+            # This line safely handles missing columns:
+            pos_val = row.get('quantity', 0) * row.get('current_price', 0) 
+            
+            # ADD this line to accumulate the total value safely:
+            total_val += pos_val 
+            
             pru = row.get('pru', row.get('buying_price', 0))
             perf = 0
             if pru > 0:
