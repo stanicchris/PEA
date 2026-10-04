@@ -1,15 +1,17 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from backend.services.portfolio_service import fetch_user_data
 from backend.services.dividend_service import get_dividend_history
 from backend.utils import resolve_yf_symbol
+from backend.database import get_current_user
 
 from typing import Optional
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 @router.get("/metrics")
-async def get_metrics(user_id: Optional[str] = None):
-    df, cash = fetch_user_data(user_id)
+async def get_metrics(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    df, cash = fetch_user_data(client)
     
     if df.empty:
         return {

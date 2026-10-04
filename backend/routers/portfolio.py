@@ -1,14 +1,16 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Dict, Any, Optional
 from backend.services.portfolio_service import fetch_user_data
 from backend.services.dividend_service import get_upcoming_dividends
 from backend.utils import resolve_yf_symbol
+from backend.database import get_current_user
 
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
 
 @router.get("/dividends")
-async def get_dividends(user_id: Optional[str] = None):
-    df, cash = fetch_user_data(user_id)
+async def get_dividends(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    df, cash = fetch_user_data(client)
     if df.empty:
         return {"dividends": []}
         

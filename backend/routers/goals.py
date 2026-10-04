@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from backend.services.portfolio_service import fetch_user_data
 from backend.services.dividend_service import get_dividend_history
 from backend.utils import resolve_yf_symbol
+from backend.database import get_current_user
 from datetime import datetime
 
 from typing import Optional
@@ -9,8 +10,9 @@ from typing import Optional
 router = APIRouter(prefix="/api/goals", tags=["goals"])
 
 @router.get("/projections")
-async def get_projections(user_id: Optional[str] = None):
-    df, cash = fetch_user_data(user_id)
+async def get_projections(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    df, cash = fetch_user_data(client)
     
     if df.empty:
         return {"monthly_projections": {}, "safety_scores": [], "total_projected_year": 0.0}
