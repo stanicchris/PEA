@@ -547,3 +547,11 @@ async def export_portfolio_excel(auth_context: dict = Depends(get_current_user))
         headers={"Content-Disposition": "attachment; filename=Export_PEA_Complet.xlsx"}
     )
 
+from services.price_service import sync_prices_for_instruments
+
+@app.post("/api/jobs/sync-prices")
+async def sync_prices(auth_context: dict = Depends(get_current_user)):
+    # Should probably be protected by a service role key for cron, but we allow manual trigger for now
+    client = auth_context["client"]
+    results = sync_prices_for_instruments(client)
+    return results
