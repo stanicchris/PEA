@@ -9,8 +9,8 @@ env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_SECRET_KEY = os.environ.get("SUPABASE_SECRET_KEY")
-SUPABASE_ANON_KEY = os.environ.get("SUPABASE_KEY") # Current fallback
+SUPABASE_SECRET_KEY = os.environ.get("SUPABASE_SECRET_KEY") or os.environ.get("SUPABASE_KEY")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_KEY")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
