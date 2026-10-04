@@ -68,7 +68,7 @@ from backend.services.tax_service import get_pea_tax_status
 @app.get("/api/portfolio/summary")
 async def get_summary(auth_context: dict = Depends(get_current_user)):
     client = auth_context["client"]
-    user_id = auth_context["user"]["id"]
+    user_id = auth_context["user"].id
     df, cash = fetch_user_data(client)
     if df.empty:
         return {
@@ -107,7 +107,7 @@ from backend.services.dividend_service import get_dividend_metrics
 @app.get("/api/dividends/metrics")
 async def get_dividends_metrics_endpoint(auth_context: dict = Depends(get_current_user)):
     client = auth_context["client"]
-    user_id = auth_context["user"]["id"]
+    user_id = auth_context["user"].id
     df, cash = fetch_user_data(client)
     
     if df.empty:
