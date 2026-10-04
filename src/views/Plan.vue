@@ -1,9 +1,17 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold text-white mb-4">Plan & Fiscalité</h1>
-    <p class="text-white/70">Ancien onglet Objectifs & Rente...</p>
+  <div class="space-y-6">
+    <GoalsView :userId="store.userId" />
+    <ReportsView 
+      :positions="store.positions" 
+      :summary="store.summary" 
+    />
   </div>
 </template>
 
 <script setup>
+import { useAppStore } from '../stores/app'
+import GoalsView from './GoalsView.vue'
+import ReportsView from '../components/ReportsView.vue'
+
+const store = useAppStore()
 </script>

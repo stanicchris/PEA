@@ -1,9 +1,17 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold text-white mb-4">Performance</h1>
-    <p class="text-white/70">Ancien onglet Analytics...</p>
+  <div class="space-y-6">
+    <AnalyticsView 
+      :positions="store.positions" 
+      :summary="store.summary" 
+      :history="store.history" 
+      :userId="store.userId"
+    />
   </div>
 </template>
 
 <script setup>
+import { useAppStore } from '../stores/app'
+import AnalyticsView from '../components/AnalyticsView.vue'
+
+const store = useAppStore()
 </script>

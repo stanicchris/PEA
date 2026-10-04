@@ -8,27 +8,26 @@
     </div>
 
     <!-- LOGIN SCREEN -->
-    <LoginWidget v-if="!userId" @login-success="onLoginSuccess" class="relative z-10" />
+    <LoginWidget v-if="!store.userId" @login-success="store.setLoginData" class="relative z-10" />
 
-    <!-- MAIN CHASSIS (Rounded 48px Master Container with Liquid Glass) -->
+    <!-- MAIN CHASSIS -->
     <div v-else class="max-w-[1680px] mx-auto liquid-glass-chassis rounded-48 p-4 sm:p-6 lg:p-8 relative z-10 overflow-hidden flex flex-col min-h-[92vh] specular-highlight">
       
-      <!-- TOP NAVIGATION BAR (Liquid Glass Pill Style) -->
+      <!-- TOP NAVIGATION BAR -->
       <header class="flex items-center justify-between mb-8 gap-4 flex-wrap">
         <!-- Left: Menu + Brand Logo -->
         <div class="flex items-center gap-3">
           <button 
             @click="isMobileMenuOpen = !isMobileMenuOpen"
             class="w-10 h-10 rounded-2xl liquid-glass-pill flex items-center justify-center text-white/70 hover:text-white transition-all cursor-pointer hover:border-white/20 active:scale-95"
-            title="Menu de navigation mobile"
-            aria-label="Menu"
+            title="Menu mobile"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
           
-          <div class="flex items-center gap-2.5 cursor-pointer group" @click="activeTab = 'dashboard'">
+          <router-link to="/" class="flex items-center gap-2.5 cursor-pointer group">
             <img 
               src="/logo.png" 
               alt="Capfolio" 
@@ -39,290 +38,182 @@
                 Capfolio <span class="text-neonLime font-light">/</span> <span class="text-white/80 font-semibold text-base">PEA</span>
               </span>
             </div>
-          </div>
+          </router-link>
         </div>
 
         <!-- MOBILE SLIDE-OVER DRAWER -->
         <div v-if="isMobileMenuOpen" class="fixed inset-0 z-[120] flex md:hidden">
-          <!-- Backdrop -->
           <div class="fixed inset-0 bg-black/80 backdrop-blur-xl transition-opacity" @click="isMobileMenuOpen = false"></div>
-
-          <!-- Drawer Content -->
           <div class="relative w-4/5 max-w-xs bg-[#0C1017] border-r border-white/15 h-full p-6 flex flex-col justify-between shadow-2xl z-10 text-white">
             <div>
-              <!-- Drawer Header -->
               <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
                 <div class="flex items-center gap-2.5">
-                  <img 
-                    src="/logo.png" 
-                    alt="Capfolio" 
-                    class="w-8 h-8 rounded-xl object-cover shadow-[0_0_15px_rgba(163,230,53,0.3)] border border-white/10"
-                  />
+                  <img src="/logo.png" alt="Capfolio" class="w-8 h-8 rounded-xl object-cover shadow-[0_0_15px_rgba(163,230,53,0.3)] border border-white/10"/>
                   <span class="font-extrabold text-lg text-white">Capfolio / <span class="text-neonLime font-bold">PEA</span></span>
                 </div>
-                <button 
-                  @click="isMobileMenuOpen = false" 
-                  class="text-white/50 hover:text-white p-2 rounded-full liquid-glass-subtle active:scale-95"
-                  title="Fermer le menu"
-                  aria-label="Fermer"
-                >
+                <button @click="isMobileMenuOpen = false" class="text-white/50 hover:text-white p-2 rounded-full liquid-glass-subtle active:scale-95">
                   <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
               </div>
 
-              <!-- Navigation Links -->
               <div class="space-y-2">
-                <button 
-                  @click="activeTab = 'dashboard'; isMobileMenuOpen = false"
-                  :class="activeTab === 'dashboard' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
-                  class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
-                >
-                  <span class="text-base">⊞</span>
-                  <span>Dashboard</span>
-                </button>
-
-                <button 
-                  @click="activeTab = 'optimization'; isMobileMenuOpen = false"
-                  :class="activeTab === 'optimization' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
-                  class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
-                >
-                  <span class="text-base">🧠</span>
-                  <span>Optimisation & IA</span>
-                </button>
-
-                <button 
-                  @click="activeTab = 'goals'; isMobileMenuOpen = false"
-                  :class="activeTab === 'goals' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
-                  class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
-                >
-                  <span class="text-base">🎯</span>
-                  <span>Objectifs & Rente</span>
-                </button>
-
-                <button 
-                  @click="activeTab = 'analytics'; isMobileMenuOpen = false"
-                  :class="activeTab === 'analytics' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
-                  class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
-                >
-                  <span class="text-base">📊</span>
-                  <span>Analytics & Graphiques</span>
-                </button>
-
-                <button 
-                  @click="activeTab = 'reports'; isMobileMenuOpen = false"
-                  :class="activeTab === 'reports' ? 'bg-neonLime/15 text-neonLime border-neonLime/30 font-bold' : 'text-white/70 hover:text-white border-transparent'"
-                  class="w-full text-left px-4 py-3 rounded-2xl border text-sm flex items-center gap-3 transition-all active:scale-95"
-                >
-                  <span class="text-base">📁</span>
-                  <span>Reports & Diagnostics</span>
-                </button>
-              </div>
-
-              <!-- Fast Quick Actions -->
-              <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
-                <p class="text-[10px] font-mono uppercase text-white/40 font-bold tracking-wider px-2 mb-2">Outils & Modales</p>
-                <button 
-                  @click="isFiscalModalOpen = true; isMobileMenuOpen = false" 
-                  class="w-full text-left px-4 py-2.5 rounded-xl hover:bg-white/[0.06] text-white/80 hover:text-white flex items-center gap-3 text-xs"
-                >
-                  <span>⚖️</span>
-                  <span>Simulateur Fiscal PEA</span>
-                </button>
-                <button 
-                  @click="isAiAdvisorOpen = true; isMobileMenuOpen = false" 
-                  class="w-full text-left px-4 py-2.5 rounded-xl hover:bg-white/[0.06] text-white/80 hover:text-white flex items-center gap-3 text-xs"
-                >
-                  <span>✦</span>
-                  <span>AI Advisor Groq</span>
-                </button>
-                <button 
-                  @click="isSettingsOpen = true; isMobileMenuOpen = false" 
-                  class="w-full text-left px-4 py-2.5 rounded-xl hover:bg-white/[0.06] text-white/80 hover:text-white flex items-center gap-3 text-xs"
-                >
-                  <span>⚙️</span>
-                  <span>Paramètres du Compte</span>
+                <router-link to="/" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
+                  <span class="text-base">⊞</span> Synthèse
+                </router-link>
+                <router-link to="/portfolio" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
+                  <span class="text-base">💼</span> Portefeuille
+                </router-link>
+                <router-link to="/performance" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
+                  <span class="text-base">📈</span> Performance
+                </router-link>
+                <router-link to="/dividends" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
+                  <span class="text-base">💰</span> Dividendes
+                </router-link>
+                <router-link to="/research" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
+                  <span class="text-base">🧠</span> Recherche & IA
+                </router-link>
+                <router-link to="/plan" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
+                  <span class="text-base">🎯</span> Plan & Fiscalité
+                </router-link>
+                <button @click="store.isSettingsOpen = true; isMobileMenuOpen = false" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
+                  <span class="text-base">⚙️</span> Paramètres
                 </button>
               </div>
             </div>
-
-            <!-- Drawer Footer -->
-            <div class="pt-4 border-t border-white/10 flex items-center justify-between">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
-                  {{ username.substring(0, 2).toUpperCase() || 'CH' }}
+            
+            <div class="pt-6 border-t border-white/10 mt-auto">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-neonLime/40 to-lavender/40 flex items-center justify-center text-white font-bold border border-white/20">
+                  {{ store.username.charAt(0).toUpperCase() }}
                 </div>
-                <span class="text-xs font-bold text-white truncate max-w-[120px]">{{ username }}</span>
+                <div class="overflow-hidden">
+                  <p class="text-sm font-semibold truncate">{{ store.username }}</p>
+                  <p class="text-xs text-white/50 truncate">Premium Investor</p>
+                </div>
               </div>
-              <button @click="logout" class="text-xs text-roseAcc hover:underline font-bold" title="Déconnexion">
-                Quitter
+              <button @click="store.logout(); isMobileMenuOpen = false" class="w-full py-2.5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 text-sm font-medium transition-colors">
+                Déconnexion
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Center: Floating Pill Navigation Tabs (Liquid Glass) -->
-        <nav class="hidden md:flex items-center liquid-glass-pill rounded-full p-1.5 shadow-2xl">
-          <button 
-            @click="activeTab = 'dashboard'"
-            :class="activeTab === 'dashboard' ? 'bg-white/[0.14] text-white shadow-inner font-bold border border-white/20' : 'text-white/55 hover:text-white font-medium border border-transparent'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-          >
-            <span class="text-sm">⊞</span>
-            <span>Dashboard</span>
-          </button>
-
-          <button 
-            @click="activeTab = 'optimization'"
-            :class="activeTab === 'optimization' ? 'bg-white/[0.14] text-white shadow-inner font-bold border border-white/20' : 'text-white/55 hover:text-white font-medium border border-transparent'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-          >
-            <span class="text-sm">🧠</span>
-            <span>Optimisation</span>
-          </button>
-
-          <button 
-            @click="activeTab = 'goals'"
-            :class="activeTab === 'goals' ? 'bg-white/[0.14] text-white shadow-inner font-bold border border-white/20' : 'text-white/55 hover:text-white font-medium border border-transparent'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-          >
-            <span class="text-sm">🎯</span>
-            <span>Objectifs</span>
-          </button>
-
-          <button 
-            @click="activeTab = 'analytics'"
-            :class="activeTab === 'analytics' ? 'bg-white/[0.14] text-white shadow-inner font-bold border border-white/20' : 'text-white/55 hover:text-white font-medium border border-transparent'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-          >
-            <span class="text-sm">📊</span>
-            <span>Analytics</span>
-          </button>
-
-          <button 
-            @click="activeTab = 'reports'"
-            :class="activeTab === 'reports' ? 'bg-white/[0.14] text-white shadow-inner font-bold border border-white/20' : 'text-white/55 hover:text-white font-medium border border-transparent'"
-            class="px-5 py-2 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-          >
-            <span class="text-sm">📁</span>
-            <span>Reports</span>
-          </button>
-
-          <button 
-            @click="isSettingsOpen = true"
-            class="px-5 py-2 rounded-full text-xs text-white/55 hover:text-white transition-all flex items-center gap-2 font-medium cursor-pointer border border-transparent hover:border-white/10 active:scale-95"
-          >
-            <span class="text-sm">⚙️</span>
-            <span>Settings</span>
-          </button>
+        <!-- Center: Desktop Navigation Pills -->
+        <nav class="hidden md:flex items-center gap-1.5 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-inner">
+          <router-link to="/" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]" class="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white transition-all border border-transparent hover:bg-white/5">
+            ⊞ Synthèse
+          </router-link>
+          <router-link to="/portfolio" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]" class="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white transition-all border border-transparent hover:bg-white/5">
+            💼 Portefeuille
+          </router-link>
+          <router-link to="/performance" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]" class="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white transition-all border border-transparent hover:bg-white/5">
+            📈 Performance
+          </router-link>
+          <router-link to="/dividends" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]" class="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white transition-all border border-transparent hover:bg-white/5">
+            💰 Dividendes
+          </router-link>
+          <router-link to="/research" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]" class="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white transition-all border border-transparent hover:bg-white/5">
+            🧠 Recherche
+          </router-link>
+          <router-link to="/plan" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]" class="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white transition-all border border-transparent hover:bg-white/5">
+            🎯 Plan & Fisc
+          </router-link>
         </nav>
 
-        <!-- Right: Actions & User Avatar -->
-        <div class="flex items-center gap-3">
-          <!-- Quick Refresh Live Button (Yahoo Finance Sync only) -->
-          <button 
-            @click="refreshData" 
-            :disabled="isRefreshing" 
-            class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-neonLime/15 border border-neonLime/30 hover:bg-neonLime hover:text-black text-neonLime text-xs font-bold transition-all shadow-[0_0_20px_rgba(163,230,53,0.15)] active:scale-95 disabled:opacity-50 cursor-pointer"
-            title="Actualise les cours boursiers en direct et sauvegarde le snapshot dans Supabase"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" :class="isRefreshing ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span class="hidden sm:inline">{{ isRefreshing ? 'Sync en cours...' : '⚡ Actualiser Cours' }}</span>
-          </button>
-
-          <!-- Search Input with Auto-trigger & Click button -->
-          <div class="relative flex items-center">
+        <!-- Right: Actions & Profile -->
+        <div class="flex items-center gap-3 ml-auto md:ml-0">
+          <!-- Global Search -->
+          <div class="relative hidden sm:block group">
             <input 
-              type="text" 
-              v-model="searchQuery" 
+              v-model="searchQuery"
               @keyup.enter="handleHeaderSearch"
-              placeholder="Analyser une action (ex: AAPL, LVMH)..."
-              class="w-36 sm:w-56 lg:w-64 liquid-glass-subtle rounded-full pl-9 pr-8 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-neonLime/60 focus:ring-1 focus:ring-neonLime/30 transition-all shadow-inner"
+              type="text" 
+              placeholder="Chercher (ex: AAPL, LVMH...)" 
+              class="w-48 xl:w-64 bg-black/40 border border-white/10 rounded-2xl py-2 pl-10 pr-4 text-sm text-white placeholder-white/40 focus:outline-none focus:border-neonLime/50 focus:w-64 xl:focus:w-72 transition-all duration-300"
             />
-            <button 
-              @click="handleHeaderSearch" 
-              class="w-4 h-4 text-white/40 hover:text-neonLime absolute left-3 top-2.5 transition-colors cursor-pointer"
-              title="Lancer l'analyse du titre"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-            </button>
-            <button 
-              v-if="searchQuery.trim()" 
-              @click="handleHeaderSearch"
-              class="absolute right-2 text-[10px] font-mono font-bold px-1.5 py-0.5 bg-neonLime text-black rounded-md hover:bg-neonLimeHover transition-all cursor-pointer shadow-sm"
-              title="Analyser"
-            >
-              ↵
-            </button>
+            <svg class="w-4 h-4 text-white/50 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-neonLime transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 pointer-events-none opacity-50 group-focus-within:opacity-0 transition-opacity">
+              <span class="text-[10px] bg-white/10 px-1.5 py-0.5 rounded border border-white/10 font-mono">⌘</span>
+              <span class="text-[10px] bg-white/10 px-1.5 py-0.5 rounded border border-white/10 font-mono">K</span>
+            </div>
           </div>
 
-          <!-- Notification Bell with Dropdown -->
+          <!-- Notification Bell -->
           <div class="relative">
             <button 
               @click="isNotifOpen = !isNotifOpen"
-              class="w-10 h-10 rounded-2xl liquid-glass-pill flex items-center justify-center text-white/70 hover:text-white transition-all relative cursor-pointer hover:border-white/20 active:scale-95"
+              class="w-10 h-10 rounded-2xl liquid-glass-pill flex items-center justify-center text-white/70 hover:text-white transition-all hover:border-white/20 relative"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
-              <span class="w-2 h-2 rounded-full bg-neonLime absolute top-2.5 right-2.5 shadow-[0_0_8px_rgba(163,230,53,0.8)]"></span>
+              <!-- Animated Notification Badge -->
+              <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-neonLime rounded-full border-2 border-[#0A0D14] shadow-[0_0_8px_rgba(163,230,53,0.8)]"></span>
+              <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-neonLime rounded-full animate-ping opacity-75"></span>
             </button>
-
-            <!-- Notifications Dropdown (Liquid Glass) -->
-            <div v-if="isNotifOpen" class="absolute right-0 top-full mt-2 w-80 liquid-glass rounded-24 shadow-2xl p-4 z-50 text-xs specular-highlight border border-white/15">
-              <div class="flex justify-between items-center mb-3">
-                <span class="font-bold text-white uppercase font-mono text-[10px] tracking-wider">Notifications Portefeuille</span>
-                <span class="text-[10px] text-neonLime font-semibold">3 nouvelles</span>
+            
+            <!-- Notif Dropdown -->
+            <div v-if="isNotifOpen" class="absolute right-0 mt-3 w-80 bg-[#12161E]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden transform origin-top-right transition-all">
+              <div class="p-4 border-b border-white/10 flex justify-between items-center bg-black/20">
+                <h3 class="font-bold text-white text-sm">Notifications</h3>
+                <span class="text-xs text-neonLime bg-neonLime/10 px-2 py-0.5 rounded-full font-medium">3 Nouvelles</span>
               </div>
-              <div class="space-y-2">
-                <div class="liquid-glass-subtle p-2.5 rounded-xl border border-white/10 hover:border-white/20 transition-all">
-                  <p class="font-semibold text-white flex items-center gap-1.5"><span>⚡</span> Euronext Paris Ouverte</p>
-                  <p class="text-white/50 text-[11px] mt-0.5">Marché en direct, flux temps réel actif.</p>
+              <div class="max-h-[300px] overflow-y-auto custom-scrollbar">
+                <div class="p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer group">
+                  <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform">
+                      💰
+                    </div>
+                    <div>
+                      <p class="text-sm text-white font-medium mb-1 group-hover:text-neonLime transition-colors">Dividende TotalEnergies</p>
+                      <p class="text-xs text-white/50 leading-relaxed">Détachement de 0,79€ par action dans 3 jours.</p>
+                      <p class="text-[10px] text-white/30 mt-2 uppercase tracking-wider font-semibold">Il y a 2 heures</p>
+                    </div>
+                  </div>
                 </div>
-                <div class="liquid-glass-subtle p-2.5 rounded-xl border border-white/10 hover:border-white/20 transition-all">
-                  <p class="font-semibold text-white flex items-center gap-1.5"><span>💰</span> Dividende TotalEnergies</p>
-                  <p class="text-white/50 text-[11px] mt-0.5">Acompte sur dividende trimestriel programmé.</p>
-                </div>
-                <div class="liquid-glass-subtle p-2.5 rounded-xl border border-neonLime/20 bg-neonLime/5 transition-all">
-                  <p class="font-semibold text-neonLime flex items-center gap-1.5"><span>⚖️</span> Maturité Fiscale Atteinte</p>
-                  <p class="text-white/50 text-[11px] mt-0.5">PEA +5 ans : Exonération IR 0% active.</p>
-                </div>
+              </div>
+              <div class="p-3 text-center bg-black/40 hover:bg-black/60 transition-colors cursor-pointer">
+                <span class="text-xs text-white/50 font-medium">Marquer tout comme lu</span>
               </div>
             </div>
           </div>
 
-          <!-- User Avatar & Profile Dropdown -->
-          <div class="relative">
-            <div 
-              @click="isProfileMenuOpen = !isProfileMenuOpen" 
-              class="w-10 h-10 rounded-full border-2 border-neonLime/50 bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-[0_0_15px_rgba(139,92,246,0.4)] cursor-pointer hover:scale-105 active:scale-95 transition-all select-none"
+          <!-- Profile / Settings Dropdown -->
+          <div class="relative hidden sm:block">
+            <button 
+              @click="isProfileMenuOpen = !isProfileMenuOpen"
+              class="flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-2xl liquid-glass-pill hover:border-white/20 transition-all active:scale-95 group"
             >
-              {{ username.substring(0, 2).toUpperCase() || 'CH' }}
-            </div>
-
-            <!-- Profile Dropdown (Liquid Glass) -->
-            <div v-if="isProfileMenuOpen" class="absolute right-0 top-full mt-2 w-64 liquid-glass rounded-24 shadow-2xl p-4 z-50 text-xs specular-highlight border border-white/15">
-              <div class="flex items-center gap-3 pb-3 border-b border-white/[0.08] mb-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                  {{ username.substring(0, 2).toUpperCase() || 'CH' }}
-                </div>
-                <div>
-                  <p class="font-bold text-white">{{ username }}</p>
-                  <p class="text-white/40 text-[10px] font-mono truncate max-w-[140px]">{{ userId }}</p>
-                </div>
+              <div class="w-7 h-7 rounded-full bg-gradient-to-br from-neonLime/40 to-lavender/40 flex items-center justify-center text-white font-bold text-xs border border-white/20 shadow-[0_0_10px_rgba(163,230,53,0.2)] group-hover:shadow-[0_0_15px_rgba(163,230,53,0.4)] transition-shadow">
+                {{ store.username.charAt(0).toUpperCase() }}
               </div>
-              <div class="space-y-1">
-                <button @click="isFiscalModalOpen = true; isProfileMenuOpen = false" class="w-full text-left p-2 rounded-xl hover:bg-white/[0.05] text-white/80 hover:text-white flex items-center gap-2">
-                  <span>⚖️</span> <span>Simulateur Fiscal PEA</span>
+              <span class="text-sm font-semibold text-white/80 group-hover:text-white transition-colors max-w-[100px] truncate">
+                {{ store.username }}
+              </span>
+              <svg class="w-4 h-4 text-white/40 group-hover:text-white/80 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <!-- Profile Menu -->
+            <div v-if="isProfileMenuOpen" class="absolute right-0 mt-3 w-56 bg-[#12161E]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden transform origin-top-right transition-all">
+              <div class="p-4 border-b border-white/10 bg-black/20">
+                <p class="text-sm text-white font-bold truncate">{{ store.username }}</p>
+                <p class="text-xs text-white/50 mt-1 font-mono text-[10px] break-all">{{ store.userId }}</p>
+              </div>
+              <div class="p-2 space-y-1">
+                <button @click="store.isSettingsOpen = true; isProfileMenuOpen = false" class="w-full text-left px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                  <span class="text-base">⚙️</span> Paramètres & Données
                 </button>
-                <button @click="isSettingsOpen = true; isProfileMenuOpen = false" class="w-full text-left p-2 rounded-xl hover:bg-white/[0.05] text-white/80 hover:text-white flex items-center gap-2">
-                  <span>⚙️</span> <span>Paramètres & Backend</span>
+                <button class="w-full text-left px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                  <span class="text-base">🌙</span> Mode Discret (Bientôt)
                 </button>
-                <button @click="logout" class="w-full text-left p-2 rounded-xl hover:bg-roseAcc/20 text-roseAcc flex items-center gap-2 font-bold mt-2 border-t border-white/[0.06]">
-                  <span>🚪</span> <span>Déconnexion</span>
+              </div>
+              <div class="p-2 border-t border-white/10">
+                <button @click="store.logout" class="w-full text-left px-3 py-2 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 flex items-center gap-3 transition-colors font-medium">
+                  <span class="text-base">🚪</span> Déconnexion
                 </button>
               </div>
             </div>
@@ -330,143 +221,41 @@
         </div>
       </header>
 
-      <!-- EMPTY STATE -->
-      <div v-if="!positions.length && !isLoading" class="p-16 text-center glass-card rounded-36 border border-white/[0.08] my-auto">
-        <div class="w-16 h-16 rounded-full bg-neonLime/10 text-neonLime flex items-center justify-center mx-auto mb-4 text-2xl">
-          📈
-        </div>
-        <h2 class="text-2xl font-bold mb-2">Portefeuille en attente</h2>
-        <p class="text-white/40 text-sm max-w-md mx-auto mb-6">Importez votre relevé de compte Boursorama au format CSV pour afficher votre terminal complet.</p>
-        <button @click="isSettingsOpen = true" class="bg-neonLime text-black font-extrabold text-sm px-6 py-3 rounded-full shadow-lg hover:bg-neonLimeHover transition-all cursor-pointer">
-          Importer un CSV
-        </button>
-      </div>
+      <!-- MAIN CONTENT AREA -->
+      <main class="flex-1 w-full overflow-hidden flex flex-col relative z-10">
+        <!-- Rendu dynamique des vues selon la route -->
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
+      </main>
 
-      <!-- TAB 1 : MAIN DASHBOARD CONTENT -->
-      <div v-else-if="activeTab === 'dashboard'" class="space-y-6">
-        
-        <!-- ÉTAGE SUPÉRIEUR (Grid 4 Colonnes - Inspiré d'interface.png) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <!-- Carte 1 : Total Balance (Hero) -->
-          <HeroSection 
-            :summary="summary" 
-            :positions="positions" 
-            :isLoading="isLoading" 
-            :isRefreshing="isRefreshing"
-            @refresh="refreshData"
-            @open-settings="isSettingsOpen = true"
-          />
-
-          <!-- Carte 2 : Transfer / Asset Allocation (Concentric Rings) -->
-          <AllocationChart 
-            :positions="positions" 
-            :summary="summary" 
-            :isLoading="isLoading" 
-          />
-
-          <!-- Carte 3 : Financial Health (Equalizer Soundwave & Sentiment) -->
-          <FinancialHealthCard 
-            :summary="summary" 
-            :weather="weather" 
-            :isLoading="isLoading" 
-            @open-ai="isAiAdvisorOpen = true"
-          />
-
-          <!-- Carte 4 : Stack Fiscale & Plafond PEA 150k€ -->
-          <FiscalStackCard 
-            :summary="summary" 
-            @open-tax-sim="isFiscalModalOpen = true"
-          />
-        </div>
-
-        <!-- ÉTAGE INFÉRIEUR (Grid 2 Colonnes Asymétrique) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Carte 5 : Analytics Performance -->
-          <div class="lg:col-span-7">
-            <AnalyticsCharts 
-              :history="history" 
-              :summary="summary" 
-              :positions="positions" 
-              :isLoading="isLoading" 
-            />
-          </div>
-
-          <!-- Carte 6 : Top Movers -->
-          <div class="lg:col-span-5">
-            <TopMovers 
-              :positions="positions" 
-              :summary="summary" 
-              :isLoading="isLoading" 
-              @inspect-stock="openStockInspector"
-            />
-          </div>
-        </div>
-
-        <!-- CALENDRIER DES DIVIDENDES -->
-        <DividendCalendar :userId="userId" />
-
-        <!-- SECTION BASSE : TABLEAU PRO DES POSITIONS -->
-        <PositionsTable :positions="positions" />
-
-      </div>
-
-      <!-- TAB 2 : ANALYTICS DEEP DIVE -->
-      <div v-else-if="activeTab === 'analytics'" class="space-y-6">
-        <AnalyticsView 
-          :positions="positions" 
-          :summary="summary" 
-          :history="history" 
-          :userId="userId"
-        />
-      </div>
-
-      <!-- TAB 3 : REPORTS & TAX CONFORMITY -->
-      <div v-else-if="activeTab === 'reports'" class="space-y-6">
-        <ReportsView 
-          :positions="positions" 
-          :summary="summary" 
-        />
-      </div>
-
-      <!-- TAB 4 : OPTIMIZATION & IA -->
-      <div v-else-if="activeTab === 'optimization'" class="space-y-6">
-        <OptimizationView 
-          :userId="userId" 
-          :isAiLoading="isAiLoading" 
-          @trigger-ai="isAiAdvisorOpen = true" 
-        />
-      </div>
-
-      <!-- TAB 5 : GOALS & FIRE -->
-      <div v-else-if="activeTab === 'goals'" class="space-y-6">
-        <GoalsView :userId="userId" />
-      </div>
-
-      <!-- MODALES -->
+      <!-- MODALS -->
       <SettingsModal 
-        :isOpen="isSettingsOpen" 
-        :userId="userId" 
-        :currentCash="cashAmount" 
-        @close="isSettingsOpen = false"
-        @refresh="fetchData"
+        :isOpen="store.isSettingsOpen" 
+        :userId="store.userId" 
+        :currentCash="store.cashAmount" 
+        @close="store.isSettingsOpen = false"
+        @refresh="store.fetchData"
       />
 
       <AssetInspectorModal 
-        :isOpen="isSearchModalOpen" 
-        :asset="inspectedAsset" 
-        @close="isSearchModalOpen = false" 
+        :isOpen="store.isSearchModalOpen" 
+        :asset="store.inspectedAsset" 
+        @close="store.isSearchModalOpen = false" 
       />
 
       <AiAdvisorWidget 
-        :isOpen="isAiAdvisorOpen" 
-        :userId="userId" 
-        @close="isAiAdvisorOpen = false" 
+        :isOpen="store.isAiAdvisorOpen" 
+        :userId="store.userId" 
+        @close="store.isAiAdvisorOpen = false" 
       />
 
       <PeaFiscalModal 
-        :isOpen="isFiscalModalOpen" 
-        :summary="summary" 
-        @close="isFiscalModalOpen = false" 
+        :isOpen="store.isFiscalModalOpen" 
+        :summary="store.summary" 
+        @close="store.isFiscalModalOpen = false" 
       />
 
     </div>
@@ -474,159 +263,59 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { getApiBase } from './config';
+import { ref, onMounted } from 'vue'
+import { useAppStore } from './stores/app'
 
-import LoginWidget from './components/LoginWidget.vue';
-import HeroSection from './components/HeroSection.vue';
-import AllocationChart from './components/AllocationChart.vue';
-import FinancialHealthCard from './components/FinancialHealthCard.vue';
-import FiscalStackCard from './components/FiscalStackCard.vue';
-import AnalyticsCharts from './components/AnalyticsCharts.vue';
-import TopMovers from './components/TopMovers.vue';
-import PositionsTable from './components/PositionsTable.vue';
-import AssetInspectorModal from './components/AssetInspectorModal.vue';
-import SettingsModal from './components/SettingsModal.vue';
-import AiAdvisorWidget from './components/AiAdvisorWidget.vue';
-import PeaFiscalModal from './components/PeaFiscalModal.vue';
-import AnalyticsView from './components/AnalyticsView.vue';
-import ReportsView from './components/ReportsView.vue';
-import DividendCalendar from './components/DividendCalendar.vue';
-import OptimizationView from './views/OptimizationView.vue';
-import GoalsView from './views/GoalsView.vue';
+import LoginWidget from './components/LoginWidget.vue'
+import SettingsModal from './components/SettingsModal.vue'
+import AssetInspectorModal from './components/AssetInspectorModal.vue'
+import AiAdvisorWidget from './components/AiAdvisorWidget.vue'
+import PeaFiscalModal from './components/PeaFiscalModal.vue'
 
-const userId = ref(localStorage.getItem('pea_user_id') || null);
-const username = ref(localStorage.getItem('pea_username') || '');
-const activeTab = ref('dashboard');
+const store = useAppStore()
 
-const isLoading = ref(false);
-const isRefreshing = ref(false);
-const isAiLoading = ref(false);
-const isSettingsOpen = ref(false);
-const isAiAdvisorOpen = ref(false);
-const isFiscalModalOpen = ref(false);
-const isSearchModalOpen = ref(false);
-const isNotifOpen = ref(false);
-const isProfileMenuOpen = ref(false);
-const isMobileMenuOpen = ref(false);
-
-const searchQuery = ref('');
-const inspectedAsset = ref(null);
-
-const positions = ref([]);
-const summary = ref(null);
-const history = ref([]);
-const weather = ref(null);
-
-const cashAmount = computed(() => {
-  return summary.value?.cash || 0;
-});
-
-const onLoginSuccess = (payload) => {
-  userId.value = payload.userId;
-  username.value = payload.username;
-  fetchData();
-};
-
-const logout = () => {
-  localStorage.removeItem('pea_user_id');
-  localStorage.removeItem('pea_username');
-  localStorage.removeItem('pea_access_token');
-  userId.value = null;
-  username.value = '';
-  positions.value = [];
-  summary.value = null;
-  history.value = [];
-  isProfileMenuOpen.value = false;
-};
-
-const openStockInspector = (stock) => {
-  if (!stock) return;
-  inspectedAsset.value = stock;
-  isSearchModalOpen.value = true;
-};
+const isMobileMenuOpen = ref(false)
+const isNotifOpen = ref(false)
+const isProfileMenuOpen = ref(false)
+const searchQuery = ref('')
 
 const handleHeaderSearch = () => {
-  if (!searchQuery.value.trim()) return;
-  const q = searchQuery.value.trim();
-  const qLower = q.toLowerCase();
+  if (!searchQuery.value.trim()) return
+  const q = searchQuery.value.trim()
+  const qLower = q.toLowerCase()
   
-  // 1. Chercher d'abord dans les positions du portefeuille
-  const match = positions.value.find(p => 
+  const match = store.positions.find(p => 
     (p.name && p.name.toLowerCase().includes(qLower)) || 
     (p.ticker && p.ticker.toLowerCase().includes(qLower)) ||
     (p.isin && p.isin.toLowerCase().includes(qLower))
-  );
+  )
   
   if (match) {
-    openStockInspector(match);
+    store.openStockInspector(match)
   } else {
-    // 2. Action hors portefeuille : interrogation directe de l'API pour n'importe quelle action (ex: AAPL, NVDA, LVMH, TSLA)
-    openStockInspector({
+    store.openStockInspector({
       name: q.toUpperCase(),
       ticker: q.toUpperCase(),
       sector: 'Marché Mondial / Recherche Directe'
-    });
+    })
   }
-};
-
-
-const fetchData = async () => {
-  if (!userId.value) return;
-  const apiBase = getApiBase();
-  if (!apiBase) return;
-
-  isLoading.value = true;
-  try {
-    const token = localStorage.getItem('pea_access_token');
-    const headers = token ? { Authorization: 'Bearer ' + token } : {};
-
-    const [summaryRes, positionsRes, historyRes] = await Promise.all([
-      fetch(`${apiBase}/api/portfolio/summary?user_id=${userId.value}`, { headers }).catch(() => null),
-      fetch(`${apiBase}/api/portfolio/positions?user_id=${userId.value}`, { headers }).catch(() => null),
-      fetch(`${apiBase}/api/portfolio/history?user_id=${userId.value}`, { headers }).catch(() => null)
-    ]);
-
-    if (summaryRes && summaryRes.ok) {
-      summary.value = await summaryRes.json();
-    }
-    if (positionsRes && positionsRes.ok) {
-      const posData = await positionsRes.json();
-      positions.value = posData.positions || [];
-    }
-    if (historyRes && historyRes.ok) {
-      const histData = await historyRes.json();
-      history.value = histData.history || [];
-    }
-  } catch (error) {
-    console.error("Erreur lors de la récupération des données :", error);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-const refreshData = async () => {
-  if (!userId.value) return;
-  const apiBase = getApiBase();
-  if (!apiBase) return;
-  isRefreshing.value = true;
-  try {
-    const token = localStorage.getItem('pea_access_token');
-    // Actualisation 100% financière (Yahoo Finance -> Supabase)
-    await fetch(`${apiBase}/api/portfolio/refresh?user_id=${userId.value}`, {
-      method: 'POST',
-      headers: token ? { Authorization: 'Bearer ' + token } : {}
-    });
-    // Récupération des cours et graphiques actualisés
-    await fetchData();
-  } catch (error) {
-    console.error("Erreur lors du rafraîchissement des cours :", error);
-  } finally {
-    isRefreshing.value = false;
-  }
-};
+}
 
 onMounted(() => {
-  if (userId.value) fetchData();
-});
+  if (store.userId) {
+    store.fetchData()
+  }
+})
 </script>
+
+<style>
+/* Transition pour le router-view */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
