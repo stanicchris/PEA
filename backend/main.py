@@ -199,6 +199,10 @@ async def cron_daily_refresh(request: Request):
     if not client:
         return {"status": "error", "message": "Service client not configured"}
         
+    print("Triggering daily prices sync for global market...")
+    from backend.services.price_service import sync_prices_for_instruments
+    sync_prices_for_instruments(client)
+        
     print("Daily refresh triggered by cron. Fetching all distinct users...")
     
     # Get all distinct users by getting the latest snapshot for each user
@@ -371,6 +375,24 @@ async def upload_csv(file: UploadFile = File(...), auth_context: dict = Depends(
         })
     if pos_data:
         client.table("snapshot_positions").insert(pos_data).execute()
+        
+    # Populer la table instruments avec les nouveautés
+    instruments_to_upsert = []
+    for _, row in df.iterrows():
+        isin = row.get('isin', '')
+        name = row.get('name', '')
+        if isin:
+            ticker = resolve_yf_symbol(isin, name)
+            instruments_to_upsert.append({
+                "isin": isin,
+                "name": name,
+                "ticker": ticker
+            })
+    if instruments_to_upsert:
+        try:
+            client.table("instruments").upsert(instruments_to_upsert, on_conflict="isin").execute()
+        except:
+            pass
         
     return {"status": "ok", "snapshot_id": snap_id}
 
