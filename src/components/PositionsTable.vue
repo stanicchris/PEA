@@ -1,5 +1,5 @@
 <template>
-  <div class="liquid-glass-card rounded-32 p-7 relative overflow-hidden mt-6 specular-highlight">
+  <div class="liquid-glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-7 relative overflow-hidden mt-6 specular-highlight">
     <!-- Header with Search & Quick Filter Badges -->
     <div class="flex flex-col lg:flex-row justify-between lg:items-center gap-4 mb-6">
       <div>

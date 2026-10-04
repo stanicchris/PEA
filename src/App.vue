@@ -11,7 +11,7 @@
     <LoginWidget v-if="!store.userId" @login-success="store.setLoginData" class="relative z-10" />
 
     <!-- MAIN CHASSIS -->
-    <div v-else class="max-w-[1680px] mx-auto liquid-glass-chassis rounded-48 p-4 sm:p-6 lg:p-8 relative z-10 overflow-hidden flex flex-col min-h-[92vh] specular-highlight">
+    <div v-else class="max-w-[1680px] mx-auto liquid-glass-chassis rounded-3xl md:rounded-[48px] p-4 sm:p-6 lg:p-8 relative z-10 overflow-hidden flex flex-col min-h-[92vh] specular-highlight">
       
       <!-- TOP NAVIGATION BAR -->
       <header class="flex items-center justify-between mb-8 gap-4 flex-wrap">

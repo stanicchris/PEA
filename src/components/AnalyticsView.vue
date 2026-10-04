@@ -6,8 +6,8 @@
         <div>
           <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Score Diversification</p>
           <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-3xl font-black text-neonLime font-mono">{{ diversificationScore }}/100</span>
-            <span class="text-xs text-white/60">Optimal</span>
+            <span class="text-2xl sm:text-3xl font-black text-neonLime font-mono">{{ diversificationScore }}/100</span>
+            <span class="text-[10px] sm:text-xs text-white/60">Optimal</span>
           </div>
           <p class="text-white/40 text-[10px] mt-1">{{ positions.length }} lignes actives sur {{ topSectorSummary.length }} secteurs</p>
         </div>
@@ -20,8 +20,8 @@
         <div>
           <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Rendement Dividendes</p>
           <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-3xl font-black text-lavender font-mono">{{ avgDividendYield.toFixed(2) }} %</span>
-            <span class="text-xs text-lavender font-bold">~{{ annualDividendEstimate.toFixed(0) }} €/an</span>
+            <span class="text-2xl sm:text-3xl font-black text-lavender font-mono">{{ avgDividendYield.toFixed(2) }} %</span>
+            <span class="text-[10px] sm:text-xs text-lavender font-bold">~{{ annualDividendEstimate.toFixed(0) }} €/an</span>
           </div>
           <p class="text-white/40 text-[10px] mt-1">Revenus passifs réinvestis sans impôt</p>
         </div>
