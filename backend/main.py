@@ -596,7 +596,7 @@ async def export_portfolio_excel(auth_context: dict = Depends(get_current_user))
         headers={"Content-Disposition": "attachment; filename=Export_PEA_Complet.xlsx"}
     )
 
-from services.price_service import sync_prices_for_instruments
+from backend.services.price_service import sync_prices_for_instruments
 
 @app.post("/api/jobs/sync-prices")
 async def sync_prices(auth_context: dict = Depends(get_current_user)):
