@@ -68,7 +68,7 @@ const props = defineProps({
 defineEmits(['open-tax-sim']);
 
 const investedAmount = computed(() => {
-  return props.summary?.total_invested || 7458.78;
+  return props.summary?.total_invested ?? 0;
 });
 
 const percentInvested = computed(() => {

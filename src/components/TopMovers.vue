@@ -53,54 +53,60 @@
       <p class="text-white/40 text-[11px] mt-0.5">Cliquez sur une colonne pour inspecter les fondamentaux</p>
     </div>
 
-    <!-- Segmented LED Bar Chart with Axis Scale and Avatars -->
-    <div class="relative w-full flex items-end justify-between pt-2 pb-1 gap-2">
-      <!-- Y-Axis Scale Marks -->
-      <div class="flex flex-col justify-between h-36 text-[9px] font-mono text-white/30 pr-1 select-none">
-        <span>+40%</span>
-        <span>+20%</span>
-        <span>+10%</span>
-        <span>+05%</span>
-        <span>00%</span>
-        <span>-10%</span>
-      </div>
+    <div v-if="!ledColumns.length" class="h-44 flex items-center justify-center text-white/40 text-xs border border-dashed border-white/10 rounded-2xl">
+      Aucune position disponible.
+    </div>
 
-      <!-- LED Bars Grid -->
-      <div class="flex-1 flex items-end justify-between gap-1.5 sm:gap-2.5 h-36 border-b border-white/[0.08] pb-1">
-        <div 
-          v-for="(col, idx) in ledColumns" 
-          :key="idx" 
-          @click="$emit('inspect-stock', col.rawPosition)"
-          class="flex-1 flex flex-col items-center justify-end h-full group cursor-pointer"
-          :title="`${col.name}: ${col.perf >= 0 ? '+' : ''}${col.perf.toFixed(2)}%`"
-        >
-          <!-- Stack of LED segments -->
-          <div class="w-full max-w-[20px] flex flex-col-reverse gap-[2.5px] items-center mb-1">
-            <div 
-              v-for="seg in col.segments" 
-              :key="seg"
-              class="w-full h-1.5 rounded-[2px] transition-all group-hover:brightness-125"
-              :style="{ backgroundColor: col.color }"
-            ></div>
+    <!-- Segmented LED Bar Chart with Axis Scale and Avatars -->
+    <div v-else class="space-y-0">
+      <div class="relative w-full flex items-end justify-between pt-2 pb-1 gap-2">
+        <!-- Y-Axis Scale Marks -->
+        <div class="flex flex-col justify-between h-36 text-[9px] font-mono text-white/30 pr-1 select-none">
+          <span>+40%</span>
+          <span>+20%</span>
+          <span>+10%</span>
+          <span>+05%</span>
+          <span>00%</span>
+          <span>-10%</span>
+        </div>
+
+        <!-- LED Bars Grid -->
+        <div class="flex-1 flex items-end justify-between gap-1.5 sm:gap-2.5 h-36 border-b border-white/[0.08] pb-1">
+          <div 
+            v-for="(col, idx) in ledColumns" 
+            :key="idx" 
+            @click="$emit('inspect-stock', col.rawPosition)"
+            class="flex-1 flex flex-col items-center justify-end h-full group cursor-pointer"
+            :title="`${col.name}: ${col.perf >= 0 ? '+' : ''}${col.perf.toFixed(2)}%`"
+          >
+            <!-- Stack of LED segments -->
+            <div class="w-full max-w-[20px] flex flex-col-reverse gap-[2.5px] items-center mb-1">
+              <div 
+                v-for="seg in col.segments" 
+                :key="seg"
+                class="w-full h-1.5 rounded-[2px] transition-all group-hover:brightness-125"
+                :style="{ backgroundColor: col.color }"
+              ></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Circular Stock Avatars under each bar -->
-    <div class="flex items-center justify-between gap-1.5 sm:gap-2.5 pl-6 pt-2">
-      <div 
-        v-for="(col, idx) in ledColumns" 
-        :key="'avatar-'+idx"
-        class="flex-1 flex justify-center"
-      >
+      <!-- Circular Stock Avatars under each bar -->
+      <div class="flex items-center justify-between gap-1.5 sm:gap-2.5 pl-6 pt-2">
         <div 
-          @click="$emit('inspect-stock', col.rawPosition)"
-          class="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center font-bold text-[9px] text-white overflow-hidden shadow-sm transition-transform hover:scale-125 cursor-pointer"
-          :style="{ backgroundColor: col.avatarBg }"
-          :title="col.name"
+          v-for="(col, idx) in ledColumns" 
+          :key="'avatar-'+idx"
+          class="flex-1 flex justify-center"
         >
-          <span>{{ col.symbol }}</span>
+          <div 
+            @click="$emit('inspect-stock', col.rawPosition)"
+            class="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center font-bold text-[9px] text-white overflow-hidden shadow-sm transition-transform hover:scale-125 cursor-pointer"
+            :style="{ backgroundColor: col.avatarBg }"
+            :title="col.name"
+          >
+            <span>{{ col.symbol }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -135,21 +141,13 @@ const selectFilter = (mode) => {
 };
 
 const formattedValue = computed(() => {
-  const val = props.summary?.total_value || 36100.01;
+  const val = props.summary?.total_value ?? 0;
   return val.toLocaleString('fr-FR', { minimumFractionDigits: 2, style: 'currency', currency: 'EUR' });
 });
 
 const ledColumns = computed(() => {
   if (!props.positions || !props.positions.length) {
-    return [
-      { name: 'LVMH (MC)', symbol: 'MC', segments: 14, color: '#A3E635', avatarBg: '#3B82F6', perf: 28.4, rawPosition: null },
-      { name: 'TotalEnergies', symbol: 'TT', segments: 11, color: '#A3E635', avatarBg: '#10B981', perf: 21.0, rawPosition: null },
-      { name: 'Schneider', symbol: 'SU', segments: 8, color: '#98F794', avatarBg: '#F59E0B', perf: 14.5, rawPosition: null },
-      { name: 'Air Liquide', symbol: 'AI', segments: 5, color: '#A3E635', avatarBg: '#6366F1', perf: 9.8, rawPosition: null },
-      { name: 'Safran', symbol: 'SA', segments: 12, color: '#A3E635', avatarBg: '#EC4899', perf: 24.1, rawPosition: null },
-      { name: 'BNP Paribas', symbol: 'BN', segments: 6, color: '#C4B5FD', avatarBg: '#8B5CF6', perf: 11.2, rawPosition: null },
-      { name: 'ETF World', symbol: 'CW', segments: 4, color: '#98F794', avatarBg: '#14B8A6', perf: 8.0, rawPosition: null }
-    ];
+    return [];
   }
 
   const sorted = [...props.positions].sort((a, b) => {

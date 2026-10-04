@@ -10,6 +10,7 @@ ETF_TER_DB = {
     "LU1861136247": {"name": "Amundi STOXX Europe 600", "ter": 0.18, "alternative_isin": None, "alternative_name": None, "alternative_ter": None},
     "LU1834983477": {"name": "Amundi MSCI Emerging Markets", "ter": 0.20, "alternative_isin": None, "alternative_name": None, "alternative_ter": None},
     "FR0013412020": {"name": "Amundi MSCI Water", "ter": 0.60, "alternative_isin": None, "alternative_name": None, "alternative_ter": None},
+    "FR0011550193": {"name": "BNP Paribas Easy STOXX Europe 600 UCITS ETF", "ter": 0.18, "alternative_isin": None, "alternative_name": None, "alternative_ter": None},
     "LU1681045370": {"name": "Amundi PEA Nasdaq-100", "ter": 0.30, "alternative_isin": None, "alternative_name": None, "alternative_ter": None}
 }
 
@@ -29,7 +30,7 @@ def scan_portfolio_fees(df: pd.DataFrame):
         isin = row.get('isin', '')
         name = row.get('name', 'Inconnu')
         quantity = float(row.get('quantity', 0.0))
-        value = float(row.get('value', 0.0))
+        value = float(row.get('amount', 0.0) or (quantity * float(row.get('last_price', 0.0) or 0.0)))
         
         if value <= 0:
             continue

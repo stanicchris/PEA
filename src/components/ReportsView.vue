@@ -164,9 +164,9 @@ const props = defineProps({
 
 const isExporting = ref(false);
 
-const totalVal = computed(() => props.summary?.total_value || 36100);
-const investedAmount = computed(() => props.summary?.total_invested || 30000);
-const gainTotal = computed(() => Math.max(0, (props.summary?.global_performance_value || 6100)));
+const totalVal = computed(() => props.summary?.total_value ?? 0);
+const investedAmount = computed(() => props.summary?.total_invested ?? 0);
+const gainTotal = computed(() => Math.max(0, (props.summary?.global_performance_value ?? 0)));
 
 const todayFormatted = computed(() => {
   return new Date().toLocaleDateString('fr-FR', {

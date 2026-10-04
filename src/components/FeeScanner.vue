@@ -80,7 +80,7 @@ import { getApiBase } from '../config';
 const props = defineProps({
   userId: {
     type: String,
-    required: true
+    required: false
   }
 });
 
@@ -89,10 +89,14 @@ const scannedAssets = ref([]);
 const totalSavings = ref(0);
 
 const fetchFees = async () => {
-  if (!props.userId) return;
+  const uid = props.userId || localStorage.getItem('pea_user_id') || '';
+  const token = localStorage.getItem('pea_access_token');
+  const headers = token ? { Authorization: 'Bearer ' + token } : {};
+  
   isLoading.value = true;
   try {
-    const res = await fetch(`${getApiBase()}/api/optimization/fee-scan?user_id=${props.userId}`);
+    const url = uid ? `${getApiBase()}/api/optimization/fee-scan?user_id=${uid}` : `${getApiBase()}/api/optimization/fee-scan`;
+    const res = await fetch(url, { headers });
     if (res.ok) {
       const data = await res.json();
       scannedAssets.value = data.scanned_assets || [];

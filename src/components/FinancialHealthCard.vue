@@ -66,11 +66,11 @@ const props = defineProps({
 });
 
 const gainValue = computed(() => {
-  return props.summary?.global_performance_value || 374.84;
+  return props.summary?.global_performance_value ?? 0;
 });
 
 const perfPct = computed(() => {
-  return props.summary?.global_performance_pct || -2.4;
+  return props.summary?.global_performance_pct ?? 0;
 });
 
 const formatPrice = (val) => {

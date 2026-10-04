@@ -71,7 +71,7 @@ import { getApiBase } from '../config';
 const props = defineProps({
   userId: {
     type: String,
-    required: true
+    required: false
   }
 });
 
@@ -83,10 +83,14 @@ const totalProjected = computed(() => {
 });
 
 const fetchDividends = async () => {
-  if (!props.userId) return;
+  const uid = props.userId || localStorage.getItem('pea_user_id') || '';
+  const token = localStorage.getItem('pea_access_token');
+  const headers = token ? { Authorization: 'Bearer ' + token } : {};
+  
   isLoading.value = true;
   try {
-    const res = await fetch(`${getApiBase()}/api/portfolio/dividends?user_id=${props.userId}`);
+    const url = uid ? `${getApiBase()}/api/portfolio/dividends?user_id=${uid}` : `${getApiBase()}/api/portfolio/dividends`;
+    const res = await fetch(url, { headers });
     if (res.ok) {
       const data = await res.json();
       dividends.value = data.dividends || [];
