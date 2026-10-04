@@ -52,18 +52,21 @@ secrets.toml
 # Allow project logo
 !public/logo.png
 !src/assets/logo.png
-!logo.png
 
 # ===================================
-# Agent Customizations & Dev Tools
-# (Skills are saved globally in ~/.gemini/config/skills)
+# Agent Customizations, Superpowers & Dev Docs
 # ===================================
 .agents/
 .agent/
 _agents/
-.devcontainer/
+.superpowers/
+docs/
+productdesign.md
+skills-lock.json
+interface.png
 scratch/
 *.log
+.devcontainer/
 
 # ===================================
 # OS Generated Files
