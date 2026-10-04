@@ -12,7 +12,7 @@ from datetime import datetime
 import pandas as pd
 from dotenv import load_dotenv
 
-from backend.database import supabase
+from backend.database import get_current_user, get_supabase_service_client
 from backend.utils import resolve_sector, resolve_yf_symbol, search_yf_symbol_online, to_synthetic_email
 from backend.schemas import AuthRequest
 
@@ -48,17 +48,7 @@ app.add_middleware(
 
 
 
-security = HTTPBearer()
-
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    try:
-        from backend.database import supabase
-        res = supabase.auth.get_user(credentials.credentials)
-        if not res or not res.user:
-            raise HTTPException(status_code=401, detail="Token invalide")
-        return res.user.id
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Non autorisé: {str(e)}")
+# We import get_current_user from backend.database
 
 from backend.routers import auth, portfolio, market, ai, optimization, goals, analytics
 
@@ -73,8 +63,9 @@ app.include_router(analytics.router)
 from backend.services.portfolio_service import fetch_user_data
 
 @app.get("/api/portfolio/summary")
-async def get_summary(user_id: Optional[str] = None):
-    df, cash = fetch_user_data(user_id)
+async def get_summary(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    df, cash = fetch_user_data(client)
     if df.empty:
         return {
             "total_value": round(cash, 2), 
@@ -101,8 +92,9 @@ async def get_summary(user_id: Optional[str] = None):
     }
 
 @app.get("/api/portfolio/positions")
-async def get_positions(user_id: Optional[str] = None):
-    df, _ = fetch_user_data(user_id)
+async def get_positions(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    df, _ = fetch_user_data(client)
     positions = []
     if not df.empty:
         for _, row in df.iterrows():
@@ -136,22 +128,23 @@ class CashUpdateRequest(BaseModel):
     cash: float
 
 @app.post("/api/portfolio/cash")
-async def update_cash(req: CashUpdateRequest, user_id: str):
-    if not supabase: raise HTTPException(500, "DB not configured")
+async def update_cash(req: CashUpdateRequest, auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    user_id = auth_context["user"].id
     
     # 1. Update in snapshots table (latest snapshot)
-    res_snap = supabase.table("snapshots").select("id, valeur_titres").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+    res_snap = client.table("snapshots").select("id, valeur_titres").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
     if res_snap.data:
         snap_id = res_snap.data[0]['id']
         val_titres = float(res_snap.data[0].get("valeur_titres") or 0.0)
-        supabase.table("snapshots").update({
+        client.table("snapshots").update({
             "cash": req.cash, 
             "total_valeur": round(val_titres + req.cash, 2)
         }).eq("id", snap_id).execute()
         
     # 2. Update/upsert in user_settings table
     try:
-        supabase.table("user_settings").upsert({
+        client.table("user_settings").upsert({
             "user_id": user_id,
             "cash": req.cash,
             "updated_at": datetime.now().isoformat()
@@ -162,8 +155,9 @@ async def update_cash(req: CashUpdateRequest, user_id: str):
     return {"status": "ok", "cash": req.cash}
 
 @app.post("/api/portfolio/upload")
-async def upload_csv(user_id: str, file: UploadFile = File(...)):
-    if not supabase: raise HTTPException(500, "DB not configured")
+async def upload_csv(file: UploadFile = File(...), auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    user_id = auth_context["user"].id
     
     content = await file.read()
     try:
@@ -204,7 +198,7 @@ async def upload_csv(user_id: str, file: UploadFile = File(...)):
     snapshot_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     valeur_titres = float(df['amount'].sum()) if 'amount' in df.columns else 0.0
     
-    res_cash = supabase.table("snapshots").select("cash").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+    res_cash = client.table("snapshots").select("cash").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
     cash = float(res_cash.data[0]['cash']) if res_cash.data else 0.0
     
     snap_data = {
@@ -216,7 +210,7 @@ async def upload_csv(user_id: str, file: UploadFile = File(...)):
         "cout_investi": float((df['quantity'] * df['buying_price']).sum()) if 'buying_price' in df.columns else 0.0,
         "source_filename": file.filename
     }
-    res = supabase.table("snapshots").insert(snap_data).execute()
+    res = client.table("snapshots").insert(snap_data).execute()
     snap_id = res.data[0]['id']
     
     pos_data = []
@@ -235,28 +229,17 @@ async def upload_csv(user_id: str, file: UploadFile = File(...)):
             "variation": float(row.get('variation', 0.0)),
         })
     if pos_data:
-        supabase.table("snapshot_positions").insert(pos_data).execute()
+        client.table("snapshot_positions").insert(pos_data).execute()
         
     return {"status": "ok", "snapshot_id": snap_id}
 
 @app.get("/api/portfolio/history")
-async def get_portfolio_history(user_id: Optional[str] = None, credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))):
-    if not supabase: return {"history": []}
-    
-    target_user_id = user_id
-    if not target_user_id and credentials:
-        try:
-            res = supabase.auth.get_user(credentials.credentials)
-            if res and res.user:
-                target_user_id = res.user.id
-        except:
-            pass
-            
-    if not target_user_id:
-        return {"history": []}
+async def get_portfolio_history(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    target_user_id = auth_context["user"].id
 
     try:
-        res = supabase.table("snapshots").select("id, snapshot_date, total_valeur, valeur_titres, cash, cout_investi, plus_value").eq("user_id", target_user_id).order("snapshot_date", desc=False).execute()
+        res = client.table("snapshots").select("id, snapshot_date, total_valeur, valeur_titres, cash, cout_investi, plus_value").eq("user_id", target_user_id).order("snapshot_date", desc=False).execute()
         history = []
         if res.data:
             for row in res.data:
@@ -283,15 +266,17 @@ async def get_portfolio_history(user_id: Optional[str] = None, credentials: Opti
         return {"history": []}
 
 @app.get("/api/portfolio/ai-diagnostic")
-async def get_ai_diagnostic(user_id: str = Depends(get_current_user)):
-    df, _ = fetch_user_data(user_id)
+async def get_ai_diagnostic(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    df, _ = fetch_user_data(client)
     if df.empty: return {}
     df['yf_symbol'] = df['isin'] 
     return analyze_portfolio_global(df)
 
 @app.get("/api/portfolio/weather")
-async def get_portfolio_weather(user_id: str = Depends(get_current_user)):
-    df, _ = fetch_user_data(user_id)
+async def get_portfolio_weather(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    df, _ = fetch_user_data(client)
     if df.empty: return {"score": 0, "emoji": "☁️", "text": "Vide", "details": {}}
     
     news_dict = {}
@@ -311,11 +296,12 @@ async def get_portfolio_weather(user_id: str = Depends(get_current_user)):
 import yfinance as yf
 
 @app.post("/api/portfolio/refresh")
-async def refresh_portfolio(user_id: str = Depends(get_current_user)):
-    if not supabase: return {"status": "error", "message": "Supabase non configuré"}
+async def refresh_portfolio(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    user_id = auth_context["user"].id
     
     # Récupérer le dernier snapshot
-    res_snap = supabase.table("snapshots").select("*").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+    res_snap = client.table("snapshots").select("*").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
     if not res_snap.data: return {"status": "ok"}
     
     latest_snap = res_snap.data[0]
@@ -324,7 +310,7 @@ async def refresh_portfolio(user_id: str = Depends(get_current_user)):
     cout_investi = float(latest_snap.get('cout_investi', 0.0))
     
     # Récupérer les positions
-    res_pos = supabase.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
+    res_pos = client.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
     if not res_pos.data: return {"status": "ok"}
     
     valeur_titres = 0.0
@@ -394,12 +380,12 @@ async def refresh_portfolio(user_id: str = Depends(get_current_user)):
             "plus_value": round(plus_value_totale, 2),
             "source_filename": "Live Refresh Yahoo Finance"
         }
-        res_new = supabase.table("snapshots").insert(snap_data).execute()
+        res_new = client.table("snapshots").insert(snap_data).execute()
         target_snap_id = res_new.data[0]['id'] if res_new.data else snap_id
     else:
         # Même jour : mettre à jour le snapshot du jour
         target_snap_id = snap_id
-        supabase.table("snapshots").update({
+        client.table("snapshots").update({
             "valeur_titres": round(valeur_titres, 2),
             "total_valeur": round(valeur_titres + cash, 2),
             "plus_value": round(plus_value_totale, 2),
@@ -412,10 +398,10 @@ async def refresh_portfolio(user_id: str = Depends(get_current_user)):
         p['snapshot_date'] = now_str
         
     if not is_same_day:
-        supabase.table("snapshot_positions").insert(positions_to_insert).execute()
+        client.table("snapshot_positions").insert(positions_to_insert).execute()
     else:
-        supabase.table("snapshot_positions").delete().eq("snapshot_id", target_snap_id).execute()
-        supabase.table("snapshot_positions").insert(positions_to_insert).execute()
+        client.table("snapshot_positions").delete().eq("snapshot_id", target_snap_id).execute()
+        client.table("snapshot_positions").insert(positions_to_insert).execute()
     
     return {
         "status": "ok", 
@@ -456,17 +442,17 @@ from openpyxl.utils import get_column_letter
 from fastapi.responses import Response
 
 @app.get("/api/portfolio/export/excel")
-async def export_portfolio_excel(user_id: str = Depends(get_current_user)):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Supabase not configured")
+async def export_portfolio_excel(auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    user_id = auth_context["user"].id
     
-    res_snap = supabase.table("snapshots").select("*").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+    res_snap = client.table("snapshots").select("*").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
     snap = res_snap.data[0] if res_snap.data else {}
     snap_id = snap.get('id')
     
     positions = []
     if snap_id:
-        res_pos = supabase.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
+        res_pos = client.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
         positions = res_pos.data or []
         
     wb = openpyxl.Workbook()
