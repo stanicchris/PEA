@@ -416,6 +416,7 @@
           :positions="positions" 
           :summary="summary" 
           :history="history" 
+          :userId="userId"
         />
       </div>
 

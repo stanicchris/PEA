@@ -3,10 +3,12 @@ from backend.services.portfolio_service import fetch_user_data
 from backend.services.dividend_service import get_dividend_history
 from backend.utils import resolve_yf_symbol
 
+from typing import Optional
+
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 @router.get("/metrics")
-async def get_metrics(user_id: str):
+async def get_metrics(user_id: Optional[str] = None):
     df, cash = fetch_user_data(user_id)
     
     if df.empty:
@@ -31,7 +33,7 @@ async def get_metrics(user_id: str):
         div_score = 40 + int((num_positions / 15) * 55)
         
     # Calculate Dividend Yield
-    total_value = cash
+    total_value = float(cash or 0.0)
     annual_dividends = 0.0
     
     # We will approximate Beta and Sharpe based on the portfolio composition
@@ -43,9 +45,9 @@ async def get_metrics(user_id: str):
         isin = row.get('isin', '')
         name = row.get('name', 'Inconnu')
         qty = float(row.get('quantity', 0.0))
-        price = float(row.get('current_price', 0.0))
+        price = float(row.get('last_price', 0.0) or row.get('current_price', 0.0) or 0.0)
         
-        pos_value = qty * price
+        pos_value = float(row.get('amount', 0.0) or (qty * price))
         total_value += pos_value
         
         # Determine pseudo-beta based on name (ETFs are ~1.0, stocks are ~1.1 to 1.3)

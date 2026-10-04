@@ -148,58 +148,49 @@
       </div>
     </div>
 
-    <!-- Bottom Section : Calendrier Dividendes & Matrice Risque -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- Calendrier Mensuel des Dividendes -->
-      <div class="lg:col-span-7 liquid-glass-card rounded-32 p-7 specular-highlight">
-        <div class="flex justify-between items-center mb-4">
-          <div>
-            <h3 class="text-white font-bold text-lg tracking-tight">Calendrier Prévisionnel des Dividendes (12 Mois)</h3>
-            <p class="text-white/40 text-xs">Estimation des versements de coupons basée sur votre portefeuille</p>
-          </div>
-          <span class="px-3 py-1 rounded-full bg-lavender/15 border border-lavender/30 text-lavender font-mono text-xs font-bold shadow-[0_0_10px_rgba(167,139,250,0.2)]">
-            Total : {{ annualDividendEstimate.toFixed(2) }} €
-          </span>
+    <!-- Bottom Section : Matrice Risque & Top Pondérations Réelles -->
+    <div class="liquid-glass-card rounded-32 p-7 specular-highlight">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
+        <div>
+          <h3 class="text-white font-bold text-lg tracking-tight mb-1 flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-neonLime/15 border border-neonLime/30 flex items-center justify-center text-neonLime text-sm">⚖️</span>
+            Top Pondérations Réelles & Risque de Concentration
+          </h3>
+          <p class="text-white/40 text-xs">Poids exact de chaque actif sur votre capital total de {{ totalVal.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) }} €</p>
         </div>
-
-        <div class="h-60 w-full">
-          <v-chart class="w-full h-full" :option="dividendCalendarOption" autoresize />
+        <div class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70 text-xs font-mono">
+          Actifs analysés : <span class="font-bold text-white">{{ positions.length }}</span>
         </div>
       </div>
 
-      <!-- Top Pondérations & Risque de Concentration -->
-      <div class="lg:col-span-5 liquid-glass-card rounded-32 p-7 flex flex-col justify-between specular-highlight">
-        <div>
-          <h3 class="text-white font-bold text-lg tracking-tight mb-1">Top Pondérations Réelles</h3>
-          <p class="text-white/40 text-xs mb-4">Poids exact de chaque actif sur votre capital total de {{ totalVal.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) }} €</p>
-        </div>
-
-        <div class="space-y-3">
-          <div v-for="pos in topWeightedPositions" :key="pos.ticker || pos.name" class="liquid-glass-subtle p-3 rounded-20 border border-white/10">
-            <div class="flex justify-between items-center text-xs mb-1.5">
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-white">{{ pos.name }}</span>
-                <span class="text-white/40 font-mono text-[10px]">{{ pos.ticker }}</span>
-              </div>
-              <span class="font-mono font-bold text-neonLime">{{ pos.weight.toFixed(1) }} % ({{ pos.val.toFixed(2) }} €)</span>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div v-for="pos in topWeightedPositions" :key="pos.ticker || pos.name" class="liquid-glass-subtle p-4 rounded-24 border border-white/10 flex flex-col justify-between">
+          <div class="flex justify-between items-center text-xs mb-2.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-bold text-white truncate text-sm">{{ pos.name }}</span>
+              <span class="text-white/40 font-mono text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 shrink-0">{{ pos.ticker }}</span>
             </div>
-            <div class="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-              <div class="h-full rounded-full bg-gradient-to-r from-neonPurple to-neonLime shadow-sm" :style="{ width: Math.min(100, pos.weight * 2.5) + '%' }"></div>
-            </div>
+            <span class="font-mono font-bold text-neonLime text-sm ml-2 shrink-0">{{ pos.weight.toFixed(1) }} % ({{ pos.val.toFixed(2) }} €)</span>
+          </div>
+          <div class="h-2 rounded-full bg-white/[0.06] overflow-hidden">
+            <div class="h-full rounded-full bg-gradient-to-r from-neonPurple to-neonLime shadow-sm transition-all duration-500" :style="{ width: Math.min(100, pos.weight * 2.5) + '%' }"></div>
           </div>
         </div>
+      </div>
 
-        <div class="pt-3 border-t border-white/[0.08] flex items-center gap-2 text-white/40 text-xs mt-3">
+      <div class="pt-4 border-t border-white/[0.08] flex items-center justify-between text-white/50 text-xs mt-6">
+        <div class="flex items-center gap-2">
           <span class="text-neonLime text-base">ℹ️</span>
-          <span>Règle des 15% : Concentration équilibrée sur les premières lignes.</span>
+          <span>Règle des 15% : Concentration équilibrée sur les premières lignes de votre portefeuille.</span>
         </div>
+        <span class="text-white/40 font-mono text-[11px] hidden sm:inline">PEA Conforme</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { LineChart, BarChart, PieChart } from 'echarts/charts';
@@ -211,7 +202,8 @@ use([CanvasRenderer, LineChart, BarChart, PieChart, GridComponent, TooltipCompon
 const props = defineProps({
   positions: { type: Array, default: () => [] },
   summary: { type: Object, default: () => ({}) },
-  history: { type: Array, default: () => [] }
+  history: { type: Array, default: () => [] },
+  userId: { type: String, required: false }
 });
 
 const selectedBenchmarkPeriod = ref('1A');
@@ -232,22 +224,24 @@ import { getApiBase } from '../config';
 
 const fetchAnalyticsData = async () => {
   try {
-    const uid = localStorage.getItem('pea_user_id');
-    if (!uid) return;
-    const res = await fetch(`${getApiBase()}/api/analytics/metrics?user_id=${uid}`);
+    const uid = props.userId || localStorage.getItem('pea_user_id') || '';
+    const token = localStorage.getItem('pea_access_token');
+    const headers = token ? { Authorization: 'Bearer ' + token } : {};
+    const url = uid ? `${getApiBase()}/api/analytics/metrics?user_id=${uid}` : `${getApiBase()}/api/analytics/metrics`;
+    const res = await fetch(url, { headers });
     if (res.ok) {
       const data = await res.json();
-      diversificationScore.value = data.diversification_score || 55;
-      avgDividendYield.value = data.avg_dividend_yield || 0;
-      sharpeRatio.value = data.sharpe_ratio || 1.64;
-      betaCac40.value = data.beta_cac40 || 0.88;
+      diversificationScore.value = data.diversification_score ?? 55;
+      avgDividendYield.value = data.avg_dividend_yield ?? 0;
+      sharpeRatio.value = data.sharpe_ratio ?? 1.64;
+      betaCac40.value = data.beta_cac40 ?? 0.88;
     }
   } catch (e) {
     console.error("Failed to fetch analytics metrics", e);
   }
 };
 
-import { onMounted } from 'vue';
+watch(() => props.userId, fetchAnalyticsData);
 onMounted(fetchAnalyticsData);
 
 const topWeightedPositions = computed(() => {
@@ -385,49 +379,6 @@ const benchmarkChartOption = computed(() => {
         data: cac40,
         lineStyle: { color: '#64748B', width: 1.5, type: 'dotted' },
         itemStyle: { color: '#64748B' }
-      }
-    ]
-  };
-});
-
-const dividendCalendarOption = computed(() => {
-  const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-  const annualTotal = annualDividendEstimate.value || 1137;
-  // Seasonality weights for French PEA (peak in May-June)
-  const weights = [0.04, 0.03, 0.08, 0.21, 0.28, 0.14, 0.08, 0.02, 0.04, 0.06, 0.09, 0.05];
-  const divValues = weights.map(w => Math.round(annualTotal * w));
-
-  return {
-    backgroundColor: 'transparent',
-    tooltip: {
-      trigger: 'axis',
-      backgroundColor: '#16191E',
-      borderColor: 'rgba(255,255,255,0.1)',
-      textStyle: { color: '#F8FAFC', fontFamily: 'JetBrains Mono' },
-      formatter: '{b} : {c} € estimés'
-    },
-    grid: { left: '3%', right: '3%', bottom: '8%', top: '10%', containLabel: true },
-    xAxis: {
-      type: 'category',
-      data: months,
-      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
-      axisLabel: { color: '#64748B', fontFamily: 'JetBrains Mono', fontSize: 10 }
-    },
-    yAxis: {
-      type: 'value',
-      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.04)' } },
-      axisLabel: { color: '#64748B', fontFamily: 'JetBrains Mono', fontSize: 10, formatter: '{value} €' }
-    },
-    series: [
-      {
-        name: 'Dividendes',
-        type: 'bar',
-        barWidth: '50%',
-        data: divValues,
-        itemStyle: {
-          color: '#8B5CF6',
-          borderRadius: [6, 6, 0, 0]
-        }
       }
     ]
   };
