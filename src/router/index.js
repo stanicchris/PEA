@@ -40,6 +40,11 @@ const routes = [
     path: '/stock/:ticker',
     name: 'StockDetail',
     component: () => import('../views/StockDetail.vue')
+  },
+  {
+    path: '/watchlist',
+    name: 'Watchlist',
+    component: () => import('../views/Watchlist.vue')
   }
 ]
 

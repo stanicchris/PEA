@@ -14,7 +14,15 @@
           <span class="px-2 py-0.5 rounded bg-neonLime/15 border border-neonLime/30 text-neonLime text-xs font-mono font-bold">{{ ticker }}</span>
           <span v-if="stockData?.sector" class="text-white/40 text-xs font-mono">{{ stockData.sector }}</span>
         </div>
-        <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight">{{ stockData?.name || ticker }}</h1>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+          <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight">{{ stockData?.name || ticker }}</h1>
+          <button 
+            @click="addToWatchlist" 
+            class="px-4 py-2 rounded-full liquid-glass-subtle bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs font-bold transition-all active:scale-95 flex items-center gap-2"
+          >
+            <span class="text-amberAcc">★</span> Ajouter à la Watchlist
+          </button>
+        </div>
       </div>
     </div>
 
@@ -131,6 +139,31 @@ const ticker = computed(() => route.params.ticker);
 const stockData = ref(null);
 const isLoading = ref(true);
 const error = ref(null);
+
+const addToWatchlist = async () => {
+  try {
+    const apiBase = getApiBase();
+    const res = await fetch(`${apiBase}/api/watchlist/`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + (localStorage.getItem('pea_access_token') || '') 
+      },
+      body: JSON.stringify({
+        ticker: ticker.value,
+        name: stockData.value?.name,
+        target_price: stockData.value?.metrics?.target_price || null
+      })
+    });
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.detail || "Erreur d'ajout à la watchlist");
+    }
+    alert("Action ajoutée à la watchlist !");
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
 onMounted(async () => {
   try {

@@ -50,7 +50,7 @@ app.add_middleware(
 
 # We import get_current_user from backend.database
 
-from backend.routers import auth, portfolio, market, ai, optimization, goals, analytics
+from backend.routers import auth, portfolio, market, ai, optimization, goals, analytics, watchlist
 
 app.include_router(auth.router)
 app.include_router(portfolio.router)
@@ -59,6 +59,7 @@ app.include_router(ai.router)
 app.include_router(optimization.router)
 app.include_router(goals.router)
 app.include_router(analytics.router)
+app.include_router(watchlist.router, prefix="/api/watchlist")
 
 from backend.services.portfolio_service import fetch_user_data
 

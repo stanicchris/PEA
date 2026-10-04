@@ -72,6 +72,9 @@
                 <router-link to="/research" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
                   <span class="text-base">🧠</span> Recherche & IA
                 </router-link>
+                <router-link to="/watchlist" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
+                  <span class="text-base">⭐</span> Watchlist
+                </router-link>
                 <router-link to="/plan" @click="isMobileMenuOpen = false" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 font-bold" class="w-full text-left px-4 py-3 rounded-2xl border border-transparent text-white/70 hover:text-white text-sm flex items-center gap-3 transition-all active:scale-95">
                   <span class="text-base">🎯</span> Plan & Fiscalité
                 </router-link>
@@ -114,6 +117,9 @@
           </router-link>
           <router-link to="/research" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]" class="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white transition-all border border-transparent hover:bg-white/5">
             🧠 Recherche
+          </router-link>
+          <router-link to="/watchlist" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]" class="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white transition-all border border-transparent hover:bg-white/5">
+            ⭐ Watchlist
           </router-link>
           <router-link to="/plan" exact-active-class="bg-neonLime/15 text-neonLime border-neonLime/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]" class="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white transition-all border border-transparent hover:bg-white/5">
             🎯 Plan & Fisc
