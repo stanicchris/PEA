@@ -252,6 +252,7 @@ async def cron_daily_refresh(request: Request):
                 pos_var_pct = (current_price - pru) / pru if pru > 0 else 0.0
                 
                 positions_to_insert.append({
+                    "user_id": uid, "snapshot_date": latest_snap_date_str,
                     "snapshot_id": snap_id, "isin": pos.get('isin', ''), "name": pos.get('name', ''),
                     "type": pos.get('type', 'Action'), "quantity": qty, "buying_price": pru,
                     "last_price": current_price, "amount": pos_amount, 
@@ -279,7 +280,10 @@ async def cron_daily_refresh(request: Request):
                     }).execute()
                     if new_snap.data:
                         new_snap_id = new_snap.data[0]['id']
-                        for p in positions_to_insert: p["snapshot_id"] = new_snap_id
+                        new_date = new_snap.data[0]['snapshot_date']
+                        for p in positions_to_insert: 
+                            p["snapshot_id"] = new_snap_id
+                            p["snapshot_date"] = new_date
                         client.table("snapshot_positions").insert(positions_to_insert).execute()
                         
             users_updated += 1
