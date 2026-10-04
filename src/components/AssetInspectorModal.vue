@@ -129,6 +129,13 @@
           </a>
           
           <button 
+            @click="goToDetail"
+            class="w-full sm:w-auto px-6 py-2.5 rounded-full liquid-glass-subtle bg-neonLime/10 text-neonLime font-bold text-xs border border-neonLime/30 hover:bg-neonLime/20 transition-all cursor-pointer active:scale-95"
+          >
+            Voir la fiche détaillée
+          </button>
+          
+          <button 
             @click="$emit('close')" 
             class="w-full sm:w-auto px-6 py-2.5 rounded-full liquid-glass-subtle hover:bg-white/10 text-white font-bold text-xs border border-white/15 hover:border-white/30 transition-all cursor-pointer active:scale-95"
           >
@@ -143,6 +150,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { getApiBase } from '../config';
 
 const props = defineProps({
@@ -154,6 +162,12 @@ const emit = defineEmits(['close']);
 const isLoading = ref(false);
 const error = ref(null);
 const analysis = ref(null);
+const router = useRouter();
+
+const goToDetail = () => {
+  emit('close');
+  router.push(`/stock/${props.asset.ticker || props.asset.name}`);
+};
 
 const handleKeydown = (e) => {
   if (e.key === 'Escape' && props.isOpen) {

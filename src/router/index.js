@@ -35,6 +35,11 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/Settings.vue')
+  },
+  {
+    path: '/stock/:ticker',
+    name: 'StockDetail',
+    component: () => import('../views/StockDetail.vue')
   }
 ]
 
