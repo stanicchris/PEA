@@ -195,9 +195,101 @@ async def cron_daily_refresh(request: Request):
         raise HTTPException(status_code=401, detail="Invalid cron secret")
     
     # In a real scenario, this would loop over all users and call refresh_portfolio logic
-    # For now, we return success to acknowledge the cron tick.
-    print("Daily refresh triggered by cron.")
-    return {"status": "ok", "message": "Global portfolio refresh triggered"}
+    client = get_supabase_service_client()
+    if not client:
+        return {"status": "error", "message": "Service client not configured"}
+        
+    print("Daily refresh triggered by cron. Fetching all distinct users...")
+    
+    # Get all distinct users by getting the latest snapshot for each user
+    # For simplicity, we just fetch all users from user_settings (or from snapshots)
+    try:
+        # Assuming we have a limited number of users for now
+        res_users = client.table("user_settings").select("user_id").execute()
+        user_ids = [row["user_id"] for row in res_users.data] if res_users.data else []
+        
+        users_updated = 0
+        for uid in user_ids:
+            # Let's call the internal refresh logic for each user
+            # We must duplicate a bit of logic or create a helper.
+            res_snap = client.table("snapshots").select("*").eq("user_id", uid).order("snapshot_date", desc=True).limit(1).execute()
+            if not res_snap.data: continue
+            
+            latest_snap = res_snap.data[0]
+            snap_id = latest_snap['id']
+            cash = float(latest_snap.get('cash', 0.0))
+            cout_investi = float(latest_snap.get('cout_investi', 0.0))
+            
+            res_pos = client.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
+            if not res_pos.data: continue
+            
+            valeur_titres = 0.0
+            plus_value_totale = 0.0
+            
+            now = datetime.now()
+            today_date = now.strftime("%Y-%m-%d")
+            latest_snap_date_str = str(latest_snap.get('snapshot_date', ''))
+            is_same_day = today_date in latest_snap_date_str
+            
+            positions_to_insert = []
+            
+            for pos in res_pos.data:
+                ticker = resolve_yf_symbol(pos.get('isin', ''), pos.get('name', ''))
+                current_price = pos.get('last_price', 0.0)
+                
+                try:
+                    if ticker:
+                        import yfinance as yf
+                        info = yf.Ticker(ticker).fast_info
+                        if info.last_price: current_price = info.last_price
+                except:
+                    pass
+                    
+                qty = float(pos.get('quantity', 0.0))
+                pru = float(pos.get('buying_price', 0.0))
+                pos_amount = current_price * qty
+                pos_var_amount = pos_amount - (pru * qty)
+                pos_var_pct = (current_price - pru) / pru if pru > 0 else 0.0
+                
+                positions_to_insert.append({
+                    "snapshot_id": snap_id, "isin": pos.get('isin', ''), "name": pos.get('name', ''),
+                    "type": pos.get('type', 'Action'), "quantity": qty, "buying_price": pru,
+                    "last_price": current_price, "amount": pos_amount, 
+                    "amount_variation": pos_var_amount, "variation": pos_var_pct, "weight": 0
+                })
+                valeur_titres += pos_amount
+                plus_value_totale += pos_var_amount
+                
+            if positions_to_insert:
+                total_valeur = valeur_titres + cash
+                if is_same_day:
+                    client.table("snapshot_positions").delete().eq("snapshot_id", snap_id).execute()
+                    client.table("snapshot_positions").insert(positions_to_insert).execute()
+                    client.table("snapshots").update({
+                        "valeur_titres": round(valeur_titres, 2),
+                        "plus_value_totale": round(plus_value_totale, 2),
+                        "total_valeur": round(total_valeur, 2)
+                    }).eq("id", snap_id).execute()
+                else:
+                    new_snap = client.table("snapshots").insert({
+                        "user_id": uid, "snapshot_date": now.strftime("%Y-%m-%d %H:%M:%S"),
+                        "cash": cash, "valeur_titres": round(valeur_titres, 2),
+                        "plus_value_totale": round(plus_value_totale, 2),
+                        "cout_investi": cout_investi, "total_valeur": round(total_valeur, 2)
+                    }).execute()
+                    if new_snap.data:
+                        new_snap_id = new_snap.data[0]['id']
+                        for p in positions_to_insert: p["snapshot_id"] = new_snap_id
+                        client.table("snapshot_positions").insert(positions_to_insert).execute()
+                        
+            users_updated += 1
+            import time
+            time.sleep(1) # Prevent rate limiting on YF
+            
+        return {"status": "ok", "message": f"Global portfolio refresh triggered. Updated {users_updated} users."}
+    except Exception as e:
+        print(f"Cron error: {e}")
+        return {"status": "error", "message": str(e)}
 
 @app.post("/api/portfolio/upload")
 async def upload_csv(file: UploadFile = File(...), auth_context: dict = Depends(get_current_user)):
