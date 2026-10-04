@@ -1,0 +1,14 @@
+name: Daily Portfolio Refresh
+
+on:
+  schedule:
+    # 18:45 Paris time is 16:45 UTC (or 17:45 UTC depending on DST). Using 16:45 UTC.
+    - cron: '45 16 * * *'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Refresh Endpoint
+        run: curl -X POST https://capfolio.onrender.com/api/cron/daily-refresh -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

@@ -21,18 +21,33 @@ async def get_metrics(auth_context: dict = Depends(get_current_user)):
             "beta_cac40": 0.0
         }
         
-    # Calculate Diversification Score
+    # Calculate Diversification Score using HHI (Herfindahl-Hirschman Index)
     active_positions = df[df['quantity'] > 0]
-    num_positions = len(active_positions)
-    
-    # Simple diversification heuristic
-    # Max score 100 if > 15 positions, else scales down to 40
-    if num_positions == 0:
-        div_score = 0
-    elif num_positions >= 15:
-        div_score = 95
+    total_value_for_hhi = float(cash or 0.0)
+    for _, row in active_positions.iterrows():
+        qty = float(row.get('quantity', 0.0))
+        price = float(row.get('last_price', 0.0) or row.get('current_price', 0.0) or row.get('buying_price', 0.0) or 0.0)
+        total_value_for_hhi += (qty * price)
+
+    if total_value_for_hhi > 0:
+        hhi = 0.0
+        # Include cash as a position for diversification
+        cash_weight = float(cash or 0.0) / total_value_for_hhi
+        hhi += (cash_weight ** 2)
+        
+        for _, row in active_positions.iterrows():
+            qty = float(row.get('quantity', 0.0))
+            price = float(row.get('last_price', 0.0) or row.get('current_price', 0.0) or row.get('buying_price', 0.0) or 0.0)
+            weight = (qty * price) / total_value_for_hhi
+            hhi += (weight ** 2)
+        
+        # HHI ranges from ~0 (perfectly diversified) to 1.0 (perfectly concentrated)
+        # We want a score out of 100 where 100 is perfectly diversified.
+        # Let's map HHI: 1.0 -> 0 score, 0.0 -> 100 score.
+        # A good HHI is < 0.15. 
+        div_score = max(0, min(100, int((1.0 - hhi) * 100)))
     else:
-        div_score = 40 + int((num_positions / 15) * 55)
+        div_score = 0
         
     # Calculate Dividend Yield
     total_value = float(cash or 0.0)

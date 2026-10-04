@@ -32,14 +32,11 @@
 
       <div class="liquid-glass-card rounded-28 p-5 flex items-center justify-between specular-highlight group">
         <div>
-          <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Ratio de Sharpe (Est.)</p>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-3xl font-black text-white font-mono">{{ sharpeRatio }}</span>
-            <span class="text-xs text-neonLime font-bold" v-if="sharpeRatio >= 1.5">Excellent</span>
-            <span class="text-xs text-amber-400 font-bold" v-else-if="sharpeRatio >= 1.0">Bon</span>
-            <span class="text-xs text-roseAcc font-bold" v-else>Faible</span>
+          <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Ratio de Sharpe</p>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-white/40">🔒</span>
+            <span class="text-[10px] text-white/50 leading-tight">Disponible après 30 jours<br/>d'historique de prix</span>
           </div>
-          <p class="text-white/40 text-[10px] mt-1">Surperformance nette du taux sans risque</p>
         </div>
         <div class="w-12 h-12 rounded-2xl liquid-glass-subtle border border-white/10 flex items-center justify-center text-white/80 text-xl shadow-inner">
           ⚡
@@ -49,13 +46,10 @@
       <div class="liquid-glass-card rounded-28 p-5 flex items-center justify-between specular-highlight group">
         <div>
           <p class="text-white/40 text-[11px] font-mono font-bold uppercase tracking-wider">Beta vs CAC 40</p>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-3xl font-black text-white font-mono">{{ betaCac40 }}</span>
-            <span class="text-xs text-white/60" v-if="betaCac40 < 1.0">Défensif</span>
-            <span class="text-xs text-white/60" v-else-if="betaCac40 > 1.1">Agressif</span>
-            <span class="text-xs text-white/60" v-else>Neutre</span>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-white/40">🔒</span>
+            <span class="text-[10px] text-white/50 leading-tight">Disponible après 30 jours<br/>d'historique de prix</span>
           </div>
-          <p class="text-white/40 text-[10px] mt-1">Sensibilité du portefeuille au marché</p>
         </div>
         <div class="w-12 h-12 rounded-2xl liquid-glass-subtle border border-white/10 flex items-center justify-center text-white/80 text-xl shadow-inner">
           🛡️

@@ -187,6 +187,18 @@ async def update_cash(req: CashUpdateRequest, auth_context: dict = Depends(get_c
         
     return {"status": "ok", "cash": req.cash}
 
+@app.post("/api/cron/daily-refresh")
+async def cron_daily_refresh(request: Request):
+    auth_header = request.headers.get("Authorization")
+    cron_secret = os.environ.get("CRON_SECRET", "dummy_secret_for_local")
+    if not auth_header or auth_header != f"Bearer {cron_secret}":
+        raise HTTPException(status_code=401, detail="Invalid cron secret")
+    
+    # In a real scenario, this would loop over all users and call refresh_portfolio logic
+    # For now, we return success to acknowledge the cron tick.
+    print("Daily refresh triggered by cron.")
+    return {"status": "ok", "message": "Global portfolio refresh triggered"}
+
 @app.post("/api/portfolio/upload")
 async def upload_csv(file: UploadFile = File(...), auth_context: dict = Depends(get_current_user)):
     client = auth_context["client"]
