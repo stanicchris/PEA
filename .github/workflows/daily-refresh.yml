@@ -2,8 +2,8 @@ name: Daily Portfolio Refresh
 
 on:
   schedule:
-    # 18:45 Paris time is 16:45 UTC (or 17:45 UTC depending on DST). Using 16:45 UTC.
-    - cron: '45 16 * * *'
+    # 17:45 Paris time is roughly 15:45 UTC (or 16:45 UTC depending on DST).
+    - cron: '45 15 * * *'
   workflow_dispatch:
 
 jobs:
