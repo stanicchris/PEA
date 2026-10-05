@@ -51,7 +51,7 @@
       <div class="border-2 border-dashed border-white/15 hover:border-white/40 transition-colors rounded-24 p-8 text-center cursor-pointer relative liquid-glass-subtle">
         <input 
           type="file" 
-          accept=".csv" 
+          accept=".csv,text/csv,text/plain,application/vnd.ms-excel" 
           @change="handleFileUpload" 
           class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
         />

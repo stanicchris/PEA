@@ -85,29 +85,31 @@
         <span>{{ isRefreshing ? 'Sync en cours...' : '⚡ Actualiser Cours' }}</span>
       </button>
 
-      <input 
-        type="file" 
-        ref="csvInputRef" 
-        accept=".csv" 
-        @change="handleCsvFileChange" 
-        class="hidden" 
-      />
-
-      <button 
-        @click="triggerCsvImport" 
-        :disabled="isUploadingCsv" 
-        class="liquid-glass-pill hover:bg-white/10 text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-full transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer hover:border-white/20 disabled:opacity-50"
-        title="Importer un fichier CSV de portefeuille BoursoBank"
-      >
-        <svg v-if="!isUploadingCsv" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-        </svg>
-        <svg v-else class="animate-spin h-4 w-4 text-neonLime" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-        </svg>
-        <span>{{ isUploadingCsv ? 'Importation...' : (uploadStatusMessage || '📁 Importer CSV') }}</span>
-      </button>
+      <div class="relative">
+        <input 
+          type="file" 
+          ref="csvInputRef"
+          accept=".csv,text/csv,text/plain,application/vnd.ms-excel" 
+          @change="handleCsvFileChange" 
+          :disabled="isUploadingCsv"
+          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:pointer-events-none touch-manipulation" 
+        />
+        <button 
+          type="button"
+          :disabled="isUploadingCsv" 
+          class="w-full liquid-glass-pill hover:bg-white/10 text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-full transition-all flex items-center justify-center gap-2 active:scale-95 hover:border-white/20 disabled:opacity-50 pointer-events-none"
+          title="Importer un fichier CSV de portefeuille BoursoBank"
+        >
+          <svg v-if="!isUploadingCsv" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/70 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <svg v-else class="animate-spin h-4 w-4 text-neonLime shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          <span class="truncate">{{ isUploadingCsv ? 'Importation...' : (uploadStatusMessage || '📁 Importer CSV') }}</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
