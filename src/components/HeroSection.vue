@@ -85,24 +85,80 @@
         <span>{{ isRefreshing ? 'Sync en cours...' : '⚡ Actualiser Cours' }}</span>
       </button>
 
+      <input 
+        type="file" 
+        ref="csvInputRef" 
+        accept=".csv" 
+        @change="handleCsvFileChange" 
+        class="hidden" 
+      />
+
       <button 
-        @click="$emit('open-settings')" 
-        class="liquid-glass-pill hover:bg-white/10 text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-full transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer hover:border-white/20"
+        @click="triggerCsvImport" 
+        :disabled="isUploadingCsv" 
+        class="liquid-glass-pill hover:bg-white/10 text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-full transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer hover:border-white/20 disabled:opacity-50"
+        title="Importer un fichier CSV de portefeuille BoursoBank"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg v-if="!isUploadingCsv" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
         </svg>
-        <span>📁 Importer CSV</span>
+        <svg v-else class="animate-spin h-4 w-4 text-neonLime" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span>{{ isUploadingCsv ? 'Importation...' : (uploadStatusMessage || '📁 Importer CSV') }}</span>
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useAppStore } from '../stores/app';
 
 const store = useAppStore();
+
+const csvInputRef = ref(null);
+const isUploadingCsv = ref(false);
+const uploadStatusMessage = ref('');
+
+const triggerCsvImport = () => {
+  if (csvInputRef.value) {
+    csvInputRef.value.click();
+  }
+};
+
+const handleCsvFileChange = async (event) => {
+  const file = event.target?.files?.[0];
+  if (!file) return;
+
+  isUploadingCsv.value = true;
+  uploadStatusMessage.value = 'Import en cours...';
+
+  try {
+    const result = await store.uploadCsv(file);
+    if (result.success) {
+      uploadStatusMessage.value = '✅ Importé !';
+      setTimeout(() => {
+        uploadStatusMessage.value = '';
+      }, 3000);
+    } else {
+      uploadStatusMessage.value = '❌ Erreur';
+      alert(result.message || "Erreur lors de l'importation du CSV");
+      setTimeout(() => {
+        uploadStatusMessage.value = '';
+      }, 3000);
+    }
+  } catch (err) {
+    uploadStatusMessage.value = '❌ Erreur';
+    setTimeout(() => {
+      uploadStatusMessage.value = '';
+    }, 3000);
+  } finally {
+    isUploadingCsv.value = false;
+    if (event.target) event.target.value = '';
+  }
+};
 
 const props = defineProps({
   summary: { type: Object, default: () => ({}) },
