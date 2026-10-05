@@ -134,39 +134,6 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
-  const isUploadingCsv = ref(false)
-  const uploadCsv = async (file) => {
-    if (!file || !userId.value) return { success: false, message: 'Fichier ou utilisateur non valide' }
-    const apiBase = getApiBase()
-    if (!apiBase) return { success: false, message: 'URL API non disponible' }
-
-    isUploadingCsv.value = true
-    const formData = new FormData()
-    formData.append('file', file)
-
-    try {
-      const token = localStorage.getItem('pea_access_token')
-      const res = await fetch(`${apiBase}/api/portfolio/upload?user_id=${userId.value}`, {
-        method: 'POST',
-        headers: token ? { Authorization: 'Bearer ' + token } : {},
-        body: formData
-      })
-
-      if (res.ok) {
-        await fetchData()
-        return { success: true, message: 'Portefeuille importé avec succès !' }
-      } else {
-        const err = await res.json().catch(() => ({}))
-        const msg = err.detail || "Erreur lors de l'importation. Format CSV invalide."
-        return { success: false, message: msg }
-      }
-    } catch (e) {
-      return { success: false, message: "Erreur réseau lors de l'envoi du fichier" }
-    } finally {
-      isUploadingCsv.value = false
-    }
-  }
-
   return {
     userId,
     username,
@@ -178,7 +145,6 @@ export const useAppStore = defineStore('app', () => {
     isLoading,
     isRefreshing,
     isAiLoading,
-    isUploadingCsv,
     isSettingsOpen,
     isAiAdvisorOpen,
     isFiscalModalOpen,
@@ -193,7 +159,6 @@ export const useAppStore = defineStore('app', () => {
     logout,
     openStockInspector,
     fetchData,
-    refreshData,
-    uploadCsv
+    refreshData
   }
 })

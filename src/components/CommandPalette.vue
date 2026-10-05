@@ -99,8 +99,7 @@ const commands = [
   { id: 'nav-plan', type: 'nav', title: 'Plan & Fiscalité', subtitle: 'Statut PEA', icon: '🎯', action: () => router.push('/plan') },
   { id: 'nav-research', type: 'nav', title: 'Recherche & IA', subtitle: 'Groq Advisor', icon: '🧠', action: () => router.push('/research') },
   { id: 'act-discrete', type: 'act', title: 'Activer/Désactiver Mode Discret', icon: '🌙', action: () => store.toggleDiscreteMode() },
-  { id: 'act-import-csv', type: 'act', title: 'Importer un fichier CSV (BoursoBank)', icon: '📁', action: () => router.push('/settings') },
-  { id: 'act-settings', type: 'act', title: 'Ouvrir les Paramètres', icon: '⚙️', action: () => router.push('/settings') },
+  { id: 'act-settings', type: 'act', title: 'Ouvrir les Paramètres', icon: '⚙️', action: () => store.isSettingsOpen = true },
   { id: 'act-logout', type: 'act', title: 'Déconnexion', icon: '🚪', action: () => store.logout() }
 ];
 
