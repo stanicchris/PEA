@@ -306,11 +306,16 @@ async def upload_csv(file: UploadFile = File(...), auth_context: dict = Depends(
     
     content = await file.read()
     try:
-        df = pd.read_csv(io.BytesIO(content), sep=';', decimal=',', thousands=' ')
+        df = pd.read_csv(io.BytesIO(content), sep=';', decimal=',', thousands=' ', encoding='utf-8-sig')
         if len(df.columns) <= 2:
-            df = pd.read_csv(io.BytesIO(content), sep=',', decimal='.')
-    except Exception as e:
-        raise HTTPException(400, "Invalid CSV format")
+            df = pd.read_csv(io.BytesIO(content), sep=',', decimal='.', encoding='utf-8-sig')
+    except Exception:
+        try:
+            df = pd.read_csv(io.BytesIO(content), sep=';', decimal=',', thousands=' ', encoding='latin1')
+            if len(df.columns) <= 2:
+                df = pd.read_csv(io.BytesIO(content), sep=',', decimal='.', encoding='latin1')
+        except Exception as e:
+            raise HTTPException(400, f"Format CSV invalide : {str(e)}")
         
     mapping = {
         'nom': 'name', 'valeur': 'name', 'libelle': 'name', 'libellé': 'name', 
@@ -325,12 +330,12 @@ async def upload_csv(file: UploadFile = File(...), auth_context: dict = Depends(
     
     cleaned_cols = {}
     for c in df.columns:
-        key = str(c).strip().lower()
+        key = str(c).strip().lstrip('\ufeff').lower()
         cleaned_cols[c] = mapping.get(key, key)
     df = df.rename(columns=cleaned_cols)
     
     if 'name' not in df.columns: 
-        raise HTTPException(400, "CSV must contain a 'nom' or 'valeur' column")
+        raise HTTPException(400, "Le CSV doit contenir une colonne 'nom', 'valeur' ou 'libellé'")
     
     for col in ['quantity', 'buying_price', 'last_price', 'amount', 'amount_variation', 'variation']:
         if col in df.columns:
@@ -343,8 +348,17 @@ async def upload_csv(file: UploadFile = File(...), auth_context: dict = Depends(
     snapshot_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     valeur_titres = float(df['amount'].sum()) if 'amount' in df.columns else 0.0
     
-    res_cash = client.table("snapshots").select("cash").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
-    cash = float(res_cash.data[0]['cash']) if res_cash.data else 0.0
+    cash = 0.0
+    try:
+        res_cash = client.table("snapshots").select("cash").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+        if res_cash and res_cash.data and res_cash.data[0].get('cash') is not None:
+            cash = float(res_cash.data[0]['cash'] or 0.0)
+        else:
+            res_settings = client.table("user_settings").select("cash").eq("user_id", user_id).limit(1).execute()
+            if res_settings and res_settings.data and res_settings.data[0].get('cash') is not None:
+                cash = float(res_settings.data[0]['cash'] or 0.0)
+    except Exception as e:
+        print(f"Warning fetching cash: {e}")
     
     snap_data = {
         "user_id": user_id,

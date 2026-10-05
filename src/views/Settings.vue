@@ -67,10 +67,10 @@
       <button 
         v-if="selectedFile" 
         @click="uploadFile" 
-        :disabled="isUploading"
+        :disabled="store.isUploadingCsv"
         class="w-full mt-4 bg-white hover:bg-white/90 text-[#0C0E12] py-3 rounded-full font-black text-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
       >
-        {{ isUploading ? 'Importation en cours...' : 'Envoyer le fichier CSV' }}
+        {{ store.isUploadingCsv ? 'Importation en cours...' : 'Envoyer le fichier CSV' }}
       </button>
 
       <p v-if="uploadMsg" class="text-xs mt-3 font-medium" :class="uploadError ? 'text-roseAcc' : 'text-neonLime'">
@@ -151,41 +151,24 @@ const handleFileUpload = (e) => {
   const files = e.target.files;
   if (files && files.length > 0) {
     selectedFile.value = files[0];
+    uploadMsg.value = '';
+    uploadError.value = false;
   }
 };
 
 const uploadFile = async () => {
   if (!selectedFile.value || !store.userId) return;
-  const apiBase = getApiBase();
   
-  isUploading.value = true;
   uploadMsg.value = '';
   uploadError.value = false;
 
-  const formData = new FormData();
-  formData.append('file', selectedFile.value);
-
-  try {
-    const token = localStorage.getItem('pea_access_token');
-    const res = await fetch(`${apiBase}/api/portfolio/upload?user_id=${store.userId}`, {
-      method: 'POST',
-      headers: token ? { 'Authorization': 'Bearer ' + token } : {},
-      body: formData
-    });
-
-    if (res.ok) {
-      uploadMsg.value = 'Portefeuille importé avec succès !';
-      store.fetchData();
-      selectedFile.value = null;
-    } else {
-      uploadError.value = true;
-      uploadMsg.value = "Erreur lors de l'importation. Format CSV invalide.";
-    }
-  } catch (e) {
+  const res = await store.uploadCsv(selectedFile.value);
+  if (res.success) {
+    uploadMsg.value = res.message;
+    selectedFile.value = null;
+  } else {
     uploadError.value = true;
-    uploadMsg.value = 'Erreur réseau lors de l\'envoi du fichier';
-  } finally {
-    isUploading.value = false;
+    uploadMsg.value = res.message;
   }
 };
 

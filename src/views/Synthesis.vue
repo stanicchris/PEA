@@ -8,7 +8,7 @@
         :isLoading="store.isLoading" 
         :isRefreshing="store.isRefreshing"
         @refresh="store.refreshData"
-        @open-settings="store.isSettingsOpen = true"
+        @open-settings="router.push('/settings')"
       />
       <AllocationChart 
         :positions="store.positions" 
@@ -50,6 +50,7 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/app'
 import HeroSection from '../components/HeroSection.vue'
 import AllocationChart from '../components/AllocationChart.vue'
@@ -59,4 +60,5 @@ import AnalyticsCharts from '../components/AnalyticsCharts.vue'
 import TopMovers from '../components/TopMovers.vue'
 
 const store = useAppStore()
+const router = useRouter()
 </script>
