@@ -51,7 +51,7 @@
       <div class="border-2 border-dashed border-white/15 hover:border-white/40 transition-colors rounded-24 p-8 text-center cursor-pointer relative liquid-glass-subtle">
         <input 
           type="file" 
-          accept=".csv,.xlsx,.xls,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
+          accept="*/*" 
           @change="handleFileUpload" 
           class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
         />
@@ -150,7 +150,16 @@ const saveCash = async () => {
 const handleFileUpload = (e) => {
   const files = e.target.files;
   if (files && files.length > 0) {
-    selectedFile.value = files[0];
+    const file = files[0];
+    const fileName = (file.name || '').toLowerCase();
+    const validExtensions = ['.csv', '.xlsx', '.xls'];
+    if (!validExtensions.some(ext => fileName.endsWith(ext))) {
+      uploadError.value = true;
+      uploadMsg.value = "Format non supporté. Veuillez sélectionner un fichier .csv ou .xlsx (BoursoBank).";
+      if (e.target) e.target.value = '';
+      return;
+    }
+    selectedFile.value = file;
     uploadMsg.value = '';
     uploadError.value = false;
   }

@@ -89,7 +89,7 @@
         <input 
           type="file" 
           ref="csvInputRef"
-          accept=".csv,.xlsx,.xls,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
+          accept="*/*" 
           @change="handleCsvFileChange" 
           :disabled="isUploadingCsv"
           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:pointer-events-none touch-manipulation" 
@@ -134,6 +134,16 @@ const handleCsvFileChange = async (event) => {
   const file = event.target?.files?.[0];
   if (!file) return;
 
+  const fileName = (file.name || '').toLowerCase();
+  const validExtensions = ['.csv', '.xlsx', '.xls'];
+  const isValid = validExtensions.some(ext => fileName.endsWith(ext));
+
+  if (!isValid) {
+    alert("Veuillez sélectionner un fichier .csv ou .xlsx (export BoursoBank).");
+    if (event.target) event.target.value = '';
+    return;
+  }
+
   isUploadingCsv.value = true;
   uploadStatusMessage.value = 'Import en cours...';
 
@@ -146,7 +156,7 @@ const handleCsvFileChange = async (event) => {
       }, 3000);
     } else {
       uploadStatusMessage.value = '❌ Erreur';
-      alert(result.message || "Erreur lors de l'importation du CSV");
+      alert(result.message || "Erreur lors de l'importation du fichier");
       setTimeout(() => {
         uploadStatusMessage.value = '';
       }, 3000);
