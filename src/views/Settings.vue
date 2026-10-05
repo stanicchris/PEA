@@ -45,13 +45,13 @@
       <h2 class="text-lg font-bold text-white mb-6">Importation (Boursorama)</h2>
       
       <label class="text-xs font-mono font-bold text-white/50 uppercase tracking-wider block mb-3">
-        Mettre à jour via un fichier CSV
+        Mettre à jour via un fichier CSV ou Excel (.xlsx)
       </label>
 
       <div class="border-2 border-dashed border-white/15 hover:border-white/40 transition-colors rounded-24 p-8 text-center cursor-pointer relative liquid-glass-subtle">
         <input 
           type="file" 
-          accept=".csv,text/csv,text/plain,application/vnd.ms-excel" 
+          accept=".csv,.xlsx,.xls,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
           @change="handleFileUpload" 
           class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
         />
@@ -59,7 +59,7 @@
           <svg class="w-8 h-8 text-white/40 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
           </svg>
-          <p v-if="!selectedFile" class="text-sm text-white/70 font-medium">Cliquez ou glissez votre fichier CSV ici</p>
+          <p v-if="!selectedFile" class="text-sm text-white/70 font-medium">Cliquez ou glissez votre fichier CSV ou Excel ici</p>
           <p v-else class="text-sm text-white font-bold">{{ selectedFile.name }}</p>
         </div>
       </div>
@@ -70,7 +70,7 @@
         :disabled="store.isUploadingCsv"
         class="w-full mt-4 bg-white hover:bg-white/90 text-[#0C0E12] py-3 rounded-full font-black text-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
       >
-        {{ store.isUploadingCsv ? 'Importation en cours...' : 'Envoyer le fichier CSV' }}
+        {{ store.isUploadingCsv ? 'Importation en cours...' : 'Envoyer le fichier' }}
       </button>
 
       <p v-if="uploadMsg" class="text-xs mt-3 font-medium" :class="uploadError ? 'text-roseAcc' : 'text-neonLime'">

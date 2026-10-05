@@ -305,41 +305,51 @@ async def upload_csv(file: UploadFile = File(...), auth_context: dict = Depends(
     user_id = auth_context["user"].id
     
     content = await file.read()
-    try:
-        df = pd.read_csv(io.BytesIO(content), sep=';', decimal=',', thousands=' ', encoding='utf-8-sig')
-        if len(df.columns) <= 2:
-            df = pd.read_csv(io.BytesIO(content), sep=',', decimal='.', encoding='utf-8-sig')
-    except Exception:
+    filename = (file.filename or '').lower()
+
+    if filename.endswith('.xlsx') or filename.endswith('.xls') or content.startswith(b'PK\x03\x04') or content.startswith(b'\xd0\xcf\x11\xe0'):
         try:
-            df = pd.read_csv(io.BytesIO(content), sep=';', decimal=',', thousands=' ', encoding='latin1')
-            if len(df.columns) <= 2:
-                df = pd.read_csv(io.BytesIO(content), sep=',', decimal='.', encoding='latin1')
+            df = pd.read_excel(io.BytesIO(content))
         except Exception as e:
-            raise HTTPException(400, f"Format CSV invalide : {str(e)}")
+            raise HTTPException(400, f"Format Excel invalide : {str(e)}")
+    else:
+        try:
+            df = pd.read_csv(io.BytesIO(content), sep=';', decimal=',', thousands=' ', encoding='utf-8-sig')
+            if len(df.columns) <= 2:
+                df = pd.read_csv(io.BytesIO(content), sep=',', decimal='.', encoding='utf-8-sig')
+        except Exception:
+            try:
+                df = pd.read_csv(io.BytesIO(content), sep=';', decimal=',', thousands=' ', encoding='latin1')
+                if len(df.columns) <= 2:
+                    df = pd.read_csv(io.BytesIO(content), sep=',', decimal='.', encoding='latin1')
+            except Exception as e:
+                raise HTTPException(400, f"Format CSV/Excel invalide : {str(e)}")
         
-    mapping = {
-        'nom': 'name', 'valeur': 'name', 'libelle': 'name', 'libellé': 'name', 
-        'code isin': 'isin', 'isin': 'isin',
-        'quantité': 'quantity', 'quantite': 'quantity',
-        'prix de revient': 'buying_price', 'pru': 'buying_price', 'buyingprice': 'buying_price',
-        'dernier cours': 'last_price', 'lastprice': 'last_price',
-        'montant': 'amount', 'valorisation': 'amount',
-        '+/- value': 'amount_variation', 'plus/moins value': 'amount_variation', 'amountvariation': 'amount_variation',
-        '+/- value (%)': 'variation', 'perf (%)': 'variation', 'performance': 'variation'
+    normalized_map = {
+        'name': 'name', 'nom': 'name', 'valeur': 'name', 'libelle': 'name', 'libellé': 'name', 'titre': 'name',
+        'isin': 'isin', 'codeisin': 'isin',
+        'quantity': 'quantity', 'quantite': 'quantity', 'quantité': 'quantity', 'qte': 'quantity',
+        'buyingprice': 'buying_price', 'pru': 'buying_price', 'prixderevient': 'buying_price', 'buying_price': 'buying_price',
+        'lastprice': 'last_price', 'derniercours': 'last_price', 'cours': 'last_price', 'last_price': 'last_price',
+        'intradayvariation': 'intraday_variation', 'variationjour': 'intraday_variation', 'variationdujour': 'intraday_variation', 'intraday_variation': 'intraday_variation',
+        'amount': 'amount', 'valorisation': 'amount', 'montant': 'amount',
+        'amountvariation': 'amount_variation', '+-value': 'amount_variation', 'plusmoinsvalue': 'amount_variation', 'plusvalue': 'amount_variation', 'amount_variation': 'amount_variation',
+        'variation': 'variation', 'varioation': 'variation', '+-value(%)': 'variation', 'perf(%)': 'variation', 'performance': 'variation'
     }
     
     cleaned_cols = {}
     for c in df.columns:
-        key = str(c).strip().lstrip('\ufeff').lower()
-        cleaned_cols[c] = mapping.get(key, key)
+        key = str(c).strip().lstrip('\ufeff').lower().replace('_', '').replace(' ', '').replace('/', '')
+        cleaned_cols[c] = normalized_map.get(key, key)
     df = df.rename(columns=cleaned_cols)
     
     if 'name' not in df.columns: 
-        raise HTTPException(400, "Le CSV doit contenir une colonne 'nom', 'valeur' ou 'libellé'")
+        raise HTTPException(400, "Le fichier doit contenir une colonne 'nom', 'name', 'valeur' ou 'libellé'")
     
     for col in ['quantity', 'buying_price', 'last_price', 'amount', 'amount_variation', 'variation']:
         if col in df.columns:
-            df[col] = df[col].astype(str).str.replace(r'\s+', '', regex=True).str.replace('€', '').str.replace('%', '').str.replace(',', '.')
+            if df[col].dtype == object:
+                df[col] = df[col].astype(str).str.replace(r'\s+', '', regex=True).str.replace('€', '').str.replace('%', '').str.replace(',', '.')
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
 
     if 'amount' not in df.columns and 'quantity' in df.columns and 'last_price' in df.columns:
