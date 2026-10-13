@@ -9,7 +9,12 @@
       </div>
       
       <div class="flex gap-2">
-        <button @click="store.toggleDiscreteMode()" class="w-8 h-8 rounded-full liquid-glass-subtle hover:bg-white/10 text-white/50 hover:text-white flex items-center justify-center transition-all cursor-pointer" :title="store.isDiscreteMode ? 'Désactiver le mode discret' : 'Activer le mode discret'">
+        <button
+          @click="store.toggleDiscreteMode()"
+          class="w-8 h-8 rounded-full liquid-glass-subtle hover:bg-white/10 text-white/50 hover:text-white flex items-center justify-center transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-neonLime focus-visible:outline-none"
+          :title="store.isDiscreteMode ? 'Désactiver le mode discret' : 'Activer le mode discret'"
+          :aria-label="store.isDiscreteMode ? 'Désactiver le mode discret' : 'Activer le mode discret'"
+        >
           <!-- Eye closed / open depending on state -->
           <svg v-if="!store.isDiscreteMode" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -19,7 +24,12 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
           </svg>
         </button>
-        <button @click="$emit('open-settings')" class="w-8 h-8 rounded-full liquid-glass-subtle hover:bg-white/10 text-white/50 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+        <button
+          @click="$emit('open-settings')"
+          class="w-8 h-8 rounded-full liquid-glass-subtle hover:bg-white/10 text-white/50 hover:text-white flex items-center justify-center transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-neonLime focus-visible:outline-none"
+          aria-label="Ouvrir les paramètres"
+          title="Ouvrir les paramètres"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17" />
           </svg>
@@ -87,16 +97,19 @@
 
       <div class="relative">
         <input 
+          id="csv-file-input"
           type="file" 
           ref="csvInputRef"
           accept="*/*" 
           @change="handleCsvFileChange" 
           :disabled="isUploadingCsv"
-          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:pointer-events-none touch-manipulation" 
+          aria-label="Importer un fichier CSV ou Excel (ex: BoursoBank .xlsx)"
+          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:pointer-events-none touch-manipulation focus-visible:ring-2 focus-visible:ring-neonLime focus-visible:outline-none"
         />
         <button 
           type="button"
           :disabled="isUploadingCsv" 
+          tabindex="-1"
           class="w-full liquid-glass-pill hover:bg-white/10 text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-full transition-all flex items-center justify-center gap-2 active:scale-95 hover:border-white/20 disabled:opacity-50 pointer-events-none"
           title="Importer un fichier CSV ou Excel (ex: BoursoBank .xlsx)"
         >
