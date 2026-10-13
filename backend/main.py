@@ -621,7 +621,7 @@ except ImportError as e:
     def analyze_stock_with_ai(*args, **kwargs): return {"error": "Import failed"}
 
 @app.get("/api/stock/analyze/{ticker}")
-async def analyze_stock(ticker: str, name: str = ""):
+async def analyze_stock(ticker: str, name: str = "", auth_context: dict = Depends(get_current_user)):
     resolved_ticker = ticker.strip()
     resolved_name = (name or ticker).strip()
     
