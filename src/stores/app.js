@@ -34,9 +34,12 @@ export const useAppStore = defineStore('app', () => {
     localStorage.setItem('pea_discrete_mode', isDiscreteMode.value)
   }
 
+  // Cache the formatter to improve rendering performance
+  const currencyFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
   const formatCurrency = (val) => {
     if (isDiscreteMode.value) return '*** €'
-    return (val || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+    return currencyFormatter.format(val || 0) + ' €'
   }
 
   const cashAmount = computed(() => {
