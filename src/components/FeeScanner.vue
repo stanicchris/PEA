@@ -8,13 +8,13 @@
           <span class="w-10 h-10 rounded-2xl bg-roseAcc/10 text-roseAcc flex items-center justify-center border border-roseAcc/20 shadow-[0_0_15px_rgba(244,63,94,0.15)]">🔍</span>
           Scanner de Frais (TER)
         </h3>
-        <p class="text-white/40 text-xs mt-1 font-medium">Détecte les ETFs trop chargés en frais de gestion et propose des alternatives.</p>
+        <p class="text-white/40 text-xs mt-1 font-medium">Détecte les ETFs chargés en frais de gestion et propose des alternatives PEA moins chères.</p>
       </div>
       
       <div class="text-right">
         <p class="text-xs text-white/40 uppercase tracking-widest font-mono font-bold mb-1">Économies Potentielles</p>
         <p class="text-2xl font-black text-roseAcc tabular-nums tracking-tight">
-          {{ formatCurrency(totalSavings) }} / an
+          {{ store.isDiscreteMode ? '••• €' : formatCurrency(totalSavings) }} / an
         </p>
       </div>
     </div>
@@ -51,7 +51,7 @@
 
           <div class="text-right shrink-0">
             <p class="font-bold text-white text-sm tabular-nums">
-              Frais actuels : {{ formatCurrency(asset.annual_fee_euros) }}/an
+              Frais actuels : {{ store.isDiscreteMode ? '••• €' : formatCurrency(asset.annual_fee_euros) }}/an
             </p>
           </div>
         </div>
@@ -65,7 +65,7 @@
           </div>
           <div class="text-right bg-neonLime/10 px-3 py-1.5 rounded-lg border border-neonLime/20 shrink-0">
             <p class="text-xs font-bold text-neonLime text-center">Gain estimé</p>
-            <p class="text-sm font-black text-neonLime">+{{ formatCurrency(asset.alternative.savings_euros) }}/an</p>
+            <p class="text-sm font-black text-neonLime">+{{ store.isDiscreteMode ? '••• €' : formatCurrency(asset.alternative.savings_euros) }}/an</p>
           </div>
         </div>
       </div>
@@ -74,8 +74,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { getApiBase } from '../config';
+import { useAppStore } from '../stores/app';
 
 const props = defineProps({
   userId: {
@@ -84,11 +85,62 @@ const props = defineProps({
   }
 });
 
+const store = useAppStore();
 const isLoading = ref(false);
 const scannedAssets = ref([]);
 const totalSavings = ref(0);
 
+const currencyFmt = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+const formatCurrency = (val) => currencyFmt.format(val || 0);
+
+const computeLocalFallback = () => {
+  const list = [];
+  let savings = 0;
+  (store.positions || []).forEach(p => {
+    const nameUp = (p.name || '').toUpperCase();
+    const isEtf = p.asset_type === 'ETF' || nameUp.includes('ETF') || nameUp.includes('MSCI') || nameUp.includes('S&P');
+    if (!isEtf) return;
+    const val = (Number(p.quantity) || 0) * (Number(p.current_price) || 0);
+    if (nameUp.includes('CW8') || (nameUp.includes('AMUNDI') && nameUp.includes('WORLD'))) {
+      const ter = 0.38;
+      const altTer = 0.25;
+      const sav = val * ((ter - altTer) / 100);
+      savings += sav;
+      list.push({
+        name: p.name,
+        isin: p.isin || p.ticker,
+        ter,
+        annual_fee_euros: val * (ter / 100),
+        is_high_fee: true,
+        alternative: {
+          name: 'iShares MSCI World Swap PEA UCITS ETF (WPEA)',
+          isin: 'IE0002XZSHO1',
+          ter: altTer,
+          savings_euros: sav
+        }
+      });
+    } else {
+      const ter = 0.15;
+      list.push({
+        name: p.name,
+        isin: p.isin || p.ticker,
+        ter,
+        annual_fee_euros: val * (ter / 100),
+        is_high_fee: false,
+        alternative: null
+      });
+    }
+  });
+  scannedAssets.value = list;
+  totalSavings.value = savings;
+};
+
 const fetchFees = async () => {
+  if (store.isDemoMode) {
+    computeLocalFallback();
+    return;
+  }
+
   const uid = props.userId || localStorage.getItem('pea_user_id') || '';
   const token = localStorage.getItem('pea_access_token');
   const headers = token ? { Authorization: 'Bearer ' + token } : {};
@@ -99,11 +151,17 @@ const fetchFees = async () => {
     const res = await fetch(url, { headers });
     if (res.ok) {
       const data = await res.json();
-      scannedAssets.value = data.scanned_assets || [];
-      totalSavings.value = data.total_potential_savings || 0;
+      if (data.scanned_assets && data.scanned_assets.length) {
+        scannedAssets.value = data.scanned_assets;
+        totalSavings.value = data.total_potential_savings || 0;
+      } else {
+        computeLocalFallback();
+      }
+    } else {
+      computeLocalFallback();
     }
   } catch (e) {
-    console.error("Failed to fetch fee scan", e);
+    computeLocalFallback();
   } finally {
     isLoading.value = false;
   }
@@ -111,8 +169,4 @@ const fetchFees = async () => {
 
 watch(() => props.userId, fetchFees);
 onMounted(fetchFees);
-
-const formatCurrency = (val) => {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(val || 0);
-};
 </script>

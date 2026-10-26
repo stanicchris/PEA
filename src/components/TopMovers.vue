@@ -1,12 +1,12 @@
 <template>
-  <div class="liquid-glass-card rounded-32 p-7 flex flex-col justify-between h-full relative overflow-hidden group specular-highlight">
+  <div class="liquid-glass-card rounded-32 p-5 sm:p-7 flex flex-col justify-between h-full relative overflow-hidden group specular-highlight">
     <!-- Top Row: Title + Dropdown Mode Switcher -->
     <div class="flex justify-between items-center mb-2">
       <h3 class="text-white font-bold text-lg tracking-tight">Top Mouvements</h3>
-      
+
       <div class="relative">
-        <button 
-          @click="isDropdownOpen = !isDropdownOpen" 
+        <button
+          @click="isDropdownOpen = !isDropdownOpen"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-full liquid-glass-subtle border border-white/10 text-white/90 text-xs font-medium cursor-pointer hover:border-white/20 transition-all active:scale-95"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-neonLime" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -20,22 +20,22 @@
 
         <!-- Dropdown Menu (Liquid Glass) -->
         <div v-if="isDropdownOpen" class="absolute right-0 top-full mt-2 w-44 liquid-glass rounded-2xl shadow-2xl py-1.5 z-50 text-xs border border-white/15 specular-highlight">
-          <button 
-            @click="selectFilter('gainers')" 
+          <button
+            @click="selectFilter('gainers')"
             class="w-full text-left px-3.5 py-2 hover:bg-white/[0.08] text-neonLime flex items-center justify-between transition-colors cursor-pointer"
           >
             <span>↗ Top Gainers</span>
             <span v-if="filterMode === 'gainers'">✓</span>
           </button>
-          <button 
-            @click="selectFilter('losers')" 
+          <button
+            @click="selectFilter('losers')"
             class="w-full text-left px-3.5 py-2 hover:bg-white/[0.08] text-roseAcc flex items-center justify-between transition-colors cursor-pointer"
           >
             <span>↘ Top Losers</span>
             <span v-if="filterMode === 'losers'">✓</span>
           </button>
-          <button 
-            @click="selectFilter('weight')" 
+          <button
+            @click="selectFilter('weight')"
             class="w-full text-left px-3.5 py-2 hover:bg-white/[0.08] text-lavender flex items-center justify-between transition-colors cursor-pointer"
           >
             <span>⚖️ Plus Gros Poids</span>
@@ -47,10 +47,15 @@
 
     <!-- Big Metric Value -->
     <div class="mb-4">
-      <div class="text-3xl font-black text-white tracking-tight tabular-numbers">
-        {{ formattedValue }}
+      <div class="flex items-baseline gap-2">
+        <div class="text-2xl sm:text-3xl font-black text-white tracking-tight tabular-numbers">
+          {{ topLeaderText }}
+        </div>
+        <span v-if="ledColumns[0]" class="text-xs font-mono font-bold px-2 py-0.5 rounded-full" :class="ledColumns[0].perf >= 0 ? 'bg-neonLime/15 text-neonLime' : 'bg-roseAcc/15 text-roseAcc'">
+          {{ ledColumns[0].perf >= 0 ? '+' : '' }}{{ ledColumns[0].perf.toFixed(1) }}%
+        </span>
       </div>
-      <p class="text-white/40 text-[11px] mt-0.5">Cliquez sur une colonne pour inspecter les fondamentaux</p>
+      <p class="text-white/40 text-[11px] mt-0.5">Touchez une barre pour ouvrir le diagnostic IA BourseAi</p>
     </div>
 
     <div v-if="!ledColumns.length" class="h-44 flex items-center justify-center text-white/40 text-xs border border-dashed border-white/10 rounded-2xl">
@@ -62,7 +67,7 @@
       <div class="relative w-full flex items-end justify-between pt-2 pb-1 gap-2">
         <!-- Y-Axis Scale Marks -->
         <div class="flex flex-col justify-between h-36 text-[9px] font-mono text-white/30 pr-1 select-none">
-          <span>+40%</span>
+          <span>+35%</span>
           <span>+20%</span>
           <span>+10%</span>
           <span>+05%</span>
@@ -72,19 +77,27 @@
 
         <!-- LED Bars Grid -->
         <div class="flex-1 flex items-end justify-between gap-1.5 sm:gap-2.5 h-36 border-b border-white/[0.08] pb-1">
-          <div 
-            v-for="(col, idx) in ledColumns" 
-            :key="idx" 
+          <div
+            v-for="(col, idx) in ledColumns"
+            :key="idx"
             @click="$emit('inspect-stock', col.rawPosition)"
-            class="flex-1 flex flex-col items-center justify-end h-full group cursor-pointer"
+            class="flex-1 flex flex-col items-center justify-end h-full group/bar cursor-pointer relative"
             :title="`${col.name}: ${col.perf >= 0 ? '+' : ''}${col.perf.toFixed(2)}%`"
           >
+            <!-- Percentage Mini Label above bar -->
+            <span
+              class="text-[9px] font-mono font-bold mb-1 opacity-75 group-hover/bar:opacity-100 transition-opacity"
+              :class="col.perf >= 0 ? 'text-neonLime' : 'text-roseAcc'"
+            >
+              {{ col.perf >= 0 ? '+' : '' }}{{ Math.round(col.perf) }}%
+            </span>
+
             <!-- Stack of LED segments -->
             <div class="w-full max-w-[20px] flex flex-col-reverse gap-[2.5px] items-center mb-1">
-              <div 
-                v-for="seg in col.segments" 
+              <div
+                v-for="seg in col.segments"
                 :key="seg"
-                class="w-full h-1.5 rounded-[2px] transition-all group-hover:brightness-125"
+                class="w-full h-1.5 rounded-[2px] transition-all group-hover/bar:brightness-125 group-hover/bar:scale-x-110"
                 :style="{ backgroundColor: col.color }"
               ></div>
             </div>
@@ -94,12 +107,12 @@
 
       <!-- Circular Stock Avatars under each bar -->
       <div class="flex items-center justify-between gap-1.5 sm:gap-2.5 pl-6 pt-2">
-        <div 
-          v-for="(col, idx) in ledColumns" 
-          :key="'avatar-'+idx"
+        <div
+          v-for="(col, idx) in ledColumns"
+          :key="'avatar-' + idx"
           class="flex-1 flex justify-center"
         >
-          <div 
+          <div
             @click="$emit('inspect-stock', col.rawPosition)"
             class="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center font-bold text-[9px] text-white overflow-hidden shadow-sm transition-transform hover:scale-125 cursor-pointer"
             :style="{ backgroundColor: col.avatarBg }"
@@ -114,62 +127,69 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed } from 'vue'
+import { useAppStore } from '../stores/app'
+
+const store = useAppStore()
 
 const props = defineProps({
   positions: { type: Array, default: () => [] },
   summary: { type: Object, default: () => ({}) },
   isLoading: { type: Boolean, default: false }
-});
+})
 
-const emit = defineEmits(['inspect-stock']);
+defineEmits(['inspect-stock'])
 
-const isDropdownOpen = ref(false);
-const filterMode = ref('gainers');
+const isDropdownOpen = ref(false)
+const filterMode = ref('gainers')
 
 const filterLabels = {
   gainers: 'Top Gainers',
   losers: 'Top Losers',
   weight: 'Plus Gros Poids'
-};
+}
 
-const currentFilterLabel = computed(() => filterLabels[filterMode.value]);
+const currentFilterLabel = computed(() => filterLabels[filterMode.value])
 
 const selectFilter = (mode) => {
-  filterMode.value = mode;
-  isDropdownOpen.value = false;
-};
-
-const formattedValue = computed(() => {
-  const val = props.summary?.total_value ?? 0;
-  return val.toLocaleString('fr-FR', { minimumFractionDigits: 2, style: 'currency', currency: 'EUR' });
-});
+  filterMode.value = mode
+  isDropdownOpen.value = false
+}
 
 const ledColumns = computed(() => {
   if (!props.positions || !props.positions.length) {
-    return [];
+    return []
   }
 
-  const sorted = [...props.positions].sort((a, b) => {
-    if (filterMode.value === 'gainers') return b.variation_pct - a.variation_pct;
-    if (filterMode.value === 'losers') return a.variation_pct - b.variation_pct;
-    return (b.current_price * b.quantity) - (a.current_price * a.quantity);
-  }).slice(0, 7);
+  const sorted = [...props.positions]
+    .sort((a, b) => {
+      if (filterMode.value === 'gainers') return b.variation_pct - a.variation_pct
+      if (filterMode.value === 'losers') return a.variation_pct - b.variation_pct
+      return b.current_price * b.quantity - a.current_price * a.quantity
+    })
+    .slice(0, 7)
 
-  const avatarColors = ['#3B82F6', '#10B981', '#F59E0B', '#6366F1', '#EC4899', '#8B5CF6', '#14B8A6'];
+  const avatarColors = ['#3B82F6', '#10B981', '#F59E0B', '#6366F1', '#EC4899', '#8B5CF6', '#14B8A6']
 
   return sorted.map((pos, i) => {
-    const isPositive = pos.variation_pct >= 0;
-    const segCount = Math.max(2, Math.min(18, Math.round(Math.abs(pos.variation_pct) / 2)));
+    const isPositive = pos.variation_pct >= 0
+    const segCount = Math.max(2, Math.min(16, Math.round(Math.abs(pos.variation_pct) / 2)))
     return {
       name: pos.name,
       symbol: (pos.ticker || pos.name || '').substring(0, 2).toUpperCase(),
       segments: segCount,
-      color: isPositive ? (segCount > 10 ? '#A3E635' : '#98F794') : '#F43F5E',
+      color: isPositive ? (segCount > 8 ? '#A3E635' : '#98F794') : '#F43F5E',
       avatarBg: avatarColors[i % avatarColors.length],
-      perf: pos.variation_pct,
+      perf: pos.variation_pct || 0,
       rawPosition: pos
-    };
-  });
-});
+    }
+  })
+})
+
+const topLeaderText = computed(() => {
+  if ( ledColumns.value.length > 0 ) {
+    return ledColumns.value[0].name
+  }
+  return store.formatCurrency(props.summary?.total_value ?? 0)
+})
 </script>

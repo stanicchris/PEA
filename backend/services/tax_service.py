@@ -35,9 +35,9 @@ def get_pea_tax_status(client, user_id: str):
     net_invested = deposits - withdrawals
     capacity_left = legal_limit - net_invested
     
-    # Prélèvements sociaux en vigueur (ex: 18.6%)
+    # Prélèvements sociaux en vigueur (17.2%)
     # On pourrait requêter la table tax_rules, mais pour simplifier on le met ici ou on l'interroge
-    social_taxes = 18.6
+    social_taxes = 17.2
     
     return {
         "opened_at": opened_at.strftime("%Y-%m-%d"),
@@ -66,7 +66,7 @@ def simulate_withdrawal(net_invested: float, current_value: float, withdrawal_am
     taxable_ratio = total_gain / current_value
     taxable_base = withdrawal_amount * taxable_ratio
     
-    social_taxes = taxable_base * 0.186
+    social_taxes = taxable_base * 0.172
     
     # PFU (12.8%) + clôture si < 5 ans, sinon 0%
     income_taxes = taxable_base * 0.128 if not is_mature else 0.0

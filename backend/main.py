@@ -187,6 +187,91 @@ async def update_cash(req: CashUpdateRequest, auth_context: dict = Depends(get_c
         
     return {"status": "ok", "cash": req.cash}
 
+
+class ManualPositionRequest(BaseModel):
+    name: str
+    ticker: Optional[str] = ""
+    isin: Optional[str] = ""
+    quantity: float
+    pru: float
+    current_price: float
+    sector: Optional[str] = "Actions"
+    asset_type: Optional[str] = "Action"
+
+
+@app.post("/api/portfolio/position")
+async def upsert_manual_position(req: ManualPositionRequest, auth_context: dict = Depends(get_current_user)):
+    client = auth_context["client"]
+    user_id = auth_context["user"].id
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    res_snap = client.table("snapshots").select("*").eq("user_id", user_id).order("snapshot_date", desc=True).limit(1).execute()
+    if res_snap.data:
+        snap = res_snap.data[0]
+        snap_id = snap["id"]
+        cash = float(snap.get("cash") or 0.0)
+    else:
+        cash = 0.0
+        new_snap = client.table("snapshots").insert({
+            "user_id": user_id,
+            "snapshot_date": now_str,
+            "cash": cash,
+            "valeur_titres": 0.0,
+            "total_valeur": cash,
+            "cout_investi": 0.0,
+            "source_filename": "Saisie Manuelle"
+        }).execute()
+        snap_id = new_snap.data[0]["id"]
+
+    res_pos = client.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
+    existing_positions = res_pos.data or []
+
+    amount = req.quantity * req.current_price
+    amount_var = (req.current_price - req.pru) * req.quantity
+    variation = ((req.current_price - req.pru) / req.pru * 100.0) if req.pru > 0 else 0.0
+    isin_val = req.isin or req.ticker or req.name
+
+    matched_id = None
+    for p in existing_positions:
+        if (req.isin and p.get("isin") == req.isin) or (p.get("name", "").lower() == req.name.lower()):
+            matched_id = p.get("id")
+            break
+
+    row_payload = {
+        "user_id": user_id,
+        "snapshot_id": snap_id,
+        "snapshot_date": now_str,
+        "name": req.name,
+        "isin": isin_val,
+        "type": req.asset_type or "Action",
+        "quantity": req.quantity,
+        "buying_price": req.pru,
+        "last_price": req.current_price,
+        "amount": round(amount, 2),
+        "amount_variation": round(amount_var, 2),
+        "variation": round(variation, 2)
+    }
+
+    if matched_id:
+        client.table("snapshot_positions").update(row_payload).eq("id", matched_id).execute()
+    else:
+        client.table("snapshot_positions").insert(row_payload).execute()
+
+    res_updated = client.table("snapshot_positions").select("*").eq("snapshot_id", snap_id).execute()
+    all_pos = res_updated.data or []
+    val_titres = sum(float(p.get("quantity", 0)) * float(p.get("last_price", 0)) for p in all_pos)
+    cout_investi = sum(float(p.get("quantity", 0)) * float(p.get("buying_price", 0)) for p in all_pos)
+    plus_value = val_titres - cout_investi
+
+    client.table("snapshots").update({
+        "valeur_titres": round(val_titres, 2),
+        "cout_investi": round(cout_investi, 2),
+        "plus_value": round(plus_value, 2),
+        "total_valeur": round(val_titres + cash, 2)
+    }).eq("id", snap_id).execute()
+
+    return {"status": "ok", "snapshot_id": snap_id}
+
 @app.post("/api/cron/daily-refresh")
 async def cron_daily_refresh(request: Request):
     auth_header = request.headers.get("Authorization")
@@ -326,15 +411,15 @@ async def upload_csv(file: UploadFile = File(...), auth_context: dict = Depends(
                 raise HTTPException(400, f"Format CSV/Excel invalide : {str(e)}")
         
     normalized_map = {
-        'name': 'name', 'nom': 'name', 'valeur': 'name', 'libelle': 'name', 'libellé': 'name', 'titre': 'name',
-        'isin': 'isin', 'codeisin': 'isin',
-        'quantity': 'quantity', 'quantite': 'quantity', 'quantité': 'quantity', 'qte': 'quantity',
-        'buyingprice': 'buying_price', 'pru': 'buying_price', 'prixderevient': 'buying_price', 'buying_price': 'buying_price',
-        'lastprice': 'last_price', 'derniercours': 'last_price', 'cours': 'last_price', 'last_price': 'last_price',
+        'name': 'name', 'nom': 'name', 'valeur': 'name', 'libelle': 'name', 'libellé': 'name', 'titre': 'name', 'instrument': 'name', 'designation': 'name', 'désignation': 'name',
+        'isin': 'isin', 'codeisin': 'isin', 'code': 'isin',
+        'quantity': 'quantity', 'quantite': 'quantity', 'quantité': 'quantity', 'qte': 'quantity', 'qté': 'quantity', 'titres': 'quantity',
+        'buyingprice': 'buying_price', 'pru': 'buying_price', 'prixderevient': 'buying_price', 'buying_price': 'buying_price', 'prixmoyen': 'buying_price', 'coursrevient': 'buying_price', 'pmp': 'buying_price',
+        'lastprice': 'last_price', 'derniercours': 'last_price', 'cours': 'last_price', 'last_price': 'last_price', 'coursactuel': 'last_price',
         'intradayvariation': 'intraday_variation', 'variationjour': 'intraday_variation', 'variationdujour': 'intraday_variation', 'intraday_variation': 'intraday_variation',
-        'amount': 'amount', 'valorisation': 'amount', 'montant': 'amount',
-        'amountvariation': 'amount_variation', '+-value': 'amount_variation', 'plusmoinsvalue': 'amount_variation', 'plusvalue': 'amount_variation', 'amount_variation': 'amount_variation',
-        'variation': 'variation', 'varioation': 'variation', '+-value(%)': 'variation', 'perf(%)': 'variation', 'performance': 'variation'
+        'amount': 'amount', 'valorisation': 'amount', 'montant': 'amount', 'estimation': 'amount', 'valorisationeur': 'amount',
+        'amountvariation': 'amount_variation', '+-value': 'amount_variation', 'plusmoinsvalue': 'amount_variation', 'plusvalue': 'amount_variation', 'amount_variation': 'amount_variation', 'plusmoinsvalueeur': 'amount_variation', 'gainperte': 'amount_variation',
+        'variation': 'variation', 'varioation': 'variation', '+-value(%)': 'variation', 'perf(%)': 'variation', 'performance': 'variation', 'plusmoinsvaluepct': 'variation'
     }
     
     cleaned_cols = {}
